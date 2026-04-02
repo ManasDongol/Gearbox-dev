@@ -3,3 +3,28 @@ obj/
 /packages/
 riderModule.iml
 /_ReSharper.Caches/
+
+## --- .NET / C# ---
+bin/
+obj/
+*.user
+*.userosscache
+*.sln.doccache
+.vs/
+
+## --- Angular / Node ---
+node_modules/
+dist/
+.angular/
+npm-debug.log*
+yarn-error.log*
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+## --- IDEs (JetBrains / VS Code) ---
+.idea/
+.vscode/
+*.swp
+*.bak
