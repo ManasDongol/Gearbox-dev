@@ -1,0 +1,6 @@
+@Gearbox.Presentation_HostAddress = http://localhost:5289
+
+GET {{Gearbox.Presentation_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
