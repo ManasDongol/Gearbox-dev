@@ -5,6 +5,11 @@ namespace Gearbox.Application.DTOs
     public class AppointmentDto
     {
         public Guid Id { get; set; }
-        // Add additional properties here as needed
+        public Guid CustomerId { get; set; }
+        public Guid VehicleId { get; set; }
+        public DateTime AppointmentDate { get; set; }
+        public string Status { get; set; }
+        public string Notes { get; set; }
+        public DateTime CreatedDate { get; set; }
     }
 }

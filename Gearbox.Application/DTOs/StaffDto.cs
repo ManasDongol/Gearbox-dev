@@ -4,7 +4,11 @@ namespace Gearbox.Application.DTOs
 {
     public class StaffDto
     {
-        public Guid Id { get; set; }
-        // Add additional properties here as needed
+     
+        public Guid UserId { get; set; }
+        public string FullName { get; set; }
+        public string Department { get; set; }
+        public string JobTitle { get; set; }
+      
     }
 }

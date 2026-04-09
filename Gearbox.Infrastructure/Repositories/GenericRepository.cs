@@ -45,5 +45,10 @@ namespace Gearbox.Infrastructure.Repositories
         {
             _dbSet.Remove(entity);
         }
+
+        public async Task<int> SaveChangesAsync()
+        {
+            return await _context.SaveChangesAsync();
+        }
     }
 }

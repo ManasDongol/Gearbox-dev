@@ -11,22 +11,22 @@ namespace Gearbox.Application.Services
 {
     public class StaffService : IStaffService
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IStaffRepository _repository;
 
-        public StaffService(IUnitOfWork unitOfWork)
+        public StaffService(IStaffRepository repository)
         {
-            _unitOfWork = unitOfWork;
+            _repository = repository;
         }
 
         public async Task<IEnumerable<StaffDto>> GetAllAsync()
         {
-            var entities = await _unitOfWork.Staffs.GetAllAsync();
+            var entities = await _repository.GetAllAsync();
             return entities.Select(e => MapToDto(e));
         }
 
         public async Task<StaffDto> GetByIdAsync(Guid id)
         {
-            var entity = await _unitOfWork.Staffs.GetByIdAsync(id);
+            var entity = await _repository.GetByIdAsync(id);
             if (entity == null) return null;
             return MapToDto(entity);
         }
@@ -34,42 +34,44 @@ namespace Gearbox.Application.Services
         public async Task<StaffDto> AddAsync(StaffDto dto)
         {
             var entity = MapToEntity(dto);
-            entity.Id = Guid.NewGuid(); // ensuring a new ID
-            await _unitOfWork.Staffs.AddAsync(entity);
-            await _unitOfWork.CompleteAsync();
+            await _repository.AddAsync(entity);
+            await _repository.SaveChangesAsync();
             return MapToDto(entity);
         }
 
         public async Task UpdateAsync(Guid id, StaffDto dto)
         {
-            var entity = await _unitOfWork.Staffs.GetByIdAsync(id);
+            var entity = await _repository.GetByIdAsync(id);
             if (entity != null)
             {
                 // Assign new values from dto
-                // entity.SomeProperty = dto.SomeProperty;
-                _unitOfWork.Staffs.Update(entity);
-                await _unitOfWork.CompleteAsync();
+                // (In a real scenario, you'd map individual properties)
+                _repository.Update(entity);
+                await _repository.SaveChangesAsync();
             }
         }
 
         public async Task DeleteAsync(Guid id)
         {
-            var entity = await _unitOfWork.Staffs.GetByIdAsync(id);
+            var entity = await _repository.GetByIdAsync(id);
             if (entity != null)
             {
-                _unitOfWork.Staffs.Remove(entity);
-                await _unitOfWork.CompleteAsync();
+                _repository.Remove(entity);
+                await _repository.SaveChangesAsync();
             }
         }
 
-        // Manual Mapping Methods
         private StaffDto MapToDto(Staff entity)
         {
             if (entity == null) return null;
             return new StaffDto
             {
-                Id = entity.Id,
-                // Map other properties here
+           
+                UserId = entity.UserId,
+                FullName = entity.FullName,
+                Department = entity.Department,
+                JobTitle = entity.JobTitle,
+              
             };
         }
 
@@ -78,8 +80,12 @@ namespace Gearbox.Application.Services
             if (dto == null) return null;
             return new Staff
             {
-                Id = dto.Id,
-                // Map other properties here
+             
+                UserId = dto.UserId,
+                FullName = dto.FullName,
+                Department = dto.Department,
+                JobTitle = dto.JobTitle,
+                HireDate = DateTime.UtcNow
             };
         }
     }

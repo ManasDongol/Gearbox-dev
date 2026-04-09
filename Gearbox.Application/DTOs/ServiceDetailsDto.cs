@@ -5,6 +5,8 @@ namespace Gearbox.Application.DTOs
     public class ServiceDetailsDto
     {
         public Guid Id { get; set; }
-        // Add additional properties here as needed
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public decimal BasePrice { get; set; }
     }
 }

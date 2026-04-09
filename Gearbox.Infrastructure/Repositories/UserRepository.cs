@@ -4,7 +4,7 @@ using Gearbox.Infrastructure.Data;
 
 namespace Gearbox.Infrastructure.Repositories
 {
-    public class UserRepository : GenericRepository<User>, IUserRepository
+    public class UserRepository : GenericRepository<AppUser>, IUserRepository
     {
         public UserRepository(ApplicationDbContext context) : base(context)
         {

@@ -1,13 +1,15 @@
 using Gearbox.Domain.Entities;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace Gearbox.Infrastructure.Data
 {
-    public class ApplicationDbContext : DbContext
+    public class ApplicationDbContext : IdentityDbContext<AppUser, IdentityRole<Guid>, Guid>
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
 
-        public DbSet<User> Users { get; set; }
+        public DbSet<AppUser> Users { get; set; }
         public DbSet<Customer> Customers { get; set; }
         public DbSet<Staff> Staffs { get; set; }
         public DbSet<Vehicle> Vehicles { get; set; }
@@ -28,6 +30,14 @@ namespace Gearbox.Infrastructure.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+            modelBuilder.Entity<AppUser>().ToTable("Users");
+            modelBuilder.Entity<IdentityRole<Guid>>().ToTable("Roles");
+            modelBuilder.Entity<IdentityUserRole<Guid>>().ToTable("UserRoles");
+            modelBuilder.Entity<IdentityUserClaim<Guid>>().ToTable("UserClaims");
+            modelBuilder.Entity<IdentityUserLogin<Guid>>().ToTable("UserLogins");
+            modelBuilder.Entity<IdentityRoleClaim<Guid>>().ToTable("RoleClaims");
+            modelBuilder.Entity<IdentityUserToken<Guid>>().ToTable("UserTokens");
+
 
             // User - Customer (1:1)
             modelBuilder.Entity<Customer>()
@@ -44,7 +54,7 @@ namespace Gearbox.Infrastructure.Data
                 .OnDelete(DeleteBehavior.Restrict);
 
             // User - Notification (1:Many)
-            modelBuilder.Entity<User>()
+            modelBuilder.Entity<AppUser>()
                 .HasMany(u => u.Notifications)
                 .WithOne(n => n.User)
                 .HasForeignKey(n => n.UserId)

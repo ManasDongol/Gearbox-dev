@@ -11,22 +11,22 @@ namespace Gearbox.Application.Services
 {
     public class ServiceReviewService : IServiceReviewService
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IServiceReviewRepository _repository;
 
-        public ServiceReviewService(IUnitOfWork unitOfWork)
+        public ServiceReviewService(IServiceReviewRepository repository)
         {
-            _unitOfWork = unitOfWork;
+            _repository = repository;
         }
 
         public async Task<IEnumerable<ServiceReviewDto>> GetAllAsync()
         {
-            var entities = await _unitOfWork.ServiceReviews.GetAllAsync();
+            var entities = await _repository.GetAllAsync();
             return entities.Select(e => MapToDto(e));
         }
 
         public async Task<ServiceReviewDto> GetByIdAsync(Guid id)
         {
-            var entity = await _unitOfWork.ServiceReviews.GetByIdAsync(id);
+            var entity = await _repository.GetByIdAsync(id);
             if (entity == null) return null;
             return MapToDto(entity);
         }
@@ -34,42 +34,44 @@ namespace Gearbox.Application.Services
         public async Task<ServiceReviewDto> AddAsync(ServiceReviewDto dto)
         {
             var entity = MapToEntity(dto);
-            entity.Id = Guid.NewGuid(); // ensuring a new ID
-            await _unitOfWork.ServiceReviews.AddAsync(entity);
-            await _unitOfWork.CompleteAsync();
+            await _repository.AddAsync(entity);
+            await _repository.SaveChangesAsync();
             return MapToDto(entity);
         }
 
         public async Task UpdateAsync(Guid id, ServiceReviewDto dto)
         {
-            var entity = await _unitOfWork.ServiceReviews.GetByIdAsync(id);
+            var entity = await _repository.GetByIdAsync(id);
             if (entity != null)
             {
-                // Assign new values from dto
-                // entity.SomeProperty = dto.SomeProperty;
-                _unitOfWork.ServiceReviews.Update(entity);
-                await _unitOfWork.CompleteAsync();
+              
+                _repository.Update(entity);
+                await _repository.SaveChangesAsync();
             }
         }
 
         public async Task DeleteAsync(Guid id)
         {
-            var entity = await _unitOfWork.ServiceReviews.GetByIdAsync(id);
+            var entity = await _repository.GetByIdAsync(id);
             if (entity != null)
             {
-                _unitOfWork.ServiceReviews.Remove(entity);
-                await _unitOfWork.CompleteAsync();
+                _repository.Remove(entity);
+                await _repository.SaveChangesAsync();
             }
         }
 
-        // Manual Mapping Methods
         private ServiceReviewDto MapToDto(ServiceReview entity)
         {
             if (entity == null) return null;
             return new ServiceReviewDto
             {
                 Id = entity.Id,
-                // Map other properties here
+                CustomerId = entity.CustomerId,
+                AppointmentId = entity.AppointmentId,
+                Rating = entity.Rating,
+                Comment = entity.Comment,
+                ReviewDate = entity.ReviewDate,
+              
             };
         }
 
@@ -79,7 +81,12 @@ namespace Gearbox.Application.Services
             return new ServiceReview
             {
                 Id = dto.Id,
-                // Map other properties here
+                CustomerId = dto.CustomerId,
+                AppointmentId = dto.AppointmentId,
+                Rating = dto.Rating,
+                Comment = dto.Comment,
+                ReviewDate = dto.ReviewDate,
+                
             };
         }
     }

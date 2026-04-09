@@ -11,22 +11,22 @@ namespace Gearbox.Application.Services
 {
     public class UserService : IUserService
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IUserRepository _repository;
 
-        public UserService(IUnitOfWork unitOfWork)
+        public UserService(IUserRepository repository)
         {
-            _unitOfWork = unitOfWork;
+            _repository = repository;
         }
 
         public async Task<IEnumerable<UserDto>> GetAllAsync()
         {
-            var entities = await _unitOfWork.Users.GetAllAsync();
+            var entities = await _repository.GetAllAsync();
             return entities.Select(e => MapToDto(e));
         }
 
         public async Task<UserDto> GetByIdAsync(Guid id)
         {
-            var entity = await _unitOfWork.Users.GetByIdAsync(id);
+            var entity = await _repository.GetByIdAsync(id);
             if (entity == null) return null;
             return MapToDto(entity);
         }
@@ -34,52 +34,56 @@ namespace Gearbox.Application.Services
         public async Task<UserDto> AddAsync(UserDto dto)
         {
             var entity = MapToEntity(dto);
-            entity.Id = Guid.NewGuid(); // ensuring a new ID
-            await _unitOfWork.Users.AddAsync(entity);
-            await _unitOfWork.CompleteAsync();
+            await _repository.AddAsync(entity);
+            await _repository.SaveChangesAsync();
             return MapToDto(entity);
         }
 
         public async Task UpdateAsync(Guid id, UserDto dto)
         {
-            var entity = await _unitOfWork.Users.GetByIdAsync(id);
+            var entity = await _repository.GetByIdAsync(id);
             if (entity != null)
             {
                 // Assign new values from dto
-                // entity.SomeProperty = dto.SomeProperty;
-                _unitOfWork.Users.Update(entity);
-                await _unitOfWork.CompleteAsync();
+                // (In a real scenario, you'd map individual properties)
+                _repository.Update(entity);
+                await _repository.SaveChangesAsync();
             }
         }
 
         public async Task DeleteAsync(Guid id)
         {
-            var entity = await _unitOfWork.Users.GetByIdAsync(id);
+            var entity = await _repository.GetByIdAsync(id);
             if (entity != null)
             {
-                _unitOfWork.Users.Remove(entity);
-                await _unitOfWork.CompleteAsync();
+                _repository.Remove(entity);
+                await _repository.SaveChangesAsync();
             }
         }
 
-        // Manual Mapping Methods
-        private UserDto MapToDto(User entity)
+        private UserDto MapToDto(AppUser entity)
         {
             if (entity == null) return null;
             return new UserDto
             {
-                Id = entity.Id,
-                // Map other properties here
+              
+                Username = entity.UserName,
+                Email = entity.Email,
+                PasswordHash = entity.PasswordHash,
+                IsActive = entity.IsActive,
+              
             };
         }
 
-        private User MapToEntity(UserDto dto)
+        private AppUser MapToEntity(UserDto dto)
         {
             if (dto == null) return null;
-            return new User
+            return new AppUser
             {
-                Id = dto.Id,
-                // Map other properties here
+              
+                UserName = dto.Username,
+                Email = dto.Email,
+                
             };
         }
     }

@@ -44,7 +44,7 @@ namespace Gearbox.Infrastructure.Repositories
             return await _dbSet
                 .Include(c => c.Vehicles)
                 .Where(c => c.FullName.ToLower().Contains(searchTerm) || 
-                            c.PhoneNumber.Contains(searchTerm) ||
+                            c.Phone.Contains(searchTerm) ||
                             c.Vehicles.Any(v => v.NumberPlate.ToLower().Contains(searchTerm)))
                 .ToListAsync();
         }

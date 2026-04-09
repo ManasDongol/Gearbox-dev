@@ -4,7 +4,13 @@ namespace Gearbox.Application.DTOs
 {
     public class UserDto
     {
-        public Guid Id { get; set; }
-        // Add additional properties here as needed
+       
+        public string Username { get; set; }
+        public string Email { get; set; }
+        public string PasswordHash { get; set; }
+        public string Role { get; set; }
+   
+        public bool IsActive { get; set; }
+        public bool emailVerified { get; set; }
     }
 }

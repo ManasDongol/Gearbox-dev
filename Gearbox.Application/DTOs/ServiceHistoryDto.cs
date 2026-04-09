@@ -5,6 +5,10 @@ namespace Gearbox.Application.DTOs
     public class ServiceHistoryDto
     {
         public Guid Id { get; set; }
-        // Add additional properties here as needed
+        public Guid CustomerId { get; set; }
+        public Guid VehicleId { get; set; }
+        public DateTime ServiceDate { get; set; }
+        public string Notes { get; set; }
+        public decimal TotalCost { get; set; }
     }
 }

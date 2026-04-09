@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -11,22 +11,22 @@ namespace Gearbox.Application.Services
 {
     public class ServiceDetailsService : IServiceDetailsService
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IServiceDetailsRepository _repository;
 
-        public ServiceDetailsService(IUnitOfWork unitOfWork)
+        public ServiceDetailsService(IServiceDetailsRepository repository)
         {
-            _unitOfWork = unitOfWork;
+            _repository = repository;
         }
 
         public async Task<IEnumerable<ServiceDetailsDto>> GetAllAsync()
         {
-            var entities = await _unitOfWork.ServiceDetails.GetAllAsync();
+            var entities = await _repository.GetAllAsync();
             return entities.Select(e => MapToDto(e));
         }
 
         public async Task<ServiceDetailsDto> GetByIdAsync(Guid id)
         {
-            var entity = await _unitOfWork.ServiceDetails.GetByIdAsync(id);
+            var entity = await _repository.GetByIdAsync(id);
             if (entity == null) return null;
             return MapToDto(entity);
         }
@@ -34,42 +34,42 @@ namespace Gearbox.Application.Services
         public async Task<ServiceDetailsDto> AddAsync(ServiceDetailsDto dto)
         {
             var entity = MapToEntity(dto);
-            entity.Id = Guid.NewGuid(); // ensuring a new ID
-            await _unitOfWork.ServiceDetails.AddAsync(entity);
-            await _unitOfWork.CompleteAsync();
+            await _repository.AddAsync(entity);
+            await _repository.SaveChangesAsync();
             return MapToDto(entity);
         }
 
         public async Task UpdateAsync(Guid id, ServiceDetailsDto dto)
         {
-            var entity = await _unitOfWork.ServiceDetails.GetByIdAsync(id);
+            var entity = await _repository.GetByIdAsync(id);
             if (entity != null)
             {
                 // Assign new values from dto
-                // entity.SomeProperty = dto.SomeProperty;
-                _unitOfWork.ServiceDetails.Update(entity);
-                await _unitOfWork.CompleteAsync();
+                // (In a real scenario, you'd map individual properties)
+                _repository.Update(entity);
+                await _repository.SaveChangesAsync();
             }
         }
 
         public async Task DeleteAsync(Guid id)
         {
-            var entity = await _unitOfWork.ServiceDetails.GetByIdAsync(id);
+            var entity = await _repository.GetByIdAsync(id);
             if (entity != null)
             {
-                _unitOfWork.ServiceDetails.Remove(entity);
-                await _unitOfWork.CompleteAsync();
+                _repository.Remove(entity);
+                await _repository.SaveChangesAsync();
             }
         }
 
-        // Manual Mapping Methods
         private ServiceDetailsDto MapToDto(ServiceDetails entity)
         {
             if (entity == null) return null;
             return new ServiceDetailsDto
             {
                 Id = entity.Id,
-                // Map other properties here
+                Name = entity.Name,
+                Description = entity.Description,
+                BasePrice = entity.BasePrice,
             };
         }
 
@@ -79,7 +79,9 @@ namespace Gearbox.Application.Services
             return new ServiceDetails
             {
                 Id = dto.Id,
-                // Map other properties here
+                Name = dto.Name,
+                Description = dto.Description,
+                BasePrice = dto.BasePrice,
             };
         }
     }

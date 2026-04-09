@@ -5,6 +5,10 @@ namespace Gearbox.Application.DTOs
     public class PartRequestDto
     {
         public Guid Id { get; set; }
-        // Add additional properties here as needed
+        public Guid CustomerId { get; set; }
+        public string PartName { get; set; }
+        public string Description { get; set; }
+        public bool IsFulfilled { get; set; }
+        public DateTime RequestDate { get; set; }
     }
 }

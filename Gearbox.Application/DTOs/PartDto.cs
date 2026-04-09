@@ -5,6 +5,11 @@ namespace Gearbox.Application.DTOs
     public class PartDto
     {
         public Guid Id { get; set; }
-        // Add additional properties here as needed
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public string PartNumber { get; set; }
+        public decimal SellingPrice { get; set; }
+        public int StockQuantity { get; set; }
+        public Guid VendorId { get; set; }
     }
 }

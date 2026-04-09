@@ -1,19 +1,16 @@
 using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Identity;
 
 namespace Gearbox.Domain.Entities
 {
-    public class User
+    public class AppUser :IdentityUser<Guid>
     {
-        public Guid Id { get; set; } = Guid.NewGuid();
-        public string Username { get; set; }
-        public string Email { get; set; }
-        public string PasswordHash { get; set; }
-        public string Role { get; set; } // e.g., "Admin", "Staff", "Customer"
         
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public bool IsActive { get; set; } = true;
-        public bool emailVerified { get; set; } = false;
+        
+   
 
         // Navigations
         public Customer Customer { get; set; }

@@ -11,22 +11,22 @@ namespace Gearbox.Application.Services
 {
     public class PurchaseInvoiceService : IPurchaseInvoiceService
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IPurchaseInvoiceRepository _repository;
 
-        public PurchaseInvoiceService(IUnitOfWork unitOfWork)
+        public PurchaseInvoiceService(IPurchaseInvoiceRepository repository)
         {
-            _unitOfWork = unitOfWork;
+            _repository = repository;
         }
 
         public async Task<IEnumerable<PurchaseInvoiceDto>> GetAllAsync()
         {
-            var entities = await _unitOfWork.PurchaseInvoices.GetAllAsync();
+            var entities = await _repository.GetAllAsync();
             return entities.Select(e => MapToDto(e));
         }
 
         public async Task<PurchaseInvoiceDto> GetByIdAsync(Guid id)
         {
-            var entity = await _unitOfWork.PurchaseInvoices.GetByIdAsync(id);
+            var entity = await _repository.GetByIdAsync(id);
             if (entity == null) return null;
             return MapToDto(entity);
         }
@@ -34,42 +34,43 @@ namespace Gearbox.Application.Services
         public async Task<PurchaseInvoiceDto> AddAsync(PurchaseInvoiceDto dto)
         {
             var entity = MapToEntity(dto);
-            entity.Id = Guid.NewGuid(); // ensuring a new ID
-            await _unitOfWork.PurchaseInvoices.AddAsync(entity);
-            await _unitOfWork.CompleteAsync();
+            await _repository.AddAsync(entity);
+            await _repository.SaveChangesAsync();
             return MapToDto(entity);
         }
 
         public async Task UpdateAsync(Guid id, PurchaseInvoiceDto dto)
         {
-            var entity = await _unitOfWork.PurchaseInvoices.GetByIdAsync(id);
+            var entity = await _repository.GetByIdAsync(id);
             if (entity != null)
             {
                 // Assign new values from dto
-                // entity.SomeProperty = dto.SomeProperty;
-                _unitOfWork.PurchaseInvoices.Update(entity);
-                await _unitOfWork.CompleteAsync();
+                // (In a real scenario, you'd map individual properties)
+                _repository.Update(entity);
+                await _repository.SaveChangesAsync();
             }
         }
 
         public async Task DeleteAsync(Guid id)
         {
-            var entity = await _unitOfWork.PurchaseInvoices.GetByIdAsync(id);
+            var entity = await _repository.GetByIdAsync(id);
             if (entity != null)
             {
-                _unitOfWork.PurchaseInvoices.Remove(entity);
-                await _unitOfWork.CompleteAsync();
+                _repository.Remove(entity);
+                await _repository.SaveChangesAsync();
             }
         }
 
-        // Manual Mapping Methods
         private PurchaseInvoiceDto MapToDto(PurchaseInvoice entity)
         {
             if (entity == null) return null;
             return new PurchaseInvoiceDto
             {
                 Id = entity.Id,
-                // Map other properties here
+                VendorId = entity.VendorId,
+                InvoiceNumber = entity.InvoiceNumber,
+                TotalAmount = entity.TotalAmount,
+                CreatedDate = entity.CreatedDate,
             };
         }
 
@@ -79,7 +80,10 @@ namespace Gearbox.Application.Services
             return new PurchaseInvoice
             {
                 Id = dto.Id,
-                // Map other properties here
+                VendorId = dto.VendorId,
+                InvoiceNumber = dto.InvoiceNumber,
+                TotalAmount = dto.TotalAmount,
+                CreatedDate = dto.CreatedDate,
             };
         }
     }

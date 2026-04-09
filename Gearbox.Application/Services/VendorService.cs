@@ -11,22 +11,22 @@ namespace Gearbox.Application.Services
 {
     public class VendorService : IVendorService
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IVendorRepository _repository;
 
-        public VendorService(IUnitOfWork unitOfWork)
+        public VendorService(IVendorRepository repository)
         {
-            _unitOfWork = unitOfWork;
+            _repository = repository;
         }
 
         public async Task<IEnumerable<VendorDto>> GetAllAsync()
         {
-            var entities = await _unitOfWork.Vendors.GetAllAsync();
+            var entities = await _repository.GetAllAsync();
             return entities.Select(e => MapToDto(e));
         }
 
         public async Task<VendorDto> GetByIdAsync(Guid id)
         {
-            var entity = await _unitOfWork.Vendors.GetByIdAsync(id);
+            var entity = await _repository.GetByIdAsync(id);
             if (entity == null) return null;
             return MapToDto(entity);
         }
@@ -34,42 +34,44 @@ namespace Gearbox.Application.Services
         public async Task<VendorDto> AddAsync(VendorDto dto)
         {
             var entity = MapToEntity(dto);
-            entity.Id = Guid.NewGuid(); // ensuring a new ID
-            await _unitOfWork.Vendors.AddAsync(entity);
-            await _unitOfWork.CompleteAsync();
+            await _repository.AddAsync(entity);
+            await _repository.SaveChangesAsync();
             return MapToDto(entity);
         }
 
         public async Task UpdateAsync(Guid id, VendorDto dto)
         {
-            var entity = await _unitOfWork.Vendors.GetByIdAsync(id);
+            var entity = await _repository.GetByIdAsync(id);
             if (entity != null)
             {
                 // Assign new values from dto
-                // entity.SomeProperty = dto.SomeProperty;
-                _unitOfWork.Vendors.Update(entity);
-                await _unitOfWork.CompleteAsync();
+                // (In a real scenario, you'd map individual properties)
+                _repository.Update(entity);
+                await _repository.SaveChangesAsync();
             }
         }
 
         public async Task DeleteAsync(Guid id)
         {
-            var entity = await _unitOfWork.Vendors.GetByIdAsync(id);
+            var entity = await _repository.GetByIdAsync(id);
             if (entity != null)
             {
-                _unitOfWork.Vendors.Remove(entity);
-                await _unitOfWork.CompleteAsync();
+                _repository.Remove(entity);
+                await _repository.SaveChangesAsync();
             }
         }
 
-        // Manual Mapping Methods
         private VendorDto MapToDto(Vendor entity)
         {
             if (entity == null) return null;
             return new VendorDto
             {
                 Id = entity.Id,
-                // Map other properties here
+                Name = entity.Name,
+                ContactPerson = entity.ContactPerson,
+                PhoneNumber = entity.PhoneNumber,
+                Email = entity.Email,
+                Address = entity.Address,
             };
         }
 
@@ -79,7 +81,11 @@ namespace Gearbox.Application.Services
             return new Vendor
             {
                 Id = dto.Id,
-                // Map other properties here
+                Name = dto.Name,
+                ContactPerson = dto.ContactPerson,
+                PhoneNumber = dto.PhoneNumber,
+                Email = dto.Email,
+                Address = dto.Address,
             };
         }
     }

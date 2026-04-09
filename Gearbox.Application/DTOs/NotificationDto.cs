@@ -5,6 +5,9 @@ namespace Gearbox.Application.DTOs
     public class NotificationDto
     {
         public Guid Id { get; set; }
-        // Add additional properties here as needed
+        public Guid UserId { get; set; }
+        public string Message { get; set; }
+        public bool IsRead { get; set; }
+        public DateTime CreatedAt { get; set; }
     }
 }

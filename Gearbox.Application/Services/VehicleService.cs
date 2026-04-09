@@ -11,22 +11,22 @@ namespace Gearbox.Application.Services
 {
     public class VehicleService : IVehicleService
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IVehicleRepository _repository;
 
-        public VehicleService(IUnitOfWork unitOfWork)
+        public VehicleService(IVehicleRepository repository)
         {
-            _unitOfWork = unitOfWork;
+            _repository = repository;
         }
 
         public async Task<IEnumerable<VehicleDto>> GetAllAsync()
         {
-            var entities = await _unitOfWork.Vehicles.GetAllAsync();
+            var entities = await _repository.GetAllAsync();
             return entities.Select(e => MapToDto(e));
         }
 
         public async Task<VehicleDto> GetByIdAsync(Guid id)
         {
-            var entity = await _unitOfWork.Vehicles.GetByIdAsync(id);
+            var entity = await _repository.GetByIdAsync(id);
             if (entity == null) return null;
             return MapToDto(entity);
         }
@@ -34,42 +34,46 @@ namespace Gearbox.Application.Services
         public async Task<VehicleDto> AddAsync(VehicleDto dto)
         {
             var entity = MapToEntity(dto);
-            entity.Id = Guid.NewGuid(); // ensuring a new ID
-            await _unitOfWork.Vehicles.AddAsync(entity);
-            await _unitOfWork.CompleteAsync();
+            await _repository.AddAsync(entity);
+            await _repository.SaveChangesAsync();
             return MapToDto(entity);
         }
 
         public async Task UpdateAsync(Guid id, VehicleDto dto)
         {
-            var entity = await _unitOfWork.Vehicles.GetByIdAsync(id);
+            var entity = await _repository.GetByIdAsync(id);
             if (entity != null)
             {
                 // Assign new values from dto
-                // entity.SomeProperty = dto.SomeProperty;
-                _unitOfWork.Vehicles.Update(entity);
-                await _unitOfWork.CompleteAsync();
+                // (In a real scenario, you'd map individual properties)
+                _repository.Update(entity);
+                await _repository.SaveChangesAsync();
             }
         }
 
         public async Task DeleteAsync(Guid id)
         {
-            var entity = await _unitOfWork.Vehicles.GetByIdAsync(id);
+            var entity = await _repository.GetByIdAsync(id);
             if (entity != null)
             {
-                _unitOfWork.Vehicles.Remove(entity);
-                await _unitOfWork.CompleteAsync();
+                _repository.Remove(entity);
+                await _repository.SaveChangesAsync();
             }
         }
 
-        // Manual Mapping Methods
         private VehicleDto MapToDto(Vehicle entity)
         {
             if (entity == null) return null;
             return new VehicleDto
             {
                 Id = entity.Id,
-                // Map other properties here
+                CustomerId = entity.CustomerId,
+                NumberPlate = entity.NumberPlate,
+                Make = entity.Make,
+                Model = entity.Model,
+                Year = entity.Year,
+                VIN = entity.VIN,
+                CreatedAt = entity.CreatedAt,
             };
         }
 
@@ -79,7 +83,13 @@ namespace Gearbox.Application.Services
             return new Vehicle
             {
                 Id = dto.Id,
-                // Map other properties here
+                CustomerId = dto.CustomerId,
+                NumberPlate = dto.NumberPlate,
+                Make = dto.Make,
+                Model = dto.Model,
+                Year = dto.Year,
+                VIN = dto.VIN,
+                CreatedAt = dto.CreatedAt,
             };
         }
     }

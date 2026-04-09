@@ -4,13 +4,36 @@ $appDir = "c:\Users\Lenovo\RiderProjects\Gearbox-DEV\Gearbox.Application"
 $dtosDir = Join-Path -Path $appDir -ChildPath "DTOs"
 $interfacesDir = Join-Path -Path $appDir -ChildPath "Interfaces"
 $servicesDir = Join-Path -Path $appDir -ChildPath "Services"
-
-New-Item -ItemType Directory -Force -Path $dtosDir | Out-Null
-New-Item -ItemType Directory -Force -Path $interfacesDir | Out-Null
-New-Item -ItemType Directory -Force -Path $servicesDir | Out-Null
+$domainDir = "c:\Users\Lenovo\RiderProjects\Gearbox-DEV\Gearbox.Domain"
+$entitiesDir = Join-Path -Path $domainDir -ChildPath "Entities"
 
 foreach ($entity in $entities) {
-    # 1. Generate DTO
+    # 1. Read Entity file to get properties
+    $entityPath = Join-Path $entitiesDir "${entity}.cs"
+    $properties = @()
+    if (Test-Path $entityPath) {
+        $content = Get-Content $entityPath
+        foreach ($line in $content) {
+            if ($line -match "public\s+(\S+)\s+(\w+)\s+\{\s*get;\s*set;\s*\}") {
+                $type = $Matches[1]
+                $name = $Matches[2]
+                # Skip collections and navigation properties (usually start with ICollection or are in the same namespace)
+                if ($type -notmatch "ICollection" -and $type -notmatch "List" -and $type -notmatch "IEnumerable") {
+                    # For simplicity, we'll keep them if they are common types or Guids
+                    if ($type -match "Guid|string|int|decimal|DateTime|bool|double|float|long|short|byte") {
+                         $properties += @{Type=$type; Name=$name}
+                    }
+                }
+            }
+        }
+    }
+
+    # 2. Generate DTO
+    $propsString = ""
+    foreach ($p in $properties) {
+        $propsString += "        public $($p.Type) $($p.Name) { get; set; }`n"
+    }
+
     $dtoContent = @"
 using System;
 
@@ -18,14 +41,12 @@ namespace Gearbox.Application.DTOs
 {
     public class ${entity}Dto
     {
-        public Guid Id { get; set; }
-        // Add additional properties here as needed
-    }
+$propsString    }
 }
 "@
     Set-Content -Path (Join-Path $dtosDir "${entity}Dto.cs") -Value $dtoContent -Encoding UTF8
 
-    # 2. Generate Interface
+    # 3. Generate Interface
     $interfaceContent = @"
 using System;
 using System.Collections.Generic;
@@ -46,7 +67,18 @@ namespace Gearbox.Application.Interfaces
 "@
     Set-Content -Path (Join-Path $interfacesDir "I${entity}Service.cs") -Value $interfaceContent -Encoding UTF8
 
-    # 3. Generate Service
+    # 4. Generate Service (Pure Controller -> Service -> Repo)
+    
+    $repoName = "i${entity}Repository" # lower case for field
+    $repoType = "I${entity}Repository"
+    
+    $mapToDtoContent = ""
+    $mapToEntityContent = ""
+    foreach ($p in $properties) {
+        $mapToDtoContent += "                $($p.Name) = entity.$($p.Name),`n"
+        $mapToEntityContent += "                $($p.Name) = dto.$($p.Name),`n"
+    }
+
     $serviceContent = @"
 using System;
 using System.Collections.Generic;
@@ -61,22 +93,22 @@ namespace Gearbox.Application.Services
 {
     public class ${entity}Service : I${entity}Service
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly $repoType _repository;
 
-        public ${entity}Service(IUnitOfWork unitOfWork)
+        public ${entity}Service($repoType repository)
         {
-            _unitOfWork = unitOfWork;
+            _repository = repository;
         }
 
         public async Task<IEnumerable<${entity}Dto>> GetAllAsync()
         {
-            var entities = await _unitOfWork.${entity}s.GetAllAsync();
+            var entities = await _repository.GetAllAsync();
             return entities.Select(e => MapToDto(e));
         }
 
         public async Task<${entity}Dto> GetByIdAsync(Guid id)
         {
-            var entity = await _unitOfWork.${entity}s.GetByIdAsync(id);
+            var entity = await _repository.GetByIdAsync(id);
             if (entity == null) return null;
             return MapToDto(entity);
         }
@@ -84,43 +116,39 @@ namespace Gearbox.Application.Services
         public async Task<${entity}Dto> AddAsync(${entity}Dto dto)
         {
             var entity = MapToEntity(dto);
-            entity.Id = Guid.NewGuid(); // ensuring a new ID
-            await _unitOfWork.${entity}s.AddAsync(entity);
-            await _unitOfWork.CompleteAsync();
+            await _repository.AddAsync(entity);
+            await _repository.SaveChangesAsync();
             return MapToDto(entity);
         }
 
         public async Task UpdateAsync(Guid id, ${entity}Dto dto)
         {
-            var entity = await _unitOfWork.${entity}s.GetByIdAsync(id);
+            var entity = await _repository.GetByIdAsync(id);
             if (entity != null)
             {
                 // Assign new values from dto
-                // entity.SomeProperty = dto.SomeProperty;
-                _unitOfWork.${entity}s.Update(entity);
-                await _unitOfWork.CompleteAsync();
+                // (In a real scenario, you'd map individual properties)
+                _repository.Update(entity);
+                await _repository.SaveChangesAsync();
             }
         }
 
         public async Task DeleteAsync(Guid id)
         {
-            var entity = await _unitOfWork.${entity}s.GetByIdAsync(id);
+            var entity = await _repository.GetByIdAsync(id);
             if (entity != null)
             {
-                _unitOfWork.${entity}s.Remove(entity);
-                await _unitOfWork.CompleteAsync();
+                _repository.Remove(entity);
+                await _repository.SaveChangesAsync();
             }
         }
 
-        // Manual Mapping Methods
         private ${entity}Dto MapToDto(${entity} entity)
         {
             if (entity == null) return null;
             return new ${entity}Dto
             {
-                Id = entity.Id,
-                // Map other properties here
-            };
+$mapToDtoContent            };
         }
 
         private ${entity} MapToEntity(${entity}Dto dto)
@@ -128,22 +156,12 @@ namespace Gearbox.Application.Services
             if (dto == null) return null;
             return new ${entity}
             {
-                Id = dto.Id,
-                // Map other properties here
-            };
+$mapToEntityContent            };
         }
     }
 }
 "@
-    # Fix pluralization in _unitOfWork calls
-    if ($entity -eq "ServiceHistory") {
-        $serviceContent = $serviceContent -replace "_unitOfWork.ServiceHistorys", "_unitOfWork.ServiceHistories"
-    }
-    if ($entity -eq "Staff") {
-        $serviceContent = $serviceContent -replace "_unitOfWork.Staffs", "_unitOfWork.Staffs"
-    }
-
     Set-Content -Path (Join-Path $servicesDir "${entity}Service.cs") -Value $serviceContent -Encoding UTF8
 }
 
-Write-Host "Services generation completed."
+Write-Host "Services generation updated for Controller -> Service -> Repo pattern."
