@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Gearbox.Application.DTOs;
@@ -33,7 +33,7 @@ namespace Gearbox.Presentation.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Add([FromBody] AppointmentDto dto)
+        public async Task<IActionResult> Add([FromBody] NewAppointmentDto dto)
         {
             var result = await _service.AddAsync(dto);
             return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);

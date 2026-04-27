@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -31,7 +31,7 @@ namespace Gearbox.Application.Services
             return MapToDto(entity);
         }
 
-        public async Task<AppointmentDto> AddAsync(AppointmentDto dto)
+        public async Task<AppointmentDto> AddAsync(NewAppointmentDto dto)
         {
             var entity = MapToEntity(dto);
             await _repository.AddAsync(entity);
@@ -45,7 +45,10 @@ namespace Gearbox.Application.Services
             if (entity != null)
             {
                 // Assign new values from dto
-                // (In a real scenario, you'd map individual properties)
+                entity.AppointmentDate = dto.AppointmentDate;
+                entity.Status = dto.Status;
+                entity.Notes = dto.Notes;
+                
                 _repository.Update(entity);
                 await _repository.SaveChangesAsync();
             }
@@ -88,6 +91,20 @@ namespace Gearbox.Application.Services
                 Status = dto.Status,
                 Notes = dto.Notes,
                 CreatedDate = dto.CreatedDate,
+            };
+        }
+
+        private Appointment MapToEntity(NewAppointmentDto dto)
+        {
+            if (dto == null) return null;
+            return new Appointment
+            {
+                CustomerId = dto.CustomerId,
+                VehicleId = dto.VehicleId,
+                AppointmentDate = dto.AppointmentDate,
+                Status = dto.Status,
+                Notes = dto.Notes,
+                CreatedDate = dto.CreatedDate == default ? DateTime.UtcNow : dto.CreatedDate
             };
         }
     }

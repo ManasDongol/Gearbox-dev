@@ -15,8 +15,7 @@ namespace Gearbox.Infrastructure.Data
         public DbSet<Vehicle> Vehicles { get; set; }
         public DbSet<Part> Parts { get; set; }
         public DbSet<Vendor> Vendors { get; set; }
-        public DbSet<SalesInvoice> SalesInvoices { get; set; }
-        public DbSet<SalesInvoiceItem> SalesInvoiceItems { get; set; }
+     
         public DbSet<PurchaseInvoice> PurchaseInvoices { get; set; }
         public DbSet<PurchaseInvoiceItem> PurchaseInvoiceItems { get; set; }
         public DbSet<Appointment> Appointments { get; set; }
@@ -26,6 +25,8 @@ namespace Gearbox.Infrastructure.Data
         public DbSet<ServiceReview> ServiceReviews { get; set; }
         public DbSet<PartRequest> PartRequests { get; set; }
         public DbSet<Notification> Notifications { get; set; }
+        public DbSet<SalesServicesInvoice> SalesServicesInvoices { get; set; }
+        public DbSet<SalesServicesInvoiceItem> SalesServicesInvoiceItems { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -82,33 +83,7 @@ namespace Gearbox.Infrastructure.Data
                 .HasForeignKey(v => v.CustomerId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // Customer - SalesInvoice (1:Many)
-            modelBuilder.Entity<Customer>()
-                .HasMany(c => c.SalesInvoices)
-                .WithOne(si => si.Customer)
-                .HasForeignKey(si => si.CustomerId)
-                .OnDelete(DeleteBehavior.Restrict); // Prevent deleting customer if they have invoices
-
-            // Staff - SalesInvoice (1:Many)
-            modelBuilder.Entity<Staff>()
-                .HasMany(s => s.SalesInvoices)
-                .WithOne(si => si.Staff)
-                .HasForeignKey(si => si.StaffId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            // SalesInvoice - SalesInvoiceItem (1:Many)
-            modelBuilder.Entity<SalesInvoice>()
-                .HasMany(si => si.Items)
-                .WithOne(sii => sii.SalesInvoice)
-                .HasForeignKey(sii => sii.SalesInvoiceId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            // Part - SalesInvoiceItem (1:Many) => handled via Item -> Part relationship
-            modelBuilder.Entity<SalesInvoiceItem>()
-                .HasOne(sii => sii.Part)
-                .WithMany()
-                .HasForeignKey(sii => sii.PartId)
-                .OnDelete(DeleteBehavior.Restrict);
+         
 
             // Vendor - Part (1:Many)
             modelBuilder.Entity<Vendor>()
@@ -211,14 +186,32 @@ namespace Gearbox.Infrastructure.Data
                 .WithOne(pr => pr.Customer)
                 .HasForeignKey(pr => pr.CustomerId)
                 .OnDelete(DeleteBehavior.Cascade);
+            
+             
+            modelBuilder.Entity<Customer>()
+                .HasMany(c => c.SalesServicesInvoices)
+                .WithOne(i => i.Customer)
+                .HasForeignKey(i => i.CustomerId)
+                .OnDelete(DeleteBehavior.Restrict);
+            
+            modelBuilder.Entity<Staff>()
+                .HasMany(s => s.SalesServicesInvoices)
+                .WithOne(i => i.Staff)
+                .HasForeignKey(i => i.StaffId)
+                .OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<SalesServicesInvoice>()
+                .HasMany(i => i.Items)
+                .WithOne(ii => ii.SalesServicesInvoice)
+                .HasForeignKey(ii => ii.SalesServicesInvoiceId)
+                .OnDelete(DeleteBehavior.Cascade);
                 
             // Precision for decimals
             modelBuilder.Entity<Part>().Property(p => p.SellingPrice).HasColumnType("decimal(18,2)");
             modelBuilder.Entity<Customer>().Property(c => c.TotalSpent).HasColumnType("decimal(18,2)");
             modelBuilder.Entity<Customer>().Property(c => c.PendingCredits).HasColumnType("decimal(18,2)");
-            modelBuilder.Entity<SalesInvoice>().Property(si => si.TotalAmount).HasColumnType("decimal(18,2)");
-            modelBuilder.Entity<SalesInvoice>().Property(si => si.DiscountAmount).HasColumnType("decimal(18,2)");
-            modelBuilder.Entity<SalesInvoiceItem>().Property(sii => sii.UnitPrice).HasColumnType("decimal(18,2)");
+            modelBuilder.Entity<SalesServicesInvoice>().Property(si => si.TotalAmount).HasColumnType("decimal(18,2)");
+            modelBuilder.Entity<SalesServicesInvoice>().Property(si => si.DiscountAmount).HasColumnType("decimal(18,2)");
+            modelBuilder.Entity<SalesServicesInvoiceItem>().Property(sii => sii.UnitPrice).HasColumnType("decimal(18,2)");
             modelBuilder.Entity<PurchaseInvoice>().Property(pi => pi.TotalAmount).HasColumnType("decimal(18,2)");
             modelBuilder.Entity<PurchaseInvoiceItem>().Property(pii => pii.CostPrice).HasColumnType("decimal(18,2)");
             modelBuilder.Entity<ServiceDetails>().Property(sd => sd.BasePrice).HasColumnType("decimal(18,2)");

@@ -15,6 +15,8 @@ namespace Gearbox.Domain.Entities
 
         // Navigations
         public AppUser User { get; set; }
-        public ICollection<SalesInvoice> SalesInvoices { get; set; } = new List<SalesInvoice>();
+        public ICollection<SalesServicesInvoice> SalesServicesInvoices { get; set; } = new List<SalesServicesInvoice>();
+
+      
     }
 }

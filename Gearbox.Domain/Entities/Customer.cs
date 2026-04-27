@@ -20,10 +20,13 @@ namespace Gearbox.Domain.Entities
         // Navigations
         public AppUser User { get; set; } = null!;
         public ICollection<Vehicle> Vehicles { get; set; } = new List<Vehicle>();
-        public ICollection<SalesInvoice> SalesInvoices { get; set; } = new List<SalesInvoice>();
+      
         public ICollection<Appointment> Appointments { get; set; } = new List<Appointment>();
         public ICollection<ServiceHistory> ServiceHistories { get; set; } = new List<ServiceHistory>();
         public ICollection<ServiceReview> ServiceReviews { get; set; } = new List<ServiceReview>();
+        
+        public ICollection<SalesServicesInvoice> SalesServicesInvoices { get; set; } = new List<SalesServicesInvoice>();
+
         public ICollection<PartRequest> PartRequests { get; set; } = new List<PartRequest>();
     }
 }

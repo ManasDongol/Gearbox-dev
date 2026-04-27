@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -12,10 +12,12 @@ namespace Gearbox.Application.Services
     public class PurchaseInvoiceService : IPurchaseInvoiceService
     {
         private readonly IPurchaseInvoiceRepository _repository;
+        private readonly IPartRepository _partRepository;
 
-        public PurchaseInvoiceService(IPurchaseInvoiceRepository repository)
+        public PurchaseInvoiceService(IPurchaseInvoiceRepository repository, IPartRepository partRepository)
         {
             _repository = repository;
+            _partRepository = partRepository;
         }
 
         public async Task<IEnumerable<PurchaseInvoiceDto>> GetAllAsync()
@@ -34,6 +36,21 @@ namespace Gearbox.Application.Services
         public async Task<PurchaseInvoiceDto> AddAsync(NewPurchaseInvoiceDto dto)
         {
             var entity = MapToEntity(dto);
+            
+            // Update stock for each item
+            if (dto.Items != null && dto.Items.Any())
+            {
+                foreach (var item in dto.Items)
+                {
+                    var part = await _partRepository.GetByIdAsync(item.PartId);
+                    if (part != null)
+                    {
+                        part.StockQuantity += item.Quantity;
+                        _partRepository.Update(part);
+                    }
+                }
+            }
+
             await _repository.AddAsync(entity);
             await _repository.SaveChangesAsync();
             return MapToDto(entity);
@@ -95,7 +112,13 @@ namespace Gearbox.Application.Services
                 VendorId = dto.VendorId,
                 InvoiceNumber = dto.InvoiceNumber,
                 TotalAmount = dto.TotalAmount,
-                CreatedDate = DateTime.UtcNow
+                CreatedDate = DateTime.UtcNow,
+                Items = dto.Items?.Select(i => new PurchaseInvoiceItem
+                {
+                    PartId = i.PartId,
+                    Quantity = i.Quantity,
+                    CostPrice = i.CostPrice
+                }).ToList() ?? new List<PurchaseInvoiceItem>()
             };
         }
     }

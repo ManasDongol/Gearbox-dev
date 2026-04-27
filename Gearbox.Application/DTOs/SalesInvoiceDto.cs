@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace Gearbox.Application.DTOs
 {
@@ -14,5 +14,6 @@ namespace Gearbox.Application.DTOs
         public bool IsPaid { get; set; }
         public DateTime DueDate { get; set; }
         public DateTime CreatedDate { get; set; }
+        public List<SalesInvoiceItemDto> Items { get; set; } = new List<SalesInvoiceItemDto>();
     }
 }

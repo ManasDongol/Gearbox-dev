@@ -110,6 +110,8 @@ builder.Services.AddScoped<IPartRequestRepository, PartRequestRepository>();
 builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
 builder.Services.AddScoped<IPurchaseInvoiceItemRepository, PurchaseInvoiceItemRepository>();
 builder.Services.AddScoped<ISalesInvoiceItemRepository, SalesInvoiceItemRepository>();
+builder.Services.AddScoped<ISalesServicesInvoiceRepository, SalesServicesInvoiceRepository>();
+builder.Services.AddScoped<ISalesServicesInvoiceItemRepository, SalesServicesInvoiceItemRepository>();
 builder.Services.AddScoped<AuthRepository>();
 
 builder.Services.AddScoped<AuthService>();
@@ -121,7 +123,7 @@ builder.Services.AddScoped<IStaffService,StaffService>();
 builder.Services.AddScoped<IVehicleService,VehicleService>();
 builder.Services.AddScoped<IPartService,PartService>();
 builder.Services.AddScoped<IVendorService,VendorService>();
-builder.Services.AddScoped<ISalesInvoiceService,SalesInvoiceService>();
+
 builder.Services.AddScoped<IPurchaseInvoiceService,PurchaseInvoiceService>();
 builder.Services.AddScoped<IAppointmentService,AppointmentService>();
 builder.Services.AddScoped<IServiceDetailsService,ServiceDetailsService>();
@@ -131,7 +133,9 @@ builder.Services.AddScoped<IServiceReviewService,ServiceReviewService>();
 builder.Services.AddScoped<IPartRequestService,PartRequestService>();
 builder.Services.AddScoped<INotificationService,NotificationService>();
 builder.Services.AddScoped<IPurchaseInvoiceItemService,PurchaseInvoiceItemService>();
-builder.Services.AddScoped<ISalesInvoiceItemService,SalesInvoiceItemService>();
+
+builder.Services.AddScoped<ISalesServicesInvoiceService, SalesServicesInvoiceService>();
+builder.Services.AddScoped<ISalesServicesInvoiceItemService, SalesServicesInvoiceItemService>();
 builder.Services.AddScoped<TokenService>();
 
 var app = builder.Build();

@@ -16,7 +16,7 @@ namespace Gearbox.Infrastructure.Repositories
             return await _dbSet
                 .Include(c => c.Vehicles)
                 .Include(c => c.ServiceHistories)
-                .Include(c => c.SalesInvoices)
+                .Include(c => c.SalesServicesInvoices)
                 .FirstOrDefaultAsync(c => c.UserId == id);
         }
 

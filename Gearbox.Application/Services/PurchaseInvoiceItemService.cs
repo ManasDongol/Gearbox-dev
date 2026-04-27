@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -12,10 +12,12 @@ namespace Gearbox.Application.Services
     public class PurchaseInvoiceItemService : IPurchaseInvoiceItemService
     {
         private readonly IPurchaseInvoiceItemRepository _repository;
+        private readonly IPartRepository _partRepository;
 
-        public PurchaseInvoiceItemService(IPurchaseInvoiceItemRepository repository)
+        public PurchaseInvoiceItemService(IPurchaseInvoiceItemRepository repository, IPartRepository partRepository)
         {
             _repository = repository;
+            _partRepository = partRepository;
         }
 
         public async Task<IEnumerable<PurchaseInvoiceItemDto>> GetAllAsync()
@@ -40,6 +42,13 @@ namespace Gearbox.Application.Services
                 entity.PartId = item.PartId;
                 await _repository.AddAsync(entity);
                 
+                // Update part stock
+                var part = await _partRepository.GetByIdAsync(item.PartId);
+                if (part != null)
+                {
+                    part.StockQuantity += item.Quantity;
+                    _partRepository.Update(part);
+                }
             }
             
             await _repository.SaveChangesAsync();
@@ -51,6 +60,25 @@ namespace Gearbox.Application.Services
             var entity = await _repository.GetByIdAsync(id);
             if (entity != null)
             {
+                // Update stock if quantity or part changed
+                var oldPart = await _partRepository.GetByIdAsync(entity.PartId);
+                if (oldPart != null)
+                {
+                    oldPart.StockQuantity -= entity.Quantity;
+                    _partRepository.Update(oldPart);
+                }
+
+                var newPart = await _partRepository.GetByIdAsync(dto.PartId);
+                if (newPart != null)
+                {
+                    newPart.StockQuantity += dto.Quantity;
+                    _partRepository.Update(newPart);
+                }
+
+                // Update individual properties
+                entity.PartId = dto.PartId;
+                entity.Quantity = dto.Quantity;
+                entity.CostPrice = dto.CostPrice;
              
                 _repository.Update(entity);
                 await _repository.SaveChangesAsync();
@@ -62,6 +90,13 @@ namespace Gearbox.Application.Services
             var entity = await _repository.GetByIdAsync(id);
             if (entity != null)
             {
+                var part = await _partRepository.GetByIdAsync(entity.PartId);
+                if (part != null)
+                {
+                    part.StockQuantity -= entity.Quantity;
+                    _partRepository.Update(part);
+                }
+
                 _repository.Remove(entity);
                 await _repository.SaveChangesAsync();
             }

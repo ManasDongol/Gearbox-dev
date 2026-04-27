@@ -2,7 +2,7 @@
 
 namespace Gearbox.Domain.Interfaces
 {
-    public interface ISalesInvoiceItemRepository : IGenericRepository<SalesInvoiceItem>
+    public interface ISalesInvoiceItemRepository : IGenericRepository<SalesServicesInvoiceItem>
     {
     }
 }

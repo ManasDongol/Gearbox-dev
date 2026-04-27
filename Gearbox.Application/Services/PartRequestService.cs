@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -45,7 +45,11 @@ namespace Gearbox.Application.Services
             if (entity != null)
             {
                 // Assign new values from dto
-                // (In a real scenario, you'd map individual properties)
+                entity.PartName = dto.PartName;
+                entity.Description = dto.Description;
+                entity.IsFulfilled = dto.IsFulfilled;
+                entity.RequestDate = dto.RequestDate;
+                
                 _repository.Update(entity);
                 await _repository.SaveChangesAsync();
             }
