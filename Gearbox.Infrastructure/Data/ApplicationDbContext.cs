@@ -39,19 +39,24 @@ namespace Gearbox.Infrastructure.Data
             modelBuilder.Entity<IdentityUserToken<Guid>>().ToTable("UserTokens");
 
 
+            modelBuilder.Entity<Customer>()
+                .HasKey(c => c.UserId);
             // User - Customer (1:1)
             modelBuilder.Entity<Customer>()
                 .HasOne(c => c.User)
                 .WithOne(u => u.Customer)
                 .HasForeignKey<Customer>(c => c.UserId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Cascade);
+            
+            modelBuilder.Entity<Staff>()
+                .HasKey(c => c.UserId);
 
             // User - Staff (1:1)
             modelBuilder.Entity<Staff>()
                 .HasOne(s => s.User)
                 .WithOne(u => u.Staff)
                 .HasForeignKey<Staff>(s => s.UserId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Cascade);
 
             // User - Notification (1:Many)
             modelBuilder.Entity<AppUser>()
@@ -59,6 +64,16 @@ namespace Gearbox.Infrastructure.Data
                 .WithOne(n => n.User)
                 .HasForeignKey(n => n.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
+            
+            // User - Notification (1:Many)
+            modelBuilder.Entity<AppUser>()
+                .HasIndex(u => u.Email)
+                .IsUnique();
+            modelBuilder.Entity<AppUser>()
+                .HasIndex(u => u.PhoneNumber)
+                .IsUnique();
+            
+
 
             // Customer - Vehicle (1:Many)
             modelBuilder.Entity<Customer>()

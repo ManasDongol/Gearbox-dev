@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Gearbox.Application.DTOs;
+using Gearbox.Application.DTOs.Vendor;
 using Gearbox.Application.Interfaces;
 using Gearbox.Domain.Entities;
 using Gearbox.Domain.Interfaces;
@@ -31,7 +32,7 @@ namespace Gearbox.Application.Services
             return MapToDto(entity);
         }
 
-        public async Task<VendorDto> AddAsync(VendorDto dto)
+        public async Task<VendorDto> AddAsync(NewVendorDto dto)
         {
             var entity = MapToEntity(dto);
             await _repository.AddAsync(entity);
@@ -68,7 +69,6 @@ namespace Gearbox.Application.Services
             {
                 Id = entity.Id,
                 Name = entity.Name,
-                ContactPerson = entity.ContactPerson,
                 PhoneNumber = entity.PhoneNumber,
                 Email = entity.Email,
                 Address = entity.Address,
@@ -82,7 +82,18 @@ namespace Gearbox.Application.Services
             {
                 Id = dto.Id,
                 Name = dto.Name,
-                ContactPerson = dto.ContactPerson,
+                PhoneNumber = dto.PhoneNumber,
+                Email = dto.Email,
+                Address = dto.Address,
+            };
+        }
+        private Vendor MapToEntity(NewVendorDto dto)
+        {
+            if (dto == null) return null;
+            return new Vendor
+            {
+             
+                Name = dto.Name,
                 PhoneNumber = dto.PhoneNumber,
                 Email = dto.Email,
                 Address = dto.Address,

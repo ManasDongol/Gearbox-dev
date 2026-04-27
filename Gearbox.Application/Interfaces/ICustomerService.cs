@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Gearbox.Application.DTOs;
+using Gearbox.Application.DTOs.Customer;
 
 namespace Gearbox.Application.Interfaces
 {
@@ -9,7 +10,7 @@ namespace Gearbox.Application.Interfaces
     {
         Task<IEnumerable<CustomerDto>> GetAllAsync();
         Task<CustomerDto> GetByIdAsync(Guid id);
-        Task<CustomerDto> AddAsync(CustomerDto dto);
+        Task<NewCustomerDto> AddAsync(NewCustomerDto dto);
         Task UpdateAsync(Guid id, CustomerDto dto);
         Task DeleteAsync(Guid id);
     }

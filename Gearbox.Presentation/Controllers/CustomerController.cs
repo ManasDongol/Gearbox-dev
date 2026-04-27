@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Gearbox.Application.DTOs;
+using Gearbox.Application.DTOs.Customer;
 using Gearbox.Application.Interfaces;
 
 namespace Gearbox.Presentation.Controllers
@@ -33,10 +34,10 @@ namespace Gearbox.Presentation.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Add([FromBody] CustomerDto dto)
+        public async Task<IActionResult> Add([FromBody] NewCustomerDto dto)
         {
             var result = await _service.AddAsync(dto);
-            return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
+            return Created();
         }
 
         [HttpPut("{id}")]

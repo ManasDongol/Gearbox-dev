@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Gearbox.Application.DTOs;
+using Gearbox.Application.DTOs.Staff;
 using Gearbox.Application.Interfaces;
 
 namespace Gearbox.Presentation.Controllers
@@ -33,7 +34,7 @@ namespace Gearbox.Presentation.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Add([FromBody] StaffDto dto)
+        public async Task<IActionResult> Add([FromBody] NewStaffDto dto)
         {
             var result = await _service.AddAsync(dto);
             return Ok();

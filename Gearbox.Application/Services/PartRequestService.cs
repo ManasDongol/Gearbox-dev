@@ -31,7 +31,7 @@ namespace Gearbox.Application.Services
             return MapToDto(entity);
         }
 
-        public async Task<PartRequestDto> AddAsync(PartRequestDto dto)
+        public async Task<PartRequestDto> AddAsync(NewPartRequestDto dto)
         {
             var entity = MapToEntity(dto);
             await _repository.AddAsync(entity);
@@ -88,5 +88,20 @@ namespace Gearbox.Application.Services
                 RequestDate = dto.RequestDate,
             };
         }
+        private PartRequest MapToEntity(NewPartRequestDto dto)
+        {
+            if (dto == null) return null;
+            return new PartRequest
+            {
+                CustomerId = dto.CustomerId,
+                PartName = dto.PartName,
+                Description = dto.Description,
+                IsFulfilled = dto.IsFulfilled,
+                RequestDate = dto.RequestDate,
+            };
+        }
+        
+    
+        
     }
 }

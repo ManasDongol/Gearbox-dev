@@ -31,7 +31,7 @@ namespace Gearbox.Application.Services
             return MapToDto(entity);
         }
 
-        public async Task<PurchaseInvoiceDto> AddAsync(PurchaseInvoiceDto dto)
+        public async Task<PurchaseInvoiceDto> AddAsync(NewPurchaseInvoiceDto dto)
         {
             var entity = MapToEntity(dto);
             await _repository.AddAsync(entity);
@@ -84,6 +84,18 @@ namespace Gearbox.Application.Services
                 InvoiceNumber = dto.InvoiceNumber,
                 TotalAmount = dto.TotalAmount,
                 CreatedDate = dto.CreatedDate,
+            };
+        }
+        private PurchaseInvoice MapToEntity(NewPurchaseInvoiceDto dto)
+        {
+            if (dto == null) return null;
+            return new PurchaseInvoice
+            {
+              
+                VendorId = dto.VendorId,
+                InvoiceNumber = dto.InvoiceNumber,
+                TotalAmount = dto.TotalAmount,
+                CreatedDate = DateTime.UtcNow
             };
         }
     }

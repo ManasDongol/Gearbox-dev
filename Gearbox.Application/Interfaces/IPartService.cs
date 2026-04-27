@@ -9,7 +9,7 @@ namespace Gearbox.Application.Interfaces
     {
         Task<IEnumerable<PartDto>> GetAllAsync();
         Task<PartDto> GetByIdAsync(Guid id);
-        Task<PartDto> AddAsync(PartDto dto);
+        Task<PartDto> AddAsync(NewPartDto dto);
         Task UpdateAsync(Guid id, PartDto dto);
         Task DeleteAsync(Guid id);
     }

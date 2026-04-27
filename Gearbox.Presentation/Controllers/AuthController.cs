@@ -3,6 +3,7 @@ using Gearbox.Application.Services;
 using Gearbox.Domain.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace Gearbox.Presentation.Controllers;
 
@@ -18,7 +19,8 @@ public class AuthController(UserManager<AppUser> _userManager,RoleManager<Identi
         return Ok(new { message = "User registered successfully" });
     }
     [HttpPost("login")]
-    public async Task<IActionResult> Login(LoginDto dto)
+    [EnableRateLimiting("fixed")]
+    public async Task<IActionResult> Login([FromBody] LoginDto dto)
     {
         var user = await _userManager.FindByNameAsync(dto.Username);
         if (user == null || !await _userManager.CheckPasswordAsync(user, dto.Password))

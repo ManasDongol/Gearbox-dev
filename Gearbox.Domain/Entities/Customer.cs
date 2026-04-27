@@ -1,15 +1,17 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace Gearbox.Domain.Entities
 {
     public class Customer
     {
-        public Guid Id { get; set; } = Guid.NewGuid();
+        [Key]
         public Guid UserId { get; set; }
-        public string FullName { get; set; } = string.Empty;
-        public string? Phone { get; set; }
-        public string? Address { get; set; }
+        [StringLength(50)]     
+        
+       
+      
         public string? ProfilePictureUrl { get; set; }
         public decimal TotalSpent { get; set; } = 0; // For tracking high spenders
         public decimal PendingCredits { get; set; } = 0; // For pending credits

@@ -9,7 +9,7 @@ namespace Gearbox.Application.Interfaces
     {
         Task<IEnumerable<PurchaseInvoiceDto>> GetAllAsync();
         Task<PurchaseInvoiceDto> GetByIdAsync(Guid id);
-        Task<PurchaseInvoiceDto> AddAsync(PurchaseInvoiceDto dto);
+        Task<PurchaseInvoiceDto> AddAsync(NewPurchaseInvoiceDto dto);
         Task UpdateAsync(Guid id, PurchaseInvoiceDto dto);
         Task DeleteAsync(Guid id);
     }

@@ -17,7 +17,7 @@ namespace Gearbox.Infrastructure.Repositories
                 .Include(c => c.Vehicles)
                 .Include(c => c.ServiceHistories)
                 .Include(c => c.SalesInvoices)
-                .FirstOrDefaultAsync(c => c.Id == id);
+                .FirstOrDefaultAsync(c => c.UserId == id);
         }
 
         public async Task<IEnumerable<Customer>> GetHighSpendersAsync()
@@ -43,8 +43,8 @@ namespace Gearbox.Infrastructure.Repositories
             
             return await _dbSet
                 .Include(c => c.Vehicles)
-                .Where(c => c.FullName.ToLower().Contains(searchTerm) || 
-                            c.Phone.Contains(searchTerm) ||
+                .Where(c => c.User.FirstName.ToLower().Contains(searchTerm) || 
+                            c.User.PhoneNumber.Contains(searchTerm) ||
                             c.Vehicles.Any(v => v.NumberPlate.ToLower().Contains(searchTerm)))
                 .ToListAsync();
         }

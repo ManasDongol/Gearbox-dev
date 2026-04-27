@@ -6,6 +6,7 @@ using Gearbox.Application.DTOs;
 using Gearbox.Application.Interfaces;
 using Gearbox.Domain.Entities;
 using Gearbox.Domain.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace Gearbox.Application.Services
 {
@@ -31,12 +32,23 @@ namespace Gearbox.Application.Services
             return MapToDto(entity);
         }
 
-        public async Task<PartDto> AddAsync(PartDto dto)
+        public async Task<PartDto> AddAsync(NewPartDto dto)
         {
-            var entity = MapToEntity(dto);
-            await _repository.AddAsync(entity);
-            await _repository.SaveChangesAsync();
-            return MapToDto(entity);
+            try
+            {
+                var entity = MapToEntity(dto);
+
+                await _repository.AddAsync(entity);
+                await _repository.SaveChangesAsync();
+                return MapToDto(entity);
+            }
+            catch (DbUpdateException e)
+            {
+                Console.WriteLine(e.Message); // replace with ILogger later
+                throw;
+            }
+          
+            
         }
 
         public async Task UpdateAsync(Guid id, PartDto dto)
@@ -82,6 +94,20 @@ namespace Gearbox.Application.Services
             return new Part
             {
                 Id = dto.Id,
+                Name = dto.Name,
+                Description = dto.Description,
+                PartNumber = dto.PartNumber,
+                SellingPrice = dto.SellingPrice,
+                StockQuantity = dto.StockQuantity,
+                VendorId = dto.VendorId,
+            };
+        }
+        private Part MapToEntity(NewPartDto dto)
+        {
+            if (dto == null) return null;
+            return new Part
+            {
+            
                 Name = dto.Name,
                 Description = dto.Description,
                 PartNumber = dto.PartNumber,

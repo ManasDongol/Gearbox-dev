@@ -33,7 +33,7 @@ namespace Gearbox.Presentation.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Add([FromBody] PartDto dto)
+        public async Task<IActionResult> Add([FromBody] NewPartDto dto)
         {
             var result = await _service.AddAsync(dto);
             return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);

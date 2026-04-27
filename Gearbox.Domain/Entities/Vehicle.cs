@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Gearbox.Domain.ENUMs;
 
 namespace Gearbox.Domain.Entities
 {
@@ -14,6 +15,8 @@ namespace Gearbox.Domain.Entities
         public string VIN { get; set; }
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        
+        public VehicleType VehicleType { get; set; }
 
         // Navigations
         public Customer Customer { get; set; }

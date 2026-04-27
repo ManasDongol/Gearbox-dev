@@ -3,61 +3,102 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Gearbox.Application.DTOs;
+using Gearbox.Application.DTOs.Customer;
 using Gearbox.Application.Interfaces;
 using Gearbox.Domain.Entities;
 using Gearbox.Domain.Interfaces;
+using Microsoft.AspNetCore.Identity;
 
 namespace Gearbox.Application.Services
 {
-    public class CustomerService : ICustomerService
+    public class CustomerService(ICustomerRepository _Repository, IUserRepository _userRepository, UserManager<AppUser> _userManager) : ICustomerService
     {
-        private readonly ICustomerRepository _repository;
+       
 
-        public CustomerService(ICustomerRepository repository)
-        {
-            _repository = repository;
-        }
+      
 
         public async Task<IEnumerable<CustomerDto>> GetAllAsync()
         {
-            var entities = await _repository.GetAllAsync();
+            var entities = await _Repository.GetAllAsync();
             return entities.Select(e => MapToDto(e));
         }
 
         public async Task<CustomerDto> GetByIdAsync(Guid id)
         {
-            var entity = await _repository.GetByIdAsync(id);
+            var entity = await _Repository.GetByIdAsync(id);
             if (entity == null) return null;
             return MapToDto(entity);
         }
 
-        public async Task<CustomerDto> AddAsync(CustomerDto dto)
+        public async Task<NewCustomerDto> AddAsync(NewCustomerDto dto)
         {
-            var entity = MapToEntity(dto);
-            await _repository.AddAsync(entity);
-            await _repository.SaveChangesAsync();
-            return MapToDto(entity);
+        
+            var newUser = new AppUser
+            {
+               
+               FirstName = dto.FirstName,
+               LastName = dto.LastName,
+               Address = dto.Address,
+                UserName = dto.UserName,
+                Email = dto.Email,
+                PhoneNumber = dto.PhoneNumber
+               
+            };
+
+         
+            var result = await _userManager.CreateAsync(newUser, dto.Password);
+
+            if (!result.Succeeded)
+            {
+                foreach (var error in result.Errors)
+                {
+                    Console.WriteLine(error.Description);
+                }
+
+                throw new Exception("User creation failed");
+            }
+        
+            
+            try
+            {
+                
+               
+                var entity = MapToEntity(dto, newUser.Id);
+       
+               
+               entity.UserId = newUser.Id;
+                entity.RegisteredSince = DateTime.UtcNow;
+
+                await _Repository.AddAsync(entity);
+                await _Repository.SaveChangesAsync();
+            }
+            catch
+            {
+                // rollback user if customer fails
+                await _userManager.DeleteAsync(newUser);
+                throw;
+            }
+
+            return dto;
         }
 
         public async Task UpdateAsync(Guid id, CustomerDto dto)
         {
-            var entity = await _repository.GetByIdAsync(id);
+            var entity = await _Repository.GetByIdAsync(id);
             if (entity != null)
             {
-                // Assign new values from dto
-                // (In a real scenario, you'd map individual properties)
-                _repository.Update(entity);
-                await _repository.SaveChangesAsync();
+                
+                _Repository.Update(entity);
+                await _Repository.SaveChangesAsync();
             }
         }
 
-        public async Task DeleteAsync(Guid id)
+        public async Task DeleteAsync(Guid userid)
         {
-            var entity = await _repository.GetByIdAsync(id);
+            var entity = await _userManager.FindByIdAsync(userid.ToString());
             if (entity != null)
             {
-                _repository.Remove(entity);
-                await _repository.SaveChangesAsync();
+               await  _userManager.DeleteAsync(entity);
             }
         }
 
@@ -66,11 +107,9 @@ namespace Gearbox.Application.Services
             if (entity == null) return null;
             return new CustomerDto
             {
-                Id = entity.Id,
+              
                 UserId = entity.UserId,
-                FullName = entity.FullName,
-                PhoneNumber = entity.Phone,
-                Address = entity.Address,
+               
                 TotalSpent = entity.TotalSpent,
                 PendingCredits = entity.PendingCredits,
                 RegisteredSince = entity.RegisteredSince,
@@ -82,15 +121,27 @@ namespace Gearbox.Application.Services
             if (dto == null) return null;
             return new Customer
             {
-                Id = dto.Id,
+          
                 UserId = dto.UserId,
-                FullName = dto.FullName,
-                Phone = dto.PhoneNumber,
-                Address = dto.Address,
+               
                 TotalSpent = dto.TotalSpent,
                 PendingCredits = dto.PendingCredits,
                 RegisteredSince = dto.RegisteredSince,
             };
         }
+        
+        private Customer MapToEntity(NewCustomerDto dto,Guid id)
+        {
+            if (dto == null) return null;
+            return new Customer
+            {
+                UserId = id,
+               
+                TotalSpent = dto.TotalSpent,
+                PendingCredits = dto.PendingCredits,
+               
+            };
+        }
+        
     }
 }

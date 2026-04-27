@@ -3,19 +3,24 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Gearbox.Application.DTOs;
+using Gearbox.Application.DTOs.Staff;
 using Gearbox.Application.Interfaces;
 using Gearbox.Domain.Entities;
 using Gearbox.Domain.Interfaces;
+using Microsoft.AspNetCore.Identity;
 
 namespace Gearbox.Application.Services
 {
     public class StaffService : IStaffService
     {
         private readonly IStaffRepository _repository;
+        private readonly UserManager<AppUser> _userManager;
+        
 
-        public StaffService(IStaffRepository repository)
+        public StaffService(IStaffRepository repository,UserManager<AppUser> _usermanager)
         {
             _repository = repository;
+            _userManager = _usermanager;
         }
 
         public async Task<IEnumerable<StaffDto>> GetAllAsync()
@@ -31,11 +36,44 @@ namespace Gearbox.Application.Services
             return MapToDto(entity);
         }
 
-        public async Task<StaffDto> AddAsync(StaffDto dto)
+        public async Task<StaffDto> AddAsync(NewStaffDto dto)
         {
             var entity = MapToEntity(dto);
-            await _repository.AddAsync(entity);
-            await _repository.SaveChangesAsync();
+
+            var newUser = new AppUser
+            {
+                FirstName = dto.FirstName,
+                LastName = dto.LastName,
+                UserName = dto.UserName,
+                Address = dto.Address,
+                Email = dto.email,
+                PhoneNumber = dto.PhoneNumber
+            };
+            var result = await _userManager.CreateAsync(newUser, dto.Password);
+            if (!result.Succeeded)
+            {
+                foreach (var error in result.Errors)
+                {
+                    Console.WriteLine(error.Description);
+                   
+                }
+                throw new Exception("User creation failed");
+            }
+
+            try
+            {
+                entity.UserId = newUser.Id;
+                await _repository.AddAsync(entity);
+                await _repository.SaveChangesAsync();
+
+            }
+            catch (Exception e)
+            { 
+                await _userManager.DeleteAsync(newUser);
+                throw;
+            }
+          
+         
             return MapToDto(entity);
         }
 
@@ -44,8 +82,7 @@ namespace Gearbox.Application.Services
             var entity = await _repository.GetByIdAsync(id);
             if (entity != null)
             {
-                // Assign new values from dto
-                // (In a real scenario, you'd map individual properties)
+               
                 _repository.Update(entity);
                 await _repository.SaveChangesAsync();
             }
@@ -68,7 +105,7 @@ namespace Gearbox.Application.Services
             {
            
                 UserId = entity.UserId,
-                FullName = entity.FullName,
+                
                 Department = entity.Department,
                 JobTitle = entity.JobTitle,
               
@@ -82,7 +119,20 @@ namespace Gearbox.Application.Services
             {
              
                 UserId = dto.UserId,
-                FullName = dto.FullName,
+            
+                Department = dto.Department,
+                JobTitle = dto.JobTitle,
+                HireDate = DateTime.UtcNow
+            };
+        }
+        
+        private Staff MapToEntity(NewStaffDto dto)
+        {
+            if (dto == null) return null;
+            return new Staff
+            {
+                
+              
                 Department = dto.Department,
                 JobTitle = dto.JobTitle,
                 HireDate = DateTime.UtcNow

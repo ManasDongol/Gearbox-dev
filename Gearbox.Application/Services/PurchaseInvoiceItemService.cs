@@ -31,12 +31,19 @@ namespace Gearbox.Application.Services
             return MapToDto(entity);
         }
 
-        public async Task<PurchaseInvoiceItemDto> AddAsync(PurchaseInvoiceItemDto dto)
+        public async Task<NewPurchaseInvoiceItemDto> AddAsync(NewPurchaseInvoiceItemDto dto)
         {
-            var entity = MapToEntity(dto);
-            await _repository.AddAsync(entity);
+            foreach (var item in dto._items)
+            {
+                var entity = MapToEntity(item);
+                entity.PurchaseInvoiceId = dto.PurchaseInvoiceId;
+                entity.PartId = item.PartId;
+                await _repository.AddAsync(entity);
+                
+            }
+            
             await _repository.SaveChangesAsync();
-            return MapToDto(entity);
+            return dto;
         }
 
         public async Task UpdateAsync(Guid id, PurchaseInvoiceItemDto dto)
@@ -44,8 +51,7 @@ namespace Gearbox.Application.Services
             var entity = await _repository.GetByIdAsync(id);
             if (entity != null)
             {
-                // Assign new values from dto
-                // (In a real scenario, you'd map individual properties)
+             
                 _repository.Update(entity);
                 await _repository.SaveChangesAsync();
             }
@@ -66,8 +72,7 @@ namespace Gearbox.Application.Services
             if (entity == null) return null;
             return new PurchaseInvoiceItemDto
             {
-                Id = entity.Id,
-                PurchaseInvoiceId = entity.PurchaseInvoiceId,
+               
                 PartId = entity.PartId,
                 Quantity = entity.Quantity,
                 CostPrice = entity.CostPrice,
@@ -79,8 +84,7 @@ namespace Gearbox.Application.Services
             if (dto == null) return null;
             return new PurchaseInvoiceItem
             {
-                Id = dto.Id,
-                PurchaseInvoiceId = dto.PurchaseInvoiceId,
+               
                 PartId = dto.PartId,
                 Quantity = dto.Quantity,
                 CostPrice = dto.CostPrice,

@@ -1,4 +1,5 @@
 using System.Text;
+using System.Threading.RateLimiting;
 using Gearbox.Domain.Entities;
 using Gearbox.Infrastructure.Data;
 using Microsoft.AspNetCore.Identity;
@@ -9,6 +10,7 @@ using Gearbox.Application.Interfaces;
 using  Gearbox.Infrastructure.Repositories;
 using  Gearbox.Application.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -32,7 +34,23 @@ builder.Services.AddDbContext<ApplicationDbContext>(
     
     );
 
-builder.Services.AddIdentity<AppUser,IdentityRole<Guid>>()
+
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddFixedWindowLimiter("fixed", opt =>
+    {
+        opt.PermitLimit = 4;
+        opt.Window = TimeSpan.FromSeconds(10);
+        opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+        opt.QueueLimit = 2;
+
+    });
+});
+
+builder.Services.AddIdentity<AppUser,IdentityRole<Guid>>(options =>
+    {
+        options.User.RequireUniqueEmail = true;
+    })
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 builder.Services.AddControllers();
@@ -157,6 +175,8 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
     app.MapScalarApiReference();
 }
+
+app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseHttpsRedirection();
