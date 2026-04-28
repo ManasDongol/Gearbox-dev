@@ -31,9 +31,10 @@ namespace Gearbox.Application.Services
             return MapToDto(entity);
         }
 
-        public async Task<VehicleDto> AddAsync(VehicleDto dto)
+        public async Task<VehicleDto> AddAsync(NewVehicleDto dto)
         {
             var entity = MapToEntity(dto);
+            entity.CreatedAt = DateTime.UtcNow;
             await _repository.AddAsync(entity);
             await _repository.SaveChangesAsync();
             return MapToDto(entity);
@@ -44,8 +45,12 @@ namespace Gearbox.Application.Services
             var entity = await _repository.GetByIdAsync(id);
             if (entity != null)
             {
-                // Assign new values from dto
-                // (In a real scenario, you'd map individual properties)
+                entity.VehicleType = dto.VehicleType;
+                entity.VIN = dto.VIN;
+                entity.Make = dto.Make;
+                entity.Model = dto.Model;
+                entity.Year = dto.Year;
+                entity.NumberPlate = dto.NumberPlate;
                 _repository.Update(entity);
                 await _repository.SaveChangesAsync();
             }
@@ -56,6 +61,7 @@ namespace Gearbox.Application.Services
             var entity = await _repository.GetByIdAsync(id);
             if (entity != null)
             {
+               
                 _repository.Remove(entity);
                 await _repository.SaveChangesAsync();
             }
@@ -73,7 +79,7 @@ namespace Gearbox.Application.Services
                 Model = entity.Model,
                 Year = entity.Year,
                 VIN = entity.VIN,
-                CreatedAt = entity.CreatedAt,
+                
             };
         }
 
@@ -89,7 +95,24 @@ namespace Gearbox.Application.Services
                 Model = dto.Model,
                 Year = dto.Year,
                 VIN = dto.VIN,
-                CreatedAt = dto.CreatedAt,
+               
+            };
+        }
+        
+        private Vehicle MapToEntity(NewVehicleDto dto)
+        {
+            if (dto == null) return null;
+            return new Vehicle
+            {
+              
+                CustomerId = dto.CustomerId,
+                NumberPlate = dto.NumberPlate,
+                Make = dto.Make,
+                Model = dto.Model,
+                Year = dto.Year,
+                VIN = dto.VIN,
+                VehicleType = dto.VehicleType,
+                CreatedAt = DateTime.UtcNow,
             };
         }
     }

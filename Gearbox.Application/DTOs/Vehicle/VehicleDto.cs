@@ -1,4 +1,5 @@
 ﻿using System;
+using Gearbox.Domain.ENUMs;
 
 namespace Gearbox.Application.DTOs
 {
@@ -11,6 +12,7 @@ namespace Gearbox.Application.DTOs
         public string Model { get; set; }
         public int Year { get; set; }
         public string VIN { get; set; }
-        public DateTime CreatedAt { get; set; }
+        public VehicleType VehicleType { get; set; }
+
     }
 }
