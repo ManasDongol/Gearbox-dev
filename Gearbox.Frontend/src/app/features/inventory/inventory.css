@@ -1,0 +1,14 @@
+@reference "tailwindcss";
+
+.page-layout {
+  @apply min-h-screen bg-[#EFEFEF] flex;
+}
+
+.main-content {
+  @apply flex-1 ml-56 p-8;
+}
+
+/* Filter Input */
+.filter-input {
+  @apply px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm text-[#1a3a3a] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#1a3a3a]/15 focus:border-transparent transition-all duration-200;
+}

@@ -1,0 +1,113 @@
+<!-- Inventory Page -->
+<div class="page-layout">
+  <!-- Side Navigation -->
+  <app-navmenu />
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <!-- Top Bar -->
+    <div class="flex items-center justify-between mb-8">
+      <h1 class="text-3xl font-bold text-[#1a3a3a]">Inventory</h1>
+      <!-- User Avatar -->
+      <div
+        class="w-10 h-10 rounded-full bg-[#1a3a3a] cursor-pointer hover:ring-2 hover:ring-[#1a3a3a]/30 transition-all duration-200"
+      ></div>
+    </div>
+
+    <!-- Search & Action Bar -->
+    <div class="flex items-center justify-between mb-4">
+      <input
+        type="text"
+        placeholder="Search Parts"
+        [(ngModel)]="searchQuery"
+        class="w-full max-w-md px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm text-[#1a3a3a] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#1a3a3a]/15 focus:border-transparent transition-all duration-200"
+        id="search-parts"
+      />
+      <button
+        class="flex items-center gap-2 px-5 py-2.5 bg-[#1a3a3a] text-white text-sm font-semibold rounded-lg hover:bg-[#1a4a4a] transition-all duration-200 cursor-pointer whitespace-nowrap"
+        id="btn-add-part"
+      >
+        + Add Part
+      </button>
+    </div>
+
+    <!-- Filters -->
+    <div class="flex gap-3 mb-6">
+      <input
+        type="number"
+        placeholder="Min Price"
+        [(ngModel)]="minPrice"
+        class="filter-input w-40"
+        id="filter-min-price"
+      />
+      <input
+        type="number"
+        placeholder="Max Price"
+        [(ngModel)]="maxPrice"
+        class="filter-input w-40"
+        id="filter-max-price"
+      />
+    </div>
+
+    <!-- Inventory Table -->
+    <div class="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
+      <table class="w-full">
+        <thead>
+          <tr class="border-b border-gray-100">
+            <th class="text-left px-6 py-4 text-sm font-semibold text-[#1a3a3a] bg-gray-50/50">
+              ID
+            </th>
+            <th class="text-left px-6 py-4 text-sm font-semibold text-[#1a3a3a] bg-gray-50/50">
+              Name
+            </th>
+            <th class="text-left px-6 py-4 text-sm font-semibold text-[#1a3a3a] bg-gray-50/50">
+              Selling Price
+            </th>
+            <th class="text-left px-6 py-4 text-sm font-semibold text-[#1a3a3a] bg-gray-50/50">
+              Stock
+            </th>
+            <th class="text-left px-6 py-4 text-sm font-semibold text-[#1a3a3a] bg-gray-50/50">
+              Vendor Id
+            </th>
+            <th class="text-left px-6 py-4 text-sm font-semibold text-[#1a3a3a] bg-gray-50/50">
+              Actions
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (part of filteredParts; track part.id) {
+            <tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors duration-150">
+              <td class="px-6 py-4 text-sm text-[#3a3a3a]">{{ part.id }}</td>
+              <td class="px-6 py-4 text-sm text-[#3a3a3a]">{{ part.name }}</td>
+              <td class="px-6 py-4 text-sm text-[#3a3a3a]">
+                Rs. {{ part.sellingPrice.toLocaleString() }}
+              </td>
+              <td class="px-6 py-4">
+                <span
+                  class="text-sm"
+                  [class]="part.stock <= 5 ? 'text-red-600 font-medium' : 'text-[#3a3a3a]'"
+                >
+                  {{ part.stock }}
+                </span>
+              </td>
+              <td class="px-6 py-4 text-sm text-[#3a3a3a]">{{ part.vendorId }}</td>
+              <td class="px-6 py-4">
+                <button
+                  class="text-sm text-[#1a6b5a] hover:text-[#1a3a3a] font-medium transition-colors duration-150 cursor-pointer"
+                >
+                  Edit
+                </button>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="6" class="px-6 py-16 text-center text-sm text-gray-400">
+                No parts found
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </main>
+</div>

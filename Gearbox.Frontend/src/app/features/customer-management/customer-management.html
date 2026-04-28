@@ -1,0 +1,146 @@
+<!-- Customer Management Page -->
+<div class="page-layout">
+  <!-- Side Navigation -->
+  <app-navmenu />
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <!-- Top Bar -->
+    <div class="flex items-center justify-between mb-8">
+      <h1 class="text-3xl font-bold text-[#1a3a3a]">Customer Management</h1>
+      <!-- User Avatar -->
+      <div
+        class="w-10 h-10 rounded-full bg-[#1a3a3a] cursor-pointer hover:ring-2 hover:ring-[#1a3a3a]/30 transition-all duration-200"
+      ></div>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="mb-4">
+      <input
+        type="text"
+        placeholder="Search Staff Members"
+        [(ngModel)]="searchQuery"
+        class="w-full max-w-md px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm text-[#1a3a3a] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#1a3a3a]/15 focus:border-transparent transition-all duration-200"
+        id="search-customers"
+      />
+    </div>
+
+    <!-- Filters -->
+    <div class="flex gap-3 mb-6">
+      <select
+        [(ngModel)]="statusFilter"
+        class="filter-select"
+        id="filter-customer-status"
+      >
+        <option value="">Status</option>
+        <option value="Active">Active</option>
+        <option value="Inactive">Inactive</option>
+      </select>
+    </div>
+
+    <!-- Customer Table -->
+    <div class="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
+      <table class="w-full">
+        <thead>
+          <tr class="border-b border-gray-100">
+            <th class="text-left px-6 py-4 text-sm font-semibold text-[#1a3a3a] bg-gray-50/50">
+              ID
+            </th>
+            <th class="text-left px-6 py-4 text-sm font-semibold text-[#1a3a3a] bg-gray-50/50">
+              Name
+            </th>
+            <th class="text-left px-6 py-4 text-sm font-semibold text-[#1a3a3a] bg-gray-50/50">
+              Email
+            </th>
+            <th class="text-left px-6 py-4 text-sm font-semibold text-[#1a3a3a] bg-gray-50/50">
+              Address
+            </th>
+            <th class="text-left px-6 py-4 text-sm font-semibold text-[#1a3a3a] bg-gray-50/50">
+              Status
+            </th>
+            <th class="text-left px-6 py-4 text-sm font-semibold text-[#1a3a3a] bg-gray-50/50">
+              Actions
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (customer of filteredCustomers; track customer.id) {
+            <tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors duration-150">
+              <td class="px-6 py-4 text-sm text-[#3a3a3a]">{{ customer.id }}</td>
+              <td class="px-6 py-4 text-sm text-[#3a3a3a]">{{ customer.name }}</td>
+              <td class="px-6 py-4 text-sm text-[#3a3a3a]">{{ customer.email }}</td>
+              <td class="px-6 py-4 text-sm text-[#3a3a3a]">{{ customer.address }}</td>
+              <td class="px-6 py-4">
+                <span
+                  class="inline-block px-3 py-1 text-xs font-medium rounded-full"
+                  [class]="customer.status === 'Active'
+                    ? 'bg-green-50 text-green-700'
+                    : 'bg-red-50 text-red-700'"
+                >
+                  {{ customer.status }}
+                </span>
+              </td>
+              <td class="px-6 py-4">
+                <button
+                  (click)="viewCustomer(customer)"
+                  class="text-sm text-[#1a6b5a] hover:text-[#1a3a3a] font-medium transition-colors duration-150 cursor-pointer"
+                  id="btn-view-{{ customer.id }}"
+                >
+                  View
+                </button>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="6" class="px-6 py-16 text-center text-sm text-gray-400">
+                No customers found
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </main>
+</div>
+
+<!-- Customer Detail Modal -->
+@if (showCustomerModal && selectedCustomer) {
+  <div class="modal-overlay" (click)="closeCustomerModal()" id="customer-modal-overlay">
+    <div class="modal-container" (click)="$event.stopPropagation()">
+      <div class="modal-body">
+        <!-- Profile Header -->
+        <div class="customer-profile-header">
+          <div class="customer-avatar"></div>
+          <div>
+            <h2 class="customer-name">{{ selectedCustomer.name }}</h2>
+            <p class="customer-address">{{ selectedCustomer.address }}</p>
+          </div>
+        </div>
+
+        <!-- Customer Info -->
+        <div class="info-grid">
+          <div class="info-row">
+            <div class="info-item">
+              <p class="info-label">Phone:</p>
+              <p class="info-value">{{ selectedCustomer.phone }}</p>
+            </div>
+            <div class="info-item">
+              <p class="info-label">Email</p>
+              <p class="info-value">{{ selectedCustomer.email }}</p>
+            </div>
+          </div>
+          <div class="info-row">
+            <div class="info-item">
+              <p class="info-label">Money Spent:</p>
+              <p class="info-value">Rs. {{ selectedCustomer.moneySpent.toLocaleString() }}</p>
+            </div>
+            <div class="info-item">
+              <p class="info-label">Total Orders:</p>
+              <p class="info-value">{{ selectedCustomer.totalOrders }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+}

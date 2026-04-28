@@ -1,0 +1,182 @@
+<!-- Staff Management Page -->
+<div class="page-layout">
+  <!-- Side Navigation -->
+  <app-navmenu />
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <!-- Top Bar -->
+    <div class="flex items-center justify-between mb-8">
+      <h1 class="text-3xl font-bold text-[#1a3a3a]">Staff Management</h1>
+      <!-- User Avatar -->
+      <div
+        class="w-10 h-10 rounded-full bg-[#1a3a3a] cursor-pointer hover:ring-2 hover:ring-[#1a3a3a]/30 transition-all duration-200"
+      ></div>
+    </div>
+
+    <!-- Search & Action Bar -->
+    <div class="flex items-center justify-between mb-4">
+      <input
+        type="text"
+        placeholder="Search Staff Members"
+        [(ngModel)]="searchQuery"
+        class="w-full max-w-md px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm text-[#1a3a3a] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#1a3a3a]/15 focus:border-transparent transition-all duration-200"
+        id="search-staff"
+      />
+      <button
+        (click)="openRegisterDialog()"
+        class="flex items-center gap-2 px-5 py-2.5 bg-[#1a3a3a] text-white text-sm font-semibold rounded-lg hover:bg-[#1a4a4a] transition-all duration-200 cursor-pointer whitespace-nowrap"
+        id="btn-register-staff"
+      >
+        + Register Staff
+      </button>
+    </div>
+
+    <!-- Filters -->
+    <div class="flex gap-3 mb-6">
+      <select
+        [(ngModel)]="departmentFilter"
+        class="filter-select"
+        id="filter-department"
+      >
+        <option value="">Any Department</option>
+        <option value="Sales">Sales</option>
+        <option value="Inventory">Inventory</option>
+        <option value="Mechanics">Mechanics</option>
+        <option value="Admin">Admin</option>
+      </select>
+      <select
+        [(ngModel)]="statusFilter"
+        class="filter-select"
+        id="filter-status"
+      >
+        <option value="">Status</option>
+        <option value="Active">Active</option>
+        <option value="Inactive">Inactive</option>
+      </select>
+    </div>
+
+    <!-- Staff Table -->
+    <div class="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
+      <table class="w-full">
+        <thead>
+          <tr class="border-b border-gray-100">
+            <th class="text-left px-6 py-4 text-sm font-semibold text-[#1a3a3a] bg-gray-50/50">
+              Staff ID
+            </th>
+            <th class="text-left px-6 py-4 text-sm font-semibold text-[#1a3a3a] bg-gray-50/50">
+              Name
+            </th>
+            <th class="text-left px-6 py-4 text-sm font-semibold text-[#1a3a3a] bg-gray-50/50">
+              Email
+            </th>
+            <th class="text-left px-6 py-4 text-sm font-semibold text-[#1a3a3a] bg-gray-50/50">
+              Department
+            </th>
+            <th class="text-left px-6 py-4 text-sm font-semibold text-[#1a3a3a] bg-gray-50/50">
+              Status
+            </th>
+            <th class="text-left px-6 py-4 text-sm font-semibold text-[#1a3a3a] bg-gray-50/50">
+              Actions
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (staff of filteredStaff; track staff.id) {
+            <tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors duration-150">
+              <td class="px-6 py-4 text-sm text-[#3a3a3a]">{{ staff.id }}</td>
+              <td class="px-6 py-4 text-sm text-[#3a3a3a]">{{ staff.name }}</td>
+              <td class="px-6 py-4 text-sm text-[#3a3a3a]">{{ staff.email }}</td>
+              <td class="px-6 py-4 text-sm text-[#3a3a3a]">{{ staff.department }}</td>
+              <td class="px-6 py-4">
+                <span
+                  class="inline-block px-3 py-1 text-xs font-medium rounded-full"
+                  [class]="staff.status === 'Active'
+                    ? 'bg-green-50 text-green-700'
+                    : 'bg-red-50 text-red-700'"
+                >
+                  {{ staff.status }}
+                </span>
+              </td>
+              <td class="px-6 py-4">
+                <button
+                  class="text-sm text-[#1a6b5a] hover:text-[#1a3a3a] font-medium transition-colors duration-150 cursor-pointer"
+                >
+                  View
+                </button>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="6" class="px-6 py-16 text-center text-sm text-gray-400">
+                No staff members found
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </main>
+</div>
+
+<!-- Register Staff Dialog -->
+@if (showRegisterDialog) {
+  <div class="modal-overlay" (click)="closeRegisterDialog()" id="register-staff-overlay">
+    <div class="modal-container" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2 class="modal-title">Register Staff Member</h2>
+        <button class="modal-close" (click)="closeRegisterDialog()" id="btn-close-dialog">
+          ✕
+        </button>
+      </div>
+      <div class="modal-body">
+        <!-- First Name & Last Name -->
+        <div class="form-row">
+          <div class="flex-1">
+            <label class="form-label">First Name</label>
+            <input type="text" class="form-input" placeholder="" id="input-first-name" />
+          </div>
+          <div class="flex-1">
+            <label class="form-label">Last Name</label>
+            <input type="text" class="form-input" placeholder="" id="input-last-name" />
+          </div>
+        </div>
+
+        <!-- Email -->
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input type="email" class="form-input" placeholder="" id="input-email" />
+        </div>
+
+        <!-- Password -->
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input type="password" class="form-input" placeholder="" id="input-password" />
+        </div>
+
+        <!-- Department -->
+        <div class="form-group">
+          <label class="form-label">Department</label>
+          <select class="form-select" id="select-department">
+            <option value="" disabled selected>Choose department</option>
+            <option value="Sales">Sales</option>
+            <option value="Inventory">Inventory</option>
+            <option value="Mechanics">Mechanics</option>
+            <option value="Admin">Admin</option>
+          </select>
+        </div>
+
+        <!-- Job Title -->
+        <div class="form-group">
+          <label class="form-label">Job Title</label>
+          <input type="text" class="form-input" placeholder="Choose your department" id="input-job-title" />
+        </div>
+
+        <!-- Submit Button -->
+        <button class="btn-submit" id="btn-add-member">
+          Add Member
+        </button>
+      </div>
+    </div>
+  </div>
+}
