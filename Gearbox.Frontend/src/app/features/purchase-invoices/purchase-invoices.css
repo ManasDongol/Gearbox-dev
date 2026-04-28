@@ -1,0 +1,9 @@
+@reference "tailwindcss";
+
+.page-layout {
+  @apply min-h-screen bg-[#EFEFEF] flex;
+}
+
+.main-content {
+  @apply flex-1 ml-56 p-8;
+}
