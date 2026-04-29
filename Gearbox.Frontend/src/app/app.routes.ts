@@ -6,6 +6,7 @@ import { StaffManagement } from './features/staff-management/staff-management';
 import { CustomerManagement } from './features/customer-management/customer-management';
 import { Inventory } from './features/inventory/inventory';
 import { AppointmentManagement } from './features/appointment-management/appointment-management';
+import { HomePage } from './features/home-page/home-page';
 
 export const routes: Routes = [
   { path: 'login', component: Login },
@@ -15,5 +16,6 @@ export const routes: Routes = [
   { path: 'customer-management', component: CustomerManagement },
   { path: 'inventory', component: Inventory },
   { path: 'appointment-management', component: AppointmentManagement },
-  { path: '', redirectTo: 'login', pathMatch: 'full' },
+    { path: 'home', component: HomePage },
+  { path: '', redirectTo: 'home', pathMatch: 'full' },
 ];

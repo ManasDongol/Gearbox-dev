@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gearbox – Customer Home</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a class="nav-logo" href="#">
+    <img src="/gearbox_logo.svg" alt="Gearbox Logo" class="w-7 h-7" />
+      <span class="text-lg font-semibold text-[#1a3a3a]">Gearbox</span>
+  </a>
+  <div class="nav-links">
+  
+    <a routerLink="/login" class="nav-cta">login</a>
+     <a href="#" class="nav-cta">Create an account</a>
+  </div>
+  
+</nav>
+
+<!-- HERO -->
+<div style="background: var(--white);">
+  <div class="hero">
+    <div>
+      <div class="hero-badge"><span></span> Vehicle Service & Parts Center</div>
+      <h1>Your Vehicle,<br/>Our <em>Expertise.</em></h1>
+      <p>Gearbox brings together smart inventory, expert servicing, and AI-powered vehicle health monitoring — all in one seamless platform built for you.</p>
+      <div class="hero-actions">
+        <a href="#" class="btn-primary">Book a Service</a>
+        <a href="#" class="btn-outline">Request a Part</a>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div style="font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:4px;">Your Dashboard</div>
+      <div class="hero-card">
+        <div class="hero-card-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+        </div>
+        <div class="hero-card-body">
+          <h4>Next Appointment</h4>
+          <p>Oil Change – May 1, 10:00 AM</p>
+        </div>
+        <span class="hero-card-badge badge-green">Confirmed</span>
+      </div>
+      <div class="hero-card">
+        <div class="hero-card-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        </div>
+        <div class="hero-card-body">
+          <h4>AI Alert – Brake Pads</h4>
+          <p>Predicted wear in ~2,000 km</p>
+        </div>
+        <span class="hero-card-badge badge-yellow">Attention</span>
+      </div>
+      <div class="hero-card">
+        <div class="hero-card-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+        </div>
+        <div class="hero-card-body">
+          <h4>Part Request</h4>
+          <p>Air Filter (OEM) – In Queue</p>
+        </div>
+        <span class="hero-card-badge badge-blue">Processing</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- STATS -->
+<div class="stats-strip">
+  <div class="stat-item">
+    <div class="stat-number">2,400+</div>
+    <div class="stat-label">Parts in Inventory</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-number">1,200+</div>
+    <div class="stat-label">Customers Served</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-number">98%</div>
+    <div class="stat-label">Satisfaction Rate</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-number">50+</div>
+    <div class="stat-label">Vehicle Brands Supported</div>
+  </div>
+</div>
+
+<!-- SERVICES -->
+<div class="section">
+  <div class="services-header">
+    <div class="section-label">What We Offer</div>
+    <div class="section-title">Everything Your Vehicle Needs</div>
+    <div class="section-sub">From routine maintenance to complex diagnostics — find all services and genuine parts under one roof.</div>
+  </div>
+  <div class="services-grid">
+    <div class="service-card">
+      <div class="service-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+      </div>
+      <h3>Book Appointments</h3>
+      <p>Schedule oil changes, brake checks, engine diagnostics, AC servicing and more with ease. Choose your preferred time slot and we'll confirm instantly.</p>
+      <a href="#" class="service-link">Book Now <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg></a>
+    </div>
+    <div class="service-card">
+      <div class="service-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+      </div>
+      <h3>Parts & Inventory</h3>
+      <p>Browse our extensive catalog of genuine and OEM-compatible vehicle parts. Can't find what you need? Submit a part request and we'll source it for you.</p>
+      <a href="#" class="service-link">Browse Parts <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg></a>
+    </div>
+    <div class="service-card">
+      <div class="service-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+      </div>
+      <h3>Service History</h3>
+      <p>Access your complete service and purchase history anytime. Track what's been done, what was installed, and when your next service is due.</p>
+      <a href="#" class="service-link">View History <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg></a>
+    </div>
+    <div class="service-card">
+      <div class="service-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+      </div>
+      <h3>AI Health Predictions</h3>
+      <p>Our AI analyses your vehicle's usage patterns and flags parts likely to fail — before they do. Get ahead of breakdowns with smart, proactive alerts.</p>
+      <a href="#" class="service-link">See Alerts <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg></a>
+    </div>
+    <div class="service-card">
+      <div class="service-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+      </div>
+      <h3>Request Unavailable Parts</h3>
+      <p>Didn't find the part you're looking for? Submit a request and our team will source it from our vendor network and notify you when it arrives.</p>
+      <a href="#" class="service-link">Request Part <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg></a>
+    </div>
+    <div class="service-card">
+      <div class="service-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+      </div>
+      <h3>Leave a Review</h3>
+      <p>Share your experience with our team and services. Your feedback helps us serve you better and helps other vehicle owners make confident choices.</p>
+      <a href="#" class="service-link">Write Review <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg></a>
+    </div>
+  </div>
+</div>
+
+<!-- AI SECTION -->
+<div class="ai-section">
+  <div class="ai-inner">
+    <div>
+      <div class="section-label">AI-Powered Intelligence</div>
+      <div class="section-title">Predict Problems Before They Happen</div>
+      <p style="font-size:1rem;color:var(--muted);line-height:1.75;margin-top:12px;margin-bottom:28px;">Gearbox's built-in AI continuously monitors your vehicle's data — mileage, service intervals, usage patterns — and alerts you to parts that may fail soon, so you're never caught off guard.</p>
+      <ul style="list-style:none;display:flex;flex-direction:column;gap:14px;">
+        <li style="display:flex;gap:12px;align-items:flex-start;font-size:.9rem;color:var(--text);">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#1a3a3a" stroke-width="2.5" style="flex-shrink:0;margin-top:2px;"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+          Real-time part failure predictions based on vehicle data
+        </li>
+        <li style="display:flex;gap:12px;align-items:flex-start;font-size:.9rem;color:var(--text);">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#1a3a3a" stroke-width="2.5" style="flex-shrink:0;margin-top:2px;"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+          Proactive alerts sent directly to your account
+        </li>
+        <li style="display:flex;gap:12px;align-items:flex-start;font-size:.9rem;color:var(--text);">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#1a3a3a" stroke-width="2.5" style="flex-shrink:0;margin-top:2px;"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+          Reduces unexpected breakdowns and costly emergency repairs
+        </li>
+      </ul>
+    </div>
+    <div class="ai-visual">
+      <div class="ai-visual-title">AI Health Monitor – Toyota Corolla 2018</div>
+      <div class="ai-alert">
+        <div class="ai-alert-dot dot-red"></div>
+        <div>
+          <h5>Brake Pads – High Risk</h5>
+          <p>Estimated ~2,000 km remaining. Replacement recommended soon.</p>
+          <div class="ai-progress">
+            <div style="display:flex;justify-content:space-between;font-size:.72rem;color:var(--muted);"><span>Wear Level</span><span>82%</span></div>
+            <div class="progress-bar"><div class="progress-fill" style="width:82%;background:#e85555;"></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="ai-alert">
+        <div class="ai-alert-dot dot-yellow"></div>
+        <div>
+          <h5>Engine Air Filter – Monitor</h5>
+          <p>Due for replacement at next service interval (~5,000 km).</p>
+          <div class="ai-progress">
+            <div style="display:flex;justify-content:space-between;font-size:.72rem;color:var(--muted);"><span>Wear Level</span><span>55%</span></div>
+            <div class="progress-bar"><div class="progress-fill" style="width:55%;background:#e8a825;"></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="ai-alert">
+        <div class="ai-alert-dot dot-green"></div>
+        <div>
+          <h5>Engine Oil – Good</h5>
+          <p>Last changed Apr 5, 2026. No action needed yet.</p>
+          <div class="ai-progress">
+            <div style="display:flex;justify-content:space-between;font-size:.72rem;color:var(--muted);"><span>Wear Level</span><span>18%</span></div>
+            <div class="progress-bar"><div class="progress-fill" style="width:18%;background:#35b56e;"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- HOW IT WORKS -->
+<div class="section" style="background:var(--white);max-width:100%;padding-inline:0;">
+  <div style="max-width:1280px;margin-inline:auto;padding:80px 48px;">
+    <div style="text-align:center;margin-bottom:0;">
+      <div class="section-label" style="text-align:center;">Simple Process</div>
+      <div class="section-title" style="text-align:center;">How It Works</div>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <h4>Create Account</h4>
+        <p>Self-register in minutes. Add your vehicle details and you're ready to go.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <h4>Book a Service</h4>
+        <p>Choose a service type, pick a date and time, and we'll confirm your booking.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <h4>We Do the Work</h4>
+        <p>Our expert staff handles everything. Parts, repairs, diagnostics — all logged.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <h4>Track & Review</h4>
+        <p>View your service history, get AI alerts, and leave a review anytime.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- APPOINTMENT CTA -->
+<div style="max-width:1280px;margin:0 auto;padding:0 48px 80px;">
+  <div class="appt-cta">
+    <div>
+      <h2>Ready to Book Your Next Service?</h2>
+      <p>Join over 1,200 customers who trust Gearbox to keep their vehicles in peak condition. Appointments available 6 days a week.</p>
+    </div>
+    <a href="#" class="btn-white">+ Book Appointment</a>
+  </div>
+</div>
+
+<!-- REVIEWS -->
+<div class="section" style="padding-top:0;">
+  <div class="section-label">Customer Reviews</div>
+  <div class="section-title">What Our Customers Say</div>
+  <div class="reviews-grid">
+    <div class="review-card">
+      <div class="stars">★★★★★</div>
+      <div class="review-text">"The AI health alert saved me from a major breakdown — it flagged my brake pads weeks before I noticed anything. Booked instantly through the app. Incredible service."</div>
+      <div class="reviewer">
+        <div class="reviewer-avatar">AS</div>
+        <div>
+          <div class="reviewer-name">Aarav Sharma</div>
+          <div class="reviewer-role">Toyota Corolla 2018</div>
+        </div>
+      </div>
+    </div>
+    <div class="review-card">
+      <div class="stars">★★★★★</div>
+      <div class="review-text">"I requested an OEM air filter that wasn't in stock. The team sourced it within 3 days and notified me immediately. The whole experience was smooth and professional."</div>
+      <div class="reviewer">
+        <div class="reviewer-avatar">PT</div>
+        <div>
+          <div class="reviewer-name">Priya Thapa</div>
+          <div class="reviewer-role">Honda Civic 2020</div>
+        </div>
+      </div>
+    </div>
+    <div class="review-card">
+      <div class="stars">★★★★☆</div>
+      <div class="review-text">"Being able to see my entire service history in one place is genuinely useful. I know exactly what's been done to my car and when. The booking system is fast and simple."</div>
+      <div class="reviewer">
+        <div class="reviewer-avatar">RK</div>
+        <div>
+          <div class="reviewer-name">Rohan Karki</div>
+          <div class="reviewer-role">Ford Ranger 2019</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-top">
+    <div>
+      <div class="footer-brand">
+         <img src="/gearbox_logo.svg" alt="Gearbox Logo" class="w-7 h-7" />
+      <span class="text-lg font-semibold text-[--white]">Gearbox</span>
+      </div>
+      <div class="footer-desc">A complete vehicle services and parts management platform — built to keep you moving.</div>
+    </div>
+    <div class="footer-col">
+      <h5>Services</h5>
+      <a href="#">Book Appointment</a>
+      <a href="#">Request a Part</a>
+      <a href="#">Service History</a>
+      <a href="#">AI Predictions</a>
+    </div>
+    <div class="footer-col">
+      <h5>Account</h5>
+      <a href="#">Login</a>
+      <a href="#">Register</a>
+      <a href="#">My Profile</a>
+      <a href="#">My Vehicles</a>
+    </div>
+    <div class="footer-col">
+      <h5>Company</h5>
+      <a href="#">About Us</a>
+      <a href="#">Contact</a>
+      <a href="#">Privacy Policy</a>
+      <a href="#">Terms of Use</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2026 Gearbox. All rights reserved.</span>
+    <span>Vehicle Services & Parts Management System</span>
+  </div>
+</footer>
+
+</body>
+</html>
