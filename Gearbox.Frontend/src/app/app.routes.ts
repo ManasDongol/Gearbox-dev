@@ -5,6 +5,7 @@ import { PurchaseInvoices } from './features/purchase-invoices/purchase-invoices
 import { StaffManagement } from './features/staff-management/staff-management';
 import { CustomerManagement } from './features/customer-management/customer-management';
 import { Inventory } from './features/inventory/inventory';
+import { AppointmentManagement } from './features/appointment-management/appointment-management';
 
 export const routes: Routes = [
   { path: 'login', component: Login },
@@ -13,5 +14,6 @@ export const routes: Routes = [
   { path: 'staff-management', component: StaffManagement },
   { path: 'customer-management', component: CustomerManagement },
   { path: 'inventory', component: Inventory },
+  { path: 'appointment-management', component: AppointmentManagement },
   { path: '', redirectTo: 'login', pathMatch: 'full' },
 ];

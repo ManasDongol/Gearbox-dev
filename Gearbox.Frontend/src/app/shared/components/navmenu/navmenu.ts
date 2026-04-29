@@ -16,6 +16,7 @@ export class Navmenu {
         { label: 'Dashboard', route: '/dashboard' },
         { label: 'Staff Management', route: '/staff-management' },
         { label: 'Customer Management', route: '/customer-management' },
+        { label: 'Appointments', route: '/appointment-management' },
       ],
     },
     {
