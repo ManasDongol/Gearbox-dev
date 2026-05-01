@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using System.Text;
 using System.Threading.RateLimiting;
 using Gearbox.Domain.Entities;
@@ -58,7 +59,7 @@ builder.Services.AddControllers();
 
 
 var jwtSettings = builder.Configuration.GetSection("Jwt");
-var key = Encoding.ASCII.GetBytes(jwtSettings["Key"]);
+var key = Encoding.UTF8.GetBytes(jwtSettings["Key"]);
 
 builder.Services.AddAuthentication(options =>
     {
@@ -67,27 +68,67 @@ builder.Services.AddAuthentication(options =>
     })
     .AddJwtBearer(options =>
     {
+        Console.WriteLine(key);
+        Console.WriteLine("HAHDHSAHSHSD");
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
             ValidateAudience = true,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            ValidIssuer = jwtSettings["Issuer"],
-            ValidAudience = jwtSettings["Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(key)
+
+            ValidIssuer =builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(key),
+            
+            
+            NameClaimType = ClaimTypes.Name,
+            RoleClaimType = ClaimTypes.Role
         };
-        // Allow JWT from cookies
+
         options.Events = new JwtBearerEvents
         {
             OnMessageReceived = context =>
             {
-                if (context.Request.Cookies.ContainsKey("jwt"))
-                {
-                    context.Token = context.Request.Cookies["jwt"];
-                }
-                return Task.CompletedTask;
-            }
+              /*  {
+                    var auth = context.Request.Headers["Authorization"].FirstOrDefault();
+
+                    if (!string.IsNullOrEmpty(auth) && auth.StartsWith("Bearer "))
+                    {
+                        context.Token = auth.Substring("Bearer ".Length).Trim();
+                    }
+
+                    return Task.CompletedTask;
+                }*/
+                
+                  var token = context.Request.Cookies["jwt"];
+
+                  // 2. fallback: Authorization header (important for Angular dev)
+                  if (string.IsNullOrEmpty(token))
+                  {
+                      var authHeader = context.Request.Headers["Authorization"].FirstOrDefault();
+                      if (!string.IsNullOrEmpty(authHeader) && authHeader.StartsWith("Bearer "))
+                      {
+                          token = authHeader.Substring("Bearer ".Length).Trim();
+                      }
+                  }
+
+                  if (!string.IsNullOrEmpty(token))
+                  {
+                      context.Token = token;
+                  }
+
+                  return Task.CompletedTask;
+              },
+              OnAuthenticationFailed = context =>
+              {
+                  Console.WriteLine($"Authentication failed: {context.Exception}");
+                  Console.WriteLine($"Authentication failed: {context.Exception.Message}");
+                  Console.WriteLine($"Inner: {context.Exception.InnerException?.Message}");
+                  return Task.CompletedTask;
+
+              } 
+            
         };
     });
 
@@ -181,9 +222,11 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseRateLimiter();
+app.UseCors("AllowAngularApp");
 app.UseAuthentication();
 app.UseAuthorization();
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
+
 app.MapControllers();
 
 app.Run();

@@ -2,68 +2,82 @@ import { Routes } from '@angular/router';
 
 import { Login } from './features/auth/login/login';
 import { Register } from './features/auth/register/register';
+import { HomePage } from './features/home-page/home-page';
+import { Dashboard } from './features/dashboard/dashboard';
 
 import { PurchaseInvoices } from './features/purchase-invoices/purchase-invoices';
 import { StaffManagement } from './features/staff-management/staff-management';
 import { CustomerManagement } from './features/customer-management/customer-management';
 import { Inventory } from './features/inventory/inventory';
 import { AppointmentManagement } from './features/appointment-management/appointment-management';
-import { HomePage } from './features/home-page/home-page';
-import { Dashboard } from './features/dashboard/dashboard';
 
-import { authGuard } from './core/guards/Auth/auth-guard';
-import { adminGuard } from './core/guards/AdminGuard/admin-guard';
-import { staffGuard } from './core/guards/StaffGuard/staff-guard';
+import { roleGuard } from './core/guards/RoleGuard/role-guard';
 
 export const routes: Routes = [
 
   // Public routes
-  { path: 'login', component: Login },
-  { path: 'register', component: Register },
-  { path: 'home', component: HomePage },
+  {
+    path: 'login',
+    loadComponent: () => import('./features/auth/login/login').then(m => m.Login)
+  },
+  {
+    path: 'register',
+    loadComponent: () => import('./features/auth/register/register').then(m => m.Register)
+  },
+  {
+    path: 'home',
+    loadComponent: () => import('./features/home-page/home-page').then(m => m.HomePage)
+  },
 
-  // Logged-in users
+  // Logged-in users (Admin + Staff)
   {
     path: 'dashboard',
-    component: Dashboard,
-    canMatch: [staffGuard]
+    canActivate: [roleGuard('Admin', 'Staff')],
+    loadComponent: () => import('./features/dashboard/dashboard').then(m => m.Dashboard)
   },
 
   // Admin only
   {
     path: 'purchase-invoices',
-    component: PurchaseInvoices,
-    canMatch: [adminGuard]
+    canActivate: [roleGuard('Admin')],
+    loadComponent: () => import('./features/purchase-invoices/purchase-invoices').then(m => m.PurchaseInvoices)
   },
 
   {
     path: 'staff-management',
-    component: StaffManagement,
-    canMatch: [adminGuard]
+    canActivate: [roleGuard('Admin')],
+    loadComponent: () => import('./features/staff-management/staff-management').then(m => m.StaffManagement)
   },
 
   // Staff + Admin
   {
     path: 'customer-management',
-    component: CustomerManagement,
-    canMatch: [staffGuard]
+    canActivate: [roleGuard('Admin', 'Staff')],
+    loadComponent: () => import('./features/customer-management/customer-management').then(m => m.CustomerManagement)
   },
 
   {
     path: 'inventory',
-    component: Inventory,
-    canMatch: [staffGuard]
+    canActivate: [roleGuard('Admin', 'Staff')],
+    loadComponent: () => import('./features/inventory/inventory').then(m => m.Inventory)
   },
 
   {
     path: 'appointment-management',
-    component: AppointmentManagement,
-    canMatch: [staffGuard]
+    canActivate: [roleGuard('Admin', 'Staff')],
+    loadComponent: () => import('./features/appointment-management/appointment-management').then(m => m.AppointmentManagement)
   },
 
-  // Default route
-  { path: '', redirectTo: 'home', pathMatch: 'full' },
+  // Default
+  {
+    path: '',
+    redirectTo: 'home',
+    pathMatch: 'full'
+  },
 
-  // Optional fallback
-  { path: '**', redirectTo: 'home' }
+  // Fallback
+  {
+    path: '**',
+    redirectTo: 'home'
+  }
 ];

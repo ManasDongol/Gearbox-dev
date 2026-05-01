@@ -1,14 +1,3 @@
-:root {
-  --brand: #1a3a3a;
-  --brand-mid: #2a5a5a;
-  --brand-light: #e8f0f0;
-  --accent: #e8f4f4;
-  --white: #ffffff;
-  --off-white: #f7f9f9;
-  --text: #111c1c;
-  --muted: #6b8080;
-  --border: #d8e6e6;
-}
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 

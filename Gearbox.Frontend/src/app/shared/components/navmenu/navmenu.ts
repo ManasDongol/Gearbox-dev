@@ -1,6 +1,7 @@
 import { Component, Input } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
-
+import { Auth } from '../../../core/services/auth/auth';
+import {inject} from '@angular/core';
 @Component({
   selector: 'app-navmenu',
   imports: [RouterLink, RouterLinkActive],
@@ -9,6 +10,8 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
 })
 export class Navmenu {
   @Input() activeItem: string = '';
+   auth = inject(Auth);
+
 
   menuGroups = [
     {
@@ -35,4 +38,9 @@ export class Navmenu {
       ],
     },
   ];
+
+
+  logout(){
+    this.auth.logout();
+  }
 }
