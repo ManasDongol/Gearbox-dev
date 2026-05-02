@@ -1,4 +1,4 @@
-<!-- Inventory Page -->
+<!-- Inventory (Parts Management) Page -->
 <div class="page-layout">
   <!-- Side Navigation -->
   <app-navmenu />
@@ -7,7 +7,7 @@
   <main class="main-content">
     <!-- Top Bar -->
     <div class="flex items-center justify-between mb-8">
-      <h1 class="text-3xl font-bold text-[#1a3a3a]">Inventory</h1>
+      <h1 class="text-3xl font-bold text-[#1a3a3a]">Inventory Management</h1>
       <!-- User Avatar -->
       <div
         class="w-10 h-10 rounded-full bg-[#1a3a3a] cursor-pointer hover:ring-2 hover:ring-[#1a3a3a]/30 transition-all duration-200"
@@ -15,38 +15,29 @@
     </div>
 
     <!-- Search & Action Bar -->
-    <div class="flex items-center justify-between mb-4">
-      <input
-        type="text"
-        placeholder="Search Parts"
-        [(ngModel)]="searchQuery"
-        class="w-full max-w-md px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm text-[#1a3a3a] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#1a3a3a]/15 focus:border-transparent transition-all duration-200"
-        id="search-parts"
-      />
+    <div class="flex items-center justify-between mb-6">
+      <div class="relative w-full max-w-md">
+        <input
+          type="text"
+          placeholder="Search Parts (Name, Part #, Desc...)"
+          [(ngModel)]="searchQuery"
+          (ngModelChange)="onSearchChange($event)"
+          class="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm text-[#1a3a3a] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#1a3a3a]/15 focus:border-transparent transition-all duration-200"
+          id="search-inventory"
+        />
+        @if (isLoading) {
+          <div class="absolute right-3 top-1/2 -translate-y-1/2">
+            <div class="w-4 h-4 border-2 border-[#1a3a3a]/20 border-t-[#1a3a3a] rounded-full animate-spin"></div>
+          </div>
+        }
+      </div>
       <button
+        (click)="openAddDialog()"
         class="flex items-center gap-2 px-5 py-2.5 bg-[#1a3a3a] text-white text-sm font-semibold rounded-lg hover:bg-[#1a4a4a] transition-all duration-200 cursor-pointer whitespace-nowrap"
-        id="btn-add-part"
+        id="btn-add-part-trigger"
       >
         + Add Part
       </button>
-    </div>
-
-    <!-- Filters -->
-    <div class="flex gap-3 mb-6">
-      <input
-        type="number"
-        placeholder="Min Price"
-        [(ngModel)]="minPrice"
-        class="filter-input w-40"
-        id="filter-min-price"
-      />
-      <input
-        type="number"
-        placeholder="Max Price"
-        [(ngModel)]="maxPrice"
-        class="filter-input w-40"
-        id="filter-max-price"
-      />
     </div>
 
     <!-- Inventory Table -->
@@ -55,19 +46,19 @@
         <thead>
           <tr class="border-b border-gray-100">
             <th class="text-left px-6 py-4 text-sm font-semibold text-[#1a3a3a] bg-gray-50/50">
-              ID
+              Part Name
             </th>
             <th class="text-left px-6 py-4 text-sm font-semibold text-[#1a3a3a] bg-gray-50/50">
-              Name
-            </th>
-            <th class="text-left px-6 py-4 text-sm font-semibold text-[#1a3a3a] bg-gray-50/50">
-              Selling Price
+              Part Number
             </th>
             <th class="text-left px-6 py-4 text-sm font-semibold text-[#1a3a3a] bg-gray-50/50">
               Stock
             </th>
             <th class="text-left px-6 py-4 text-sm font-semibold text-[#1a3a3a] bg-gray-50/50">
-              Vendor Id
+              Price
+            </th>
+            <th class="text-left px-6 py-4 text-sm font-semibold text-[#1a3a3a] bg-gray-50/50">
+              Vendor
             </th>
             <th class="text-left px-6 py-4 text-sm font-semibold text-[#1a3a3a] bg-gray-50/50">
               Actions
@@ -77,20 +68,20 @@
         <tbody>
           @for (part of filteredParts; track part.id) {
             <tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors duration-150">
-              <td class="px-6 py-4 text-sm text-[#3a3a3a]">{{ part.id }}</td>
-              <td class="px-6 py-4 text-sm text-[#3a3a3a]">{{ part.name }}</td>
-              <td class="px-6 py-4 text-sm text-[#3a3a3a]">
-                Rs. {{ part.sellingPrice.toLocaleString() }}
-              </td>
+              <td class="px-6 py-4 text-sm font-medium text-[#1a3a3a]">{{ part.name }}</td>
+              <td class="px-6 py-4 text-sm text-[#3a3a3a]">{{ part.partNumber }}</td>
               <td class="px-6 py-4">
-                <span
-                  class="text-sm"
-                  [class]="part.stock <= 5 ? 'text-red-600 font-medium' : 'text-[#3a3a3a]'"
+                <span 
+                  class="inline-block px-3 py-1 text-xs font-medium rounded-full"
+                  [class]="part.stockQuantity > 5 
+                    ? 'bg-green-50 text-green-700' 
+                    : (part.stockQuantity > 0 ? 'bg-orange-50 text-orange-700' : 'bg-red-50 text-red-700')"
                 >
-                  {{ part.stock }}
+                  {{ part.stockQuantity }} in stock
                 </span>
               </td>
-              <td class="px-6 py-4 text-sm text-[#3a3a3a]">{{ part.vendorId }}</td>
+              <td class="px-6 py-4 text-sm text-[#3a3a3a]">Rs. {{ part.sellingPrice }}</td>
+              <td class="px-6 py-4 text-sm text-[#3a3a3a]">{{ getVendorName(part.vendorId) }}</td>
               <td class="px-6 py-4">
                 <button
                   class="text-sm text-[#1a6b5a] hover:text-[#1a3a3a] font-medium transition-colors duration-150 cursor-pointer"
@@ -102,7 +93,11 @@
           } @empty {
             <tr>
               <td colspan="6" class="px-6 py-16 text-center text-sm text-gray-400">
-                No parts found
+                @if (isLoading) {
+                  Loading inventory...
+                } @else {
+                  No parts found
+                }
               </td>
             </tr>
           }
@@ -111,3 +106,100 @@
     </div>
   </main>
 </div>
+
+<!-- Add Part Dialog -->
+@if (showAddDialog) {
+  <div class="modal-overlay" (click)="closeAddDialog()" id="add-part-overlay">
+    <div class="modal-container max-w-2xl" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2 class="modal-title">Add New Part to Inventory</h2>
+        <button class="modal-close" (click)="closeAddDialog()" id="btn-close-part-dialog">
+          ✕
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="form-row">
+          <!-- Name -->
+          <div class="form-group">
+            <label class="form-label">Part Name</label>
+            <input 
+              type="text" 
+              class="form-input" 
+              placeholder="e.g. Brake Pads" 
+              [(ngModel)]="newPart.name"
+              id="input-part-name" 
+            />
+          </div>
+          <!-- Part Number -->
+          <div class="form-group">
+            <label class="form-label">Part Number</label>
+            <input 
+              type="text" 
+              class="form-input" 
+              placeholder="PN-12345" 
+              [(ngModel)]="newPart.partNumber"
+              id="input-part-number" 
+            />
+          </div>
+        </div>
+
+        <!-- Description -->
+        <div class="form-group">
+          <label class="form-label">Description</label>
+          <input 
+            type="text" 
+            class="form-input" 
+            placeholder="Short description of the part" 
+            [(ngModel)]="newPart.description"
+            id="input-part-desc" 
+          />
+        </div>
+
+        <div class="form-row">
+          <!-- Price -->
+          <div class="form-group">
+            <label class="form-label">Selling Price (Rs.)</label>
+            <input 
+              type="number" 
+              class="form-input" 
+              [(ngModel)]="newPart.sellingPrice"
+              id="input-part-price" 
+            />
+          </div>
+          <!-- Stock -->
+          <div class="form-group">
+            <label class="form-label">Initial Stock</label>
+            <input 
+              type="number" 
+              class="form-input" 
+              [(ngModel)]="newPart.stockQuantity"
+              id="input-part-stock" 
+            />
+          </div>
+        </div>
+
+        <!-- Vendor -->
+        <div class="form-group">
+          <label class="form-label">Vendor</label>
+          <select class="form-select" [(ngModel)]="newPart.vendorId" id="select-part-vendor">
+            <option value="" disabled selected>Choose vendor</option>
+            @for (vendor of vendors; track vendor.id) {
+              <option [value]="vendor.id">{{ vendor.name }}</option>
+            }
+          </select>
+        </div>
+
+        <!-- Submit Button -->
+        <button 
+          class="btn-submit" 
+          (click)="addPart()"
+          [disabled]="!newPart.name || !newPart.vendorId"
+          [class.opacity-50]="!newPart.name || !newPart.vendorId"
+          id="btn-save-part"
+        >
+          Save Part to Inventory
+        </button>
+      </div>
+    </div>
+  </div>
+}
