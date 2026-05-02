@@ -10,6 +10,7 @@ import { StaffManagement } from './features/staff-management/staff-management';
 import { CustomerManagement } from './features/customer-management/customer-management';
 import { Inventory } from './features/inventory/inventory';
 import { AppointmentManagement } from './features/appointment-management/appointment-management';
+import { VendorManagement } from './features/vendor-management/vendor-management';
 
 import { roleGuard } from './core/guards/RoleGuard/role-guard';
 
@@ -66,6 +67,12 @@ export const routes: Routes = [
     path: 'appointment-management',
     canActivate: [roleGuard('Admin', 'Staff')],
     loadComponent: () => import('./features/appointment-management/appointment-management').then(m => m.AppointmentManagement)
+  },
+
+  {
+    path: 'vendors',
+    canActivate: [roleGuard('Admin')],
+    loadComponent: () => import('./features/vendor-management/vendor-management').then(m => m.VendorManagement)
   },
 
   // Default

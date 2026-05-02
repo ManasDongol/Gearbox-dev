@@ -4,6 +4,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 
 import { LoginService } from '../../../core/services/login/login';
 import { Auth } from '../../../core/services/auth/auth';
+import { switchMap } from 'rxjs';
 
 @Component({
   selector: 'app-login',
@@ -31,12 +32,19 @@ onSubmit() {
     return;
   }
 
-  this.authService.login(this.form.getRawValue()).subscribe({
-    next: () => {
-      console.log('Logged in');
-
-      this.auth.loadUser();
-      this.router.navigate(['/dashboard']);
+  this.authService.login(this.form.getRawValue()).pipe(
+    switchMap(() => this.auth.loadUser())
+  ).subscribe({
+    next: (user) => {
+      if (!user) {
+        this.errorMessage = 'Could not load user info';
+        return;
+      }
+      if (this.auth.hasAnyRole(['Admin', 'Staff'])) {
+        this.router.navigate(['/dashboard']);
+      } else {
+        this.router.navigate(['/appointment']);
+      }
     },
     error: () => {
       this.errorMessage = 'Invalid credentials';

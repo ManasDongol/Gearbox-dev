@@ -1,0 +1,168 @@
+<!-- Vendor Management Page -->
+<div class="page-layout">
+  <!-- Side Navigation -->
+  <app-navmenu />
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <!-- Top Bar -->
+    <div class="flex items-center justify-between mb-8">
+      <h1 class="text-3xl font-bold text-[#1a3a3a]">Vendor Management</h1>
+      <!-- User Avatar -->
+      <div
+        class="w-10 h-10 rounded-full bg-[#1a3a3a] cursor-pointer hover:ring-2 hover:ring-[#1a3a3a]/30 transition-all duration-200"
+      ></div>
+    </div>
+
+    <!-- Search & Action Bar -->
+    <div class="flex items-center justify-between mb-6">
+      <div class="relative w-full max-w-md">
+        <input
+          type="text"
+          placeholder="Search Vendors (Name, Email, Phone...)"
+          [(ngModel)]="searchQuery"
+          (ngModelChange)="onSearchChange($event)"
+          class="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm text-[#1a3a3a] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#1a3a3a]/15 focus:border-transparent transition-all duration-200"
+          id="search-vendors"
+        />
+        @if (isLoading) {
+          <div class="absolute right-3 top-1/2 -translate-y-1/2">
+            <div class="w-4 h-4 border-2 border-[#1a3a3a]/20 border-t-[#1a3a3a] rounded-full animate-spin"></div>
+          </div>
+        }
+      </div>
+      <button
+        (click)="openAddDialog()"
+        class="flex items-center gap-2 px-5 py-2.5 bg-[#1a3a3a] text-white text-sm font-semibold rounded-lg hover:bg-[#1a4a4a] transition-all duration-200 cursor-pointer whitespace-nowrap"
+        id="btn-add-vendor-trigger"
+      >
+        + Add Vendor
+      </button>
+    </div>
+
+    <!-- Vendors Table -->
+    <div class="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
+      <table class="w-full">
+        <thead>
+          <tr class="border-b border-gray-100">
+            <th class="text-left px-6 py-4 text-sm font-semibold text-[#1a3a3a] bg-gray-50/50">
+              Vendor Name
+            </th>
+            <th class="text-left px-6 py-4 text-sm font-semibold text-[#1a3a3a] bg-gray-50/50">
+              Email
+            </th>
+            <th class="text-left px-6 py-4 text-sm font-semibold text-[#1a3a3a] bg-gray-50/50">
+              Phone Number
+            </th>
+            <th class="text-left px-6 py-4 text-sm font-semibold text-[#1a3a3a] bg-gray-50/50">
+              Address
+            </th>
+            <th class="text-left px-6 py-4 text-sm font-semibold text-[#1a3a3a] bg-gray-50/50">
+              Actions
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (vendor of filteredVendors; track vendor.id) {
+            <tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors duration-150">
+              <td class="px-6 py-4 text-sm font-medium text-[#1a3a3a]">{{ vendor.name }}</td>
+              <td class="px-6 py-4 text-sm text-[#3a3a3a]">{{ vendor.email }}</td>
+              <td class="px-6 py-4 text-sm text-[#3a3a3a]">{{ vendor.phoneNumber }}</td>
+              <td class="px-6 py-4 text-sm text-[#3a3a3a]">{{ vendor.address }}</td>
+              <td class="px-6 py-4">
+                <button
+                  class="text-sm text-[#1a6b5a] hover:text-[#1a3a3a] font-medium transition-colors duration-150 cursor-pointer"
+                >
+                  Edit
+                </button>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="5" class="px-6 py-16 text-center text-sm text-gray-400">
+                @if (isLoading) {
+                  Loading vendors...
+                } @else {
+                  No vendors found
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </main>
+</div>
+
+<!-- Add Vendor Dialog -->
+@if (showAddDialog) {
+  <div class="modal-overlay" (click)="closeAddDialog()" id="add-vendor-overlay">
+    <div class="modal-container" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2 class="modal-title">Add New Vendor</h2>
+        <button class="modal-close" (click)="closeAddDialog()" id="btn-close-vendor-dialog">
+          ✕
+        </button>
+      </div>
+      <div class="modal-body">
+        <!-- Name -->
+        <div class="form-group">
+          <label class="form-label">Vendor Name</label>
+          <input 
+            type="text" 
+            class="form-input" 
+            placeholder="Enter vendor name" 
+            [(ngModel)]="newVendor.name"
+            id="input-vendor-name" 
+          />
+        </div>
+
+        <!-- Email -->
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <input 
+            type="email" 
+            class="form-input" 
+            placeholder="vendor@example.com" 
+            [(ngModel)]="newVendor.email"
+            id="input-vendor-email" 
+          />
+        </div>
+
+        <!-- Phone -->
+        <div class="form-group">
+          <label class="form-label">Phone Number</label>
+          <input 
+            type="text" 
+            class="form-input" 
+            placeholder="Phone number" 
+            [(ngModel)]="newVendor.phoneNumber"
+            id="input-vendor-phone" 
+          />
+        </div>
+
+        <!-- Address -->
+        <div class="form-group">
+          <label class="form-label">Address</label>
+          <textarea 
+            class="form-input min-h-[80px]" 
+            placeholder="Street address, City, Country" 
+            [(ngModel)]="newVendor.address"
+            id="input-vendor-address"
+          ></textarea>
+        </div>
+
+        <!-- Submit Button -->
+        <button 
+          class="btn-submit" 
+          (click)="addVendor()"
+          [disabled]="!newVendor.name || !newVendor.email"
+          [class.opacity-50]="!newVendor.name || !newVendor.email"
+          id="btn-save-vendor"
+        >
+          Save Vendor
+        </button>
+      </div>
+    </div>
+  </div>
+}
