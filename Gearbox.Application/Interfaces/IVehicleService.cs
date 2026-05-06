@@ -9,6 +9,7 @@ namespace Gearbox.Application.Interfaces
     {
         Task<IEnumerable<VehicleDto>> GetAllAsync();
         Task<VehicleDto> GetByIdAsync(Guid id);
+        Task<IEnumerable<VehicleDto>> GetAllByVehicleIdAsync(Guid vehicleId);
         Task<VehicleDto> AddAsync(NewVehicleDto dto);
         Task UpdateAsync(Guid id, VehicleDto dto);
         Task DeleteAsync(Guid id);

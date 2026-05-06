@@ -20,7 +20,7 @@ namespace Gearbox.Application.DTOs
         public Guid Id { get; set; }
         public Guid SalesServicesInvoiceId { get; set; }
         public Guid? PartId { get; set; }
-        public Guid? ServiceDetailsId { get; set; }
+        public Guid? ServiceId { get; set; }
         public string Type { get; set; } // "Part" or "Service"
         public int Quantity { get; set; }
         public decimal UnitPrice { get; set; }

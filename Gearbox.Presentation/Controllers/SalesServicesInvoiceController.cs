@@ -33,7 +33,7 @@ namespace Gearbox.Presentation.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Add([FromBody] SalesServicesInvoiceDto dto)
+        public async Task<IActionResult> Add([FromBody] NewSalesServicesInvoiceDto dto)
         {
             var result = await _service.AddAsync(dto);
             return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);

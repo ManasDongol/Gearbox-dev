@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Navmenu } from '../../shared/components/navmenu/navmenu';
 import { VendorService } from '../../core/services/vendor/vendor';
-import { Vendor, NewVendor } from '../../core/Models/vendor.model';
+import { Vendor, NewVendor } from '../../core/models/vendor.model';
 import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 
 @Component({
@@ -23,6 +23,7 @@ export class VendorManagement implements OnInit {
   private searchSubject = new Subject<string>();
   
   showAddDialog: boolean = false;
+  showEditDialog: boolean = false;
   isLoading: boolean = false;
 
   newVendor: NewVendor = {
@@ -31,6 +32,8 @@ export class VendorManagement implements OnInit {
     email: '',
     address: ''
   };
+
+  selectedVendor: Vendor | null = null;
 
   ngOnInit() {
     this.loadVendors();
@@ -86,6 +89,16 @@ export class VendorManagement implements OnInit {
     this.resetForm();
   }
 
+  openEditDialog(vendor: Vendor) {
+    this.selectedVendor = { ...vendor };
+    this.showEditDialog = true;
+  }
+
+  closeEditDialog() {
+    this.showEditDialog = false;
+    this.selectedVendor = null;
+  }
+
   resetForm() {
     this.newVendor = {
       name: '',
@@ -108,5 +121,37 @@ export class VendorManagement implements OnInit {
         console.error('Error adding vendor', err);
       }
     });
+  }
+
+  updateVendor() {
+    if (!this.selectedVendor) return;
+
+    this.vendorService.update(this.selectedVendor.id, this.selectedVendor).subscribe({
+      next: () => {
+        const index = this.vendors.findIndex(v => v.id === this.selectedVendor?.id);
+        if (index !== -1 && this.selectedVendor) {
+          this.vendors[index] = { ...this.selectedVendor };
+          this.applyFilter(this.searchQuery);
+        }
+        this.closeEditDialog();
+      },
+      error: (err) => {
+        console.error('Error updating vendor', err);
+      }
+    });
+  }
+
+  deleteVendor(id: string) {
+    if (confirm('Are you sure you want to delete this vendor?')) {
+      this.vendorService.delete(id).subscribe({
+        next: () => {
+          this.vendors = this.vendors.filter(v => v.id !== id);
+          this.applyFilter(this.searchQuery);
+        },
+        error: (err) => {
+          console.error('Error deleting vendor', err);
+        }
+      });
+    }
   }
 }

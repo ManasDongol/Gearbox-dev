@@ -1,14 +1,14 @@
-<!-- Side Navigation Menu -->
 <aside class="fixed top-0 left-0 h-screen w-56 bg-white flex flex-col border-r border-gray-100 z-50">
+  
   <!-- Logo -->
   <div class="px-6 py-6">
-    <a routerLink="/dashboard" class="flex items-center gap-2">
-      <img src="/gearbox_logo.svg" alt="Gearbox Logo" class="w-7 h-7" />
+    <a [routerLink]="homeRoute" class="flex items-center gap-2">
+      <img src="/gearbox_logo.svg" class="w-7 h-7" />
       <span class="text-lg font-semibold text-[#1a3a3a]">Gearbox</span>
     </a>
   </div>
 
-  <!-- Navigation Links -->
+  <!-- Navigation -->
   <nav class="flex-1 px-2 overflow-y-auto">
     @for (group of menuGroups; track $index) {
       <ul class="mb-4">
@@ -26,5 +26,15 @@
       </ul>
     }
   </nav>
-  <button onclick="logout()">logout</button>
+
+  <!-- Logout -->
+  <div class="p-4">
+    <button
+      (click)="logout()"
+      class="w-full py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
+    >
+      Logout
+    </button>
+  </div>
+
 </aside>

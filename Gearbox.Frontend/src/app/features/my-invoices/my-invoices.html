@@ -1,0 +1,63 @@
+<div class="page-layout">
+  <app-navmenu />
+
+  <main class="main-content">
+    <div class="flex items-center justify-between mb-8">
+      <div>
+        <h1 class="text-3xl font-bold text-[#1a3a3a]">My Invoices</h1>
+        <p class="text-gray-500 mt-1">A read-only view of your billing history.</p>
+      </div>
+      <div class="w-10 h-10 rounded-full bg-[#1a3a3a]"></div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <div class="summary-card">
+        <p class="text-sm text-gray-500">Total Spent</p>
+        <p class="text-3xl font-bold text-[#1a3a3a] mt-2">Rs. {{ totalSpent | number }}</p>
+      </div>
+      <div class="summary-card">
+        <p class="text-sm text-gray-500">Pending Credits</p>
+        <p class="text-3xl font-bold text-red-700 mt-2">Rs. {{ customer?.pendingCredits ?? 0 | number }}</p>
+      </div>
+      <div class="summary-card">
+        <p class="text-sm text-gray-500">Invoice Count</p>
+        <p class="text-3xl font-bold text-[#1a3a3a] mt-2">{{ invoices.length }}</p>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
+      <table class="w-full">
+        <thead>
+          <tr class="border-b border-gray-100">
+            <th class="table-heading">Invoice</th>
+            <th class="table-heading">Date</th>
+            <th class="table-heading">Items</th>
+            <th class="table-heading text-right">Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (invoice of invoices; track invoice.id) {
+            <tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors duration-150">
+              <td class="table-cell font-semibold text-[#1a3a3a]">{{ invoice.id.substring(0, 8) }}...</td>
+              <td class="table-cell">{{ invoice.createdAt | date: 'mediumDate' }}</td>
+              <td class="table-cell">{{ invoice.items.length }}</td>
+              <td class="table-cell text-right font-semibold text-[#1a3a3a]">
+                Rs. {{ invoice.totalAmount | number }}
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="4" class="px-6 py-16 text-center text-sm text-gray-400">
+                @if (isLoading) {
+                  Loading invoices...
+                } @else {
+                  No invoices found.
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </main>
+</div>

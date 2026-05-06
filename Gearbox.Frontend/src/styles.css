@@ -1,5 +1,9 @@
 /* You can add global styles to this file, and also import other style files */
 @import 'tailwindcss';
+
+*{
+  font-family: 'google';
+}
 :root {
   --brand: #1a3a3a;
   --brand-mid: #2a5a5a;
@@ -10,4 +14,68 @@
   --text: #111c1c;
   --muted: #6b8080;
   --border: #d8e6e6;
+}
+
+@font-face {
+  font-family: 'google';
+  src: url('assets/fonts/GoogleSans-Medium.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+@layer components {
+  .page-layout {
+    @apply min-h-screen bg-[#F8FAFB] flex;
+  }
+
+  .main-content {
+    @apply flex-1 ml-56 p-10;
+  }
+
+  .filter-select {
+    @apply px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm text-[#1a3a3a] focus:outline-none focus:ring-2 focus:ring-[#1a3a3a]/15;
+  }
+
+  .modal-overlay {
+    @apply fixed inset-0 bg-black/40 backdrop-blur-sm z-[1000] flex items-center justify-center p-4;
+  }
+
+  .modal-container {
+    @apply bg-white rounded-2xl shadow-2xl w-full  duration-200 overflow-hidden;
+  }
+
+  .modal-header {
+    @apply px-8 py-5 border-b border-gray-100 flex items-center justify-between;
+  }
+
+  .modal-title {
+    @apply text-xl font-bold text-[#1a3a3a];
+  }
+
+  .modal-close {
+    @apply text-gray-400 hover:text-gray-600 transition-colors;
+  }
+
+  .modal-body {
+    @apply p-8;
+  }
+
+  .form-group {
+    @apply mb-5;
+  }
+
+  .form-row {
+    @apply flex gap-5 mb-5;
+  }
+
+  .form-label {
+    @apply block text-sm font-semibold text-[#1a3a3a] mb-2;
+  }
+
+  .form-input, .form-select, .form-textarea {
+    @apply w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm text-[#1a3a3a] focus:outline-none focus:ring-2 focus:ring-[#1a3a3a]/15 focus:bg-white transition-all duration-200;
+  }
+
+  .btn-submit {
+    @apply w-full py-3.5 bg-[#1a3a3a] text-white font-bold rounded-xl hover:bg-[#1a4a4a] transform active:scale-[0.98] transition-all duration-200 shadow-lg shadow-[#1a3a3a]/20;
+  }
 }

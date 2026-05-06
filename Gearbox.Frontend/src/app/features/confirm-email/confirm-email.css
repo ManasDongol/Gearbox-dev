@@ -1,0 +1,28 @@
+.container {
+  text-align: center;
+  margin-top: 100px;
+  font-family: Arial;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+
+.success h2 {
+  color: #1a3a3a;
+}
+
+.error h2 {
+  color: red;
+}
+
+.btn {
+  display: inline-block;
+  margin-top: 20px;
+  padding: 10px 20px;
+  background: #1a3a3a;
+  color: white;
+  text-decoration: none;
+  border-radius: 6px;
+  cursor: pointer;
+}

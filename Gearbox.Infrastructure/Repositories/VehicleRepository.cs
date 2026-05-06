@@ -6,8 +6,17 @@ namespace Gearbox.Infrastructure.Repositories
 {
     public class VehicleRepository : GenericRepository<Vehicle>, IVehicleRepository
     {
-        public VehicleRepository(ApplicationDbContext context) : base(context)
+
+        private ApplicationDbContext context;
+
+        public VehicleRepository(ApplicationDbContext _context): base(_context)
         {
+            context=_context;
+        }
+        
+        public async Task<IEnumerable<Vehicle>> GetCustomerVehicles(Guid customerId)
+        {
+                return  context.Vehicles.Where(v => v.CustomerId == customerId);
         }
     }
 }

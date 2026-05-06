@@ -1,0 +1,159 @@
+<div class="page-layout">
+  <app-navmenu />
+
+  <main class="main-content">
+    <div class="flex items-center justify-between mb-8">
+      <h1 class="text-3xl font-bold text-[#1a3a3a]">Sales Invoices</h1>
+      <div class="w-10 h-10 rounded-full bg-[#1a3a3a] cursor-pointer hover:ring-2 hover:ring-[#1a3a3a]/30 transition-all duration-200"></div>
+    </div>
+
+    <div class="flex items-center justify-between mb-6">
+      <div class="relative w-full max-w-md">
+        <input
+          type="text"
+          placeholder="Search Sales Invoices (Customer, ID)..."
+          [(ngModel)]="searchQuery"
+          (ngModelChange)="onSearchChange($event)"
+          class="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm text-[#1a3a3a] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#1a3a3a]/15 focus:border-transparent transition-all duration-200"
+          id="search-sales-invoices"
+        />
+        @if (isLoading) {
+          <div class="absolute right-3 top-1/2 -translate-y-1/2">
+            <div class="w-4 h-4 border-2 border-[#1a3a3a]/20 border-t-[#1a3a3a] rounded-full animate-spin"></div>
+          </div>
+        }
+      </div>
+      <button
+        (click)="openAddDialog()"
+        class="flex items-center gap-2 px-5 py-2.5 bg-[#1a3a3a] text-white text-sm font-semibold rounded-lg hover:bg-[#1a4a4a] transition-all duration-200 cursor-pointer whitespace-nowrap"
+        id="btn-create-sales-invoice"
+      >
+        + Create Sales Invoice
+      </button>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
+      <table class="w-full">
+        <thead>
+          <tr class="border-b border-gray-100">
+            <th class="text-left px-6 py-4 text-sm font-semibold text-[#1a3a3a] bg-gray-50/50">ID</th>
+            <th class="text-left px-6 py-4 text-sm font-semibold text-[#1a3a3a] bg-gray-50/50">Customer</th>
+            <th class="text-left px-6 py-4 text-sm font-semibold text-[#1a3a3a] bg-gray-50/50">Total Amount</th>
+            <th class="text-left px-6 py-4 text-sm font-semibold text-[#1a3a3a] bg-gray-50/50">Staff</th>
+            <th class="text-left px-6 py-4 text-sm font-semibold text-[#1a3a3a] bg-gray-50/50">Date</th>
+            <th class="text-left px-6 py-4 text-sm font-semibold text-[#1a3a3a] bg-gray-50/50">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (inv of filteredInvoices; track inv.id) {
+            <tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors duration-150">
+              <td class="px-6 py-4 text-sm font-medium text-[#1a3a3a]">{{ inv.id.substring(0,8) }}...</td>
+              <td class="px-6 py-4 text-sm text-[#3a3a3a]">{{ getCustomerName(inv.customerId) }}</td>
+              <td class="px-6 py-4 text-sm font-semibold text-[#1a3a3a]">Rs. {{ inv.totalAmount | number }}</td>
+              <td class="px-6 py-4 text-sm text-[#3a3a3a]">{{ getStaffName(inv.staffId) }}</td>
+              <td class="px-6 py-4 text-sm text-[#3a3a3a]">{{ inv.createdAt | date:'mediumDate' }}</td>
+              <td class="px-6 py-4 flex gap-3">
+                <button class="text-sm text-[#1a6b5a] font-medium hover:text-[#1a3a3a]">View</button>
+                <button (click)="deleteInvoice(inv.id)" class="text-sm text-red-600 font-medium hover:text-red-800">Delete</button>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="6" class="px-6 py-16 text-center text-sm text-gray-400">
+                @if (isLoading) { Loading... } @else { No sales invoices found }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </main>
+</div>
+
+<!-- Create Sales Invoice Modal -->
+@if (showAddDialog) {
+  <div class="modal-overlay" (click)="closeAddDialog()">
+    <div class="modal-container max-w-4xl" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2 class="modal-title">Create Sales Invoice</h2>
+        <button class="modal-close" (click)="closeAddDialog()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label class="form-label">Customer</label>
+            <select class="form-select" [(ngModel)]="newInvoice.customerId">
+              <option value="" disabled selected>Select Customer</option>
+              @for (c of customers; track c.userId) {
+                <option [value]="c.userId">{{ c.firstName }} {{ c.lastName }}</option>
+              }
+            </select>
+          </div>
+          <div class="form-group flex-1">
+            <label class="form-label">Sales Representative (Staff)</label>
+            <select class="form-select" [(ngModel)]="newInvoice.staffId">
+              <option value="" disabled selected>Select Staff</option>
+              @for (s of staff; track s.userId) {
+                <option [value]="s.userId">{{ s.firstName }} {{ s.lastName }}</option>
+              }
+            </select>
+          </div>
+        </div>
+
+        <div class="mt-6">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="text-md font-semibold text-[#1a3a3a]">Items (Parts)</h3>
+            <button (click)="addItem()" class="text-sm text-[#1a6b5a] font-semibold hover:underline">+ Add Item</button>
+          </div>
+          
+          <div class="space-y-3">
+            @for (item of newInvoice.items; track $index) {
+              <div class="flex gap-3 items-end bg-gray-50 p-4 rounded-xl border border-gray-100">
+                <div class="flex-[3]">
+                  <label class="form-label !text-xs">Part</label>
+                  <select class="form-select" [(ngModel)]="item.partId" (change)="onPartChange(item)">
+                    <option value="" disabled selected>Choose Part</option>
+                    @for (p of parts; track p.id) {
+                      <option [value]="p.id">{{ p.name }} ({{ p.partNumber }}) - Stock: {{ p.stockQuantity }}</option>
+                    }
+                  </select>
+                </div>
+                <div class="flex-1">
+                  <label class="form-label !text-xs">Qty</label>
+                  <input type="number" class="form-input" [(ngModel)]="item.quantity" (change)="calculateTotal()" />
+                </div>
+                <div class="flex-1">
+                  <label class="form-label !text-xs">Unit Price</label>
+                  <input type="number" class="form-input" [(ngModel)]="item.unitPrice" (change)="calculateTotal()" />
+                </div>
+                <div class="flex-1 text-right px-2 py-2.5 text-sm font-semibold text-[#1a3a3a]">
+                  Rs. {{ item.quantity * item.unitPrice | number }}
+                </div>
+                <button (click)="removeItem($index)" class="w-10 h-10 flex items-center justify-center text-red-400 hover:text-red-600">✕</button>
+              </div>
+            }
+          </div>
+        </div>
+
+        <div class="mt-8 pt-6 border-t border-gray-100">
+           <div class="flex justify-end gap-10 items-center">
+              <div class="flex flex-col items-end">
+                <label class="form-label">Discount Amount (Rs.)</label>
+                <input type="number" class="form-input w-32" [(ngModel)]="newInvoice.discountAmount" (change)="calculateTotal()" />
+              </div>
+              <div class="text-right">
+                <div class="text-sm text-gray-500">Grand Total</div>
+                <div class="text-2xl font-bold text-[#1a3a3a]">Rs. {{ newInvoice.totalAmount | number }}</div>
+              </div>
+           </div>
+           
+           <div class="mt-6 flex justify-end">
+              <button (click)="saveInvoice()" class="px-10 py-3 bg-[#1a3a3a] text-white font-semibold rounded-lg hover:bg-[#1a4a4a] transition-all">
+                Finalize Sale & Reduce Stock
+              </button>
+           </div>
+        </div>
+      </div>
+    </div>
+  </div>
+}

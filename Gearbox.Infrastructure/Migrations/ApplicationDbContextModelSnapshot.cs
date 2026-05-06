@@ -34,7 +34,7 @@ namespace Gearbox.Infrastructure.Migrations
 
                     b.HasIndex("ServicesId");
 
-                    b.ToTable("AppointmentServiceDetails", (string)null);
+                    b.ToTable("AppointmentServiceDetails");
                 });
 
             modelBuilder.Entity("Gearbox.Domain.Entities.AppUser", b =>
@@ -329,13 +329,16 @@ namespace Gearbox.Infrastructure.Migrations
                     b.ToTable("PurchaseInvoiceItems");
                 });
 
-            modelBuilder.Entity("Gearbox.Domain.Entities.SalesInvoice", b =>
+            modelBuilder.Entity("Gearbox.Domain.Entities.SalesServicesInvoice", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<DateTime>("CreatedDate")
+                    b.Property<Guid?>("AppointmentId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid>("CustomerId")
@@ -343,19 +346,6 @@ namespace Gearbox.Infrastructure.Migrations
 
                     b.Property<decimal>("DiscountAmount")
                         .HasColumnType("decimal(18,2)");
-
-                    b.Property<DateTime>("DueDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("InvoiceNumber")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<bool>("IsLoyaltyDiscountApplied")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsPaid")
-                        .HasColumnType("boolean");
 
                     b.Property<Guid>("StaffId")
                         .HasColumnType("uuid");
@@ -365,27 +355,36 @@ namespace Gearbox.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("AppointmentId");
+
                     b.HasIndex("CustomerId");
 
                     b.HasIndex("StaffId");
 
-                    b.ToTable("SalesInvoices");
+                    b.ToTable("SalesServicesInvoices");
                 });
 
-            modelBuilder.Entity("Gearbox.Domain.Entities.SalesInvoiceItem", b =>
+            modelBuilder.Entity("Gearbox.Domain.Entities.SalesServicesInvoiceItem", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("PartId")
+                    b.Property<Guid?>("PartId")
                         .HasColumnType("uuid");
 
                     b.Property<int>("Quantity")
                         .HasColumnType("integer");
 
-                    b.Property<Guid>("SalesInvoiceId")
+                    b.Property<Guid>("SalesServicesInvoiceId")
                         .HasColumnType("uuid");
+
+                    b.Property<Guid?>("ServiceId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<decimal>("UnitPrice")
                         .HasColumnType("decimal(18,2)");
@@ -394,9 +393,33 @@ namespace Gearbox.Infrastructure.Migrations
 
                     b.HasIndex("PartId");
 
-                    b.HasIndex("SalesInvoiceId");
+                    b.HasIndex("SalesServicesInvoiceId");
 
-                    b.ToTable("SalesInvoiceItems");
+                    b.HasIndex("ServiceId");
+
+                    b.ToTable("SalesServicesInvoiceItems");
+                });
+
+            modelBuilder.Entity("Gearbox.Domain.Entities.Service", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<decimal>("Price")
+                        .HasColumnType("numeric");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Services");
                 });
 
             modelBuilder.Entity("Gearbox.Domain.Entities.ServiceBill", b =>
@@ -426,7 +449,7 @@ namespace Gearbox.Infrastructure.Migrations
 
                     b.HasIndex("ServiceHistoryId");
 
-                    b.ToTable("ServiceBills");
+                    b.ToTable("ServiceBill");
                 });
 
             modelBuilder.Entity("Gearbox.Domain.Entities.ServiceDetails", b =>
@@ -467,6 +490,12 @@ namespace Gearbox.Infrastructure.Migrations
                     b.Property<DateTime>("ServiceDate")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<Guid?>("ServiceDetailsId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ServiceId")
+                        .HasColumnType("uuid");
+
                     b.Property<decimal>("TotalCost")
                         .HasColumnType("decimal(18,2)");
 
@@ -476,6 +505,10 @@ namespace Gearbox.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("CustomerId");
+
+                    b.HasIndex("ServiceDetailsId");
+
+                    b.HasIndex("ServiceId");
 
                     b.HasIndex("VehicleId");
 
@@ -504,11 +537,16 @@ namespace Gearbox.Infrastructure.Migrations
                     b.Property<DateTime>("ReviewDate")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<Guid?>("ServiceId")
+                        .HasColumnType("uuid");
+
                     b.HasKey("Id");
 
                     b.HasIndex("AppointmentId");
 
                     b.HasIndex("CustomerId");
+
+                    b.HasIndex("ServiceId");
 
                     b.ToTable("ServiceReviews");
                 });
@@ -732,21 +770,6 @@ namespace Gearbox.Infrastructure.Migrations
                     b.ToTable("UserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("ServiceDetailsServiceHistory", b =>
-                {
-                    b.Property<Guid>("ServiceHistoriesId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("ServicesId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("ServiceHistoriesId", "ServicesId");
-
-                    b.HasIndex("ServicesId");
-
-                    b.ToTable("ServiceHistoryServiceDetails", (string)null);
-                });
-
             modelBuilder.Entity("AppointmentServiceDetails", b =>
                 {
                     b.HasOne("Gearbox.Domain.Entities.Appointment", null)
@@ -855,55 +878,63 @@ namespace Gearbox.Infrastructure.Migrations
                     b.Navigation("PurchaseInvoice");
                 });
 
-            modelBuilder.Entity("Gearbox.Domain.Entities.SalesInvoice", b =>
+            modelBuilder.Entity("Gearbox.Domain.Entities.SalesServicesInvoice", b =>
                 {
+                    b.HasOne("Gearbox.Domain.Entities.Appointment", "Appointment")
+                        .WithMany()
+                        .HasForeignKey("AppointmentId");
+
                     b.HasOne("Gearbox.Domain.Entities.Customer", "Customer")
-                        .WithMany("SalesInvoices")
+                        .WithMany("SalesServicesInvoices")
                         .HasForeignKey("CustomerId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("Gearbox.Domain.Entities.Staff", "Staff")
-                        .WithMany("SalesInvoices")
+                        .WithMany("SalesServicesInvoices")
                         .HasForeignKey("StaffId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.Navigation("Appointment");
 
                     b.Navigation("Customer");
 
                     b.Navigation("Staff");
                 });
 
-            modelBuilder.Entity("Gearbox.Domain.Entities.SalesInvoiceItem", b =>
+            modelBuilder.Entity("Gearbox.Domain.Entities.SalesServicesInvoiceItem", b =>
                 {
                     b.HasOne("Gearbox.Domain.Entities.Part", "Part")
                         .WithMany()
-                        .HasForeignKey("PartId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .HasForeignKey("PartId");
 
-                    b.HasOne("Gearbox.Domain.Entities.SalesInvoice", "SalesInvoice")
+                    b.HasOne("Gearbox.Domain.Entities.SalesServicesInvoice", "SalesServicesInvoice")
                         .WithMany("Items")
-                        .HasForeignKey("SalesInvoiceId")
+                        .HasForeignKey("SalesServicesInvoiceId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Gearbox.Domain.Entities.Service", "Service")
+                        .WithMany()
+                        .HasForeignKey("ServiceId");
+
                     b.Navigation("Part");
 
-                    b.Navigation("SalesInvoice");
+                    b.Navigation("SalesServicesInvoice");
+
+                    b.Navigation("Service");
                 });
 
             modelBuilder.Entity("Gearbox.Domain.Entities.ServiceBill", b =>
                 {
                     b.HasOne("Gearbox.Domain.Entities.Appointment", "Appointment")
                         .WithMany()
-                        .HasForeignKey("AppointmentId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .HasForeignKey("AppointmentId");
 
                     b.HasOne("Gearbox.Domain.Entities.ServiceHistory", "ServiceHistory")
                         .WithMany()
-                        .HasForeignKey("ServiceHistoryId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .HasForeignKey("ServiceHistoryId");
 
                     b.Navigation("Appointment");
 
@@ -918,6 +949,16 @@ namespace Gearbox.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("Gearbox.Domain.Entities.ServiceDetails", null)
+                        .WithMany("ServiceHistories")
+                        .HasForeignKey("ServiceDetailsId");
+
+                    b.HasOne("Gearbox.Domain.Entities.Service", "Service")
+                        .WithMany()
+                        .HasForeignKey("ServiceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("Gearbox.Domain.Entities.Vehicle", "Vehicle")
                         .WithMany("ServiceHistories")
                         .HasForeignKey("VehicleId")
@@ -925,6 +966,8 @@ namespace Gearbox.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Customer");
+
+                    b.Navigation("Service");
 
                     b.Navigation("Vehicle");
                 });
@@ -942,9 +985,15 @@ namespace Gearbox.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Gearbox.Domain.Entities.Service", "Service")
+                        .WithMany()
+                        .HasForeignKey("ServiceId");
+
                     b.Navigation("Appointment");
 
                     b.Navigation("Customer");
+
+                    b.Navigation("Service");
                 });
 
             modelBuilder.Entity("Gearbox.Domain.Entities.Staff", b =>
@@ -1020,21 +1069,6 @@ namespace Gearbox.Infrastructure.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("ServiceDetailsServiceHistory", b =>
-                {
-                    b.HasOne("Gearbox.Domain.Entities.ServiceHistory", null)
-                        .WithMany()
-                        .HasForeignKey("ServiceHistoriesId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Gearbox.Domain.Entities.ServiceDetails", null)
-                        .WithMany()
-                        .HasForeignKey("ServicesId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("Gearbox.Domain.Entities.AppUser", b =>
                 {
                     b.Navigation("Customer")
@@ -1052,7 +1086,7 @@ namespace Gearbox.Infrastructure.Migrations
 
                     b.Navigation("PartRequests");
 
-                    b.Navigation("SalesInvoices");
+                    b.Navigation("SalesServicesInvoices");
 
                     b.Navigation("ServiceHistories");
 
@@ -1066,14 +1100,19 @@ namespace Gearbox.Infrastructure.Migrations
                     b.Navigation("Items");
                 });
 
-            modelBuilder.Entity("Gearbox.Domain.Entities.SalesInvoice", b =>
+            modelBuilder.Entity("Gearbox.Domain.Entities.SalesServicesInvoice", b =>
                 {
                     b.Navigation("Items");
                 });
 
+            modelBuilder.Entity("Gearbox.Domain.Entities.ServiceDetails", b =>
+                {
+                    b.Navigation("ServiceHistories");
+                });
+
             modelBuilder.Entity("Gearbox.Domain.Entities.Staff", b =>
                 {
-                    b.Navigation("SalesInvoices");
+                    b.Navigation("SalesServicesInvoices");
                 });
 
             modelBuilder.Entity("Gearbox.Domain.Entities.Vehicle", b =>

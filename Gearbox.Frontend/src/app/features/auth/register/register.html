@@ -3,89 +3,109 @@
   <!-- Header -->
   <header class="p-6">
     <a routerLink="/register" class="flex items-center gap-2 w-fit">
-      <!-- Gearbox Logo SVG -->
       <img src="gearbox_logo.svg" alt="gearbox logo" />
       <span class="text-lg font-semibold text-[#1a3a3a]">Gearbox</span>
     </a>
   </header>
 
   <!-- Main Content -->
-  <main class="flex-1 flex items-center justify-center px-4">
+  <main class="flex-1 flex items-center justify-center px-4 py-12">
     <div class="bg-white rounded-2xl shadow-sm w-full max-w-md p-10">
-      <!-- Title -->
       <h1 class="text-2xl font-bold text-[#1a3a3a] text-center mb-8">Register</h1>
 
-      <!-- Form -->
-      <form class="space-y-6">
+      <!-- Added formGroup for Angular integration -->
+      <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="space-y-4">
+        
+        <!-- Username Field -->
+        <div>
+          <label for="username" class="block text-sm font-medium text-[#1a3a3a] mb-2">Username:</label>
+          <input
+            type="text"
+            id="username"
+            formControlName="userName"
+            class="w-full px-4 py-3 bg-[#F0F0F0] border-none rounded-lg text-sm text-[#1a3a3a] focus:outline-none focus:ring-2 focus:ring-[#1a3a3a]/20 transition-all"
+            placeholder="johndoe123"
+          />
+        </div>
+
+        <!-- Address Field -->
+        <div>
+          <label for="address" class="block text-sm font-medium text-[#1a3a3a] mb-2">Address:</label>
+          <input
+            type="text"
+            id="address"
+            formControlName="address"
+            class="w-full px-4 py-3 bg-[#F0F0F0] border-none rounded-lg text-sm text-[#1a3a3a] focus:outline-none focus:ring-2 focus:ring-[#1a3a3a]/20 transition-all"
+            placeholder="123 Gear St."
+          />
+        </div>
+
+        <!-- Name Row (Optional: You can wrap these in a flex div to save space) -->
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label for="firstName" class="block text-sm font-medium text-[#1a3a3a] mb-2">First Name:</label>
+            <input
+              type="text"
+              id="firstName"
+              formControlName="firstName"
+              class="w-full px-4 py-3 bg-[#F0F0F0] border-none rounded-lg text-sm text-[#1a3a3a] focus:outline-none focus:ring-2 focus:ring-[#1a3a3a]/20 transition-all"
+            />
+          </div>
+          <div>
+            <label for="lastName" class="block text-sm font-medium text-[#1a3a3a] mb-2">Last Name:</label>
+            <input
+              type="text"
+              id="lastName"
+              formControlName="lastName"
+              class="w-full px-4 py-3 bg-[#F0F0F0] border-none rounded-lg text-sm text-[#1a3a3a] focus:outline-none focus:ring-2 focus:ring-[#1a3a3a]/20 transition-all"
+            />
+          </div>
+        </div>
+
         <!-- Email Field -->
         <div>
-          <label for="register-email" class="block text-sm font-medium text-[#1a3a3a] mb-2"
-            >First Name:</label
-          >
+          <label for="email" class="block text-sm font-medium text-[#1a3a3a] mb-2">Email:</label>
           <input
             type="email"
-            id="register-email"
-            name="email"
-            class="w-full px-4 py-3 bg-[#F0F0F0] border-none rounded-lg text-sm text-[#1a3a3a] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#1a3a3a]/20 transition-all duration-200"
-            placeholder=""
+            id="email"
+            formControlName="email"
+            class="w-full px-4 py-3 bg-[#F0F0F0] border-none rounded-lg text-sm text-[#1a3a3a] focus:outline-none focus:ring-2 focus:ring-[#1a3a3a]/20 transition-all"
+            placeholder="name@example.com"
           />
         </div>
 
-         <div>
-          <label for="register-email" class="block text-sm font-medium text-[#1a3a3a] mb-2"
-            >Last Name:</label
-          >
-          <input
-            type="email"
-            id="register-email"
-            name="email"
-            class="w-full px-4 py-3 bg-[#F0F0F0] border-none rounded-lg text-sm text-[#1a3a3a] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#1a3a3a]/20 transition-all duration-200"
-            placeholder=""
-          />
-        </div>
-
+        <!-- Phone Number Field (Fixed the duplicate First Name) -->
         <div>
-          <label for="register-email" class="block text-sm font-medium text-[#1a3a3a] mb-2"
-            >Email:</label
-          >
+          <label for="phone" class="block text-sm font-medium text-[#1a3a3a] mb-2">Phone Number:</label>
           <input
-            type="email"
-            id="register-email"
-            name="email"
-            class="w-full px-4 py-3 bg-[#F0F0F0] border-none rounded-lg text-sm text-[#1a3a3a] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#1a3a3a]/20 transition-all duration-200"
-            placeholder=""
+            type="tel"
+            id="phone"
+            formControlName="phoneNumber"
+            class="w-full px-4 py-3 bg-[#F0F0F0] border-none rounded-lg text-sm text-[#1a3a3a] focus:outline-none focus:ring-2 focus:ring-[#1a3a3a]/20 transition-all"
+            placeholder="+1 (555) 000-0000"
           />
         </div>
-
-
 
         <!-- Password Field -->
         <div>
-          <label for="register-password" class="block text-sm font-medium text-[#1a3a3a] mb-2"
-            >Password</label
-          >
+          <label for="password" class="block text-sm font-medium text-[#1a3a3a] mb-2">Password</label>
           <input
             type="password"
-            id="register-password"
-            name="password"
-            class="w-full px-4 py-3 bg-[#F0F0F0] border-none rounded-lg text-sm text-[#1a3a3a] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#1a3a3a]/20 transition-all duration-200"
-            placeholder=""
+            id="password"
+            formControlName="password"
+            class="w-full px-4 py-3 bg-[#F0F0F0] border-none rounded-lg text-sm text-[#1a3a3a] focus:outline-none focus:ring-2 focus:ring-[#1a3a3a]/20 transition-all"
           />
         </div>
 
-        <!-- Forgot Password -->
+        <!-- Forgot Password (Usually not on Register, but keeping it per your design) -->
         <div class="text-center">
-          <a
-            href="#"
-            class="text-sm text-[#5a6a6a] hover:text-[#1a3a3a] transition-colors duration-200"
-            >Forgot password?</a
-          >
+          <a href="#" class="text-sm text-[#5a6a6a] hover:text-[#1a3a3a] transition-colors">Forgot password?</a>
         </div>
 
         <!-- Submit Button -->
         <button
           type="submit"
-          class="w-full py-3 bg-[#1a3a3a] text-white font-medium rounded-lg hover:bg-[#2a4a4a] focus:outline-none focus:ring-2 focus:ring-[#1a3a3a]/50 transition-all duration-200 cursor-pointer"
+          class="w-full py-3 bg-[#1a3a3a] text-white font-medium rounded-lg hover:bg-[#2a4a4a] focus:outline-none focus:ring-2 focus:ring-[#1a3a3a]/50 transition-all cursor-pointer"
         >
           Register
         </button>

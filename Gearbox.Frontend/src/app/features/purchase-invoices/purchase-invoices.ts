@@ -1,64 +1,168 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
+import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Navmenu } from '../../shared/components/navmenu/navmenu';
+import { PurchaseInvoiceService } from '../../core/services/purchase-invoice/purchase-invoice.service';
+import { VendorService } from '../../core/services/vendor/vendor';
+import { PartService } from '../../core/services/parts/part.service';
+import { PurchaseInvoice, NewPurchaseInvoice, NewPurchaseInvoiceItem } from '../../core/models/purchase-invoice.model';
+import { Vendor } from '../../core/models/vendor.model';
+import { Part } from '../../core/models/part.model';
+import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 
 @Component({
   selector: 'app-purchase-invoices',
-  imports: [Navmenu, FormsModule],
+  standalone: true,
+  imports: [Navmenu, FormsModule, CommonModule, DatePipe],
+  providers: [DatePipe],
   templateUrl: './purchase-invoices.html',
   styleUrl: './purchase-invoices.css',
 })
-export class PurchaseInvoices {
-  invoices = [
-    {
-      id: 1,
-      vendorId: 'VND-001',
-      invoiceNumber: 'INV-2026-0001',
-      totalNumber: 15200.0,
-      createdDate: '2026-04-25',
-    },
-    {
-      id: 2,
-      vendorId: 'VND-003',
-      invoiceNumber: 'INV-2026-0002',
-      totalNumber: 8450.5,
-      createdDate: '2026-04-24',
-    },
-    {
-      id: 3,
-      vendorId: 'VND-007',
-      invoiceNumber: 'INV-2026-0003',
-      totalNumber: 32000.0,
-      createdDate: '2026-04-22',
-    },
-    {
-      id: 4,
-      vendorId: 'VND-002',
-      invoiceNumber: 'INV-2026-0004',
-      totalNumber: 5675.25,
-      createdDate: '2026-04-20',
-    },
-    {
-      id: 5,
-      vendorId: 'VND-010',
-      invoiceNumber: 'INV-2026-0005',
-      totalNumber: 19800.0,
-      createdDate: '2026-04-18',
-    },
-  ];
+export class PurchaseInvoices implements OnInit {
+  private invoiceService = inject(PurchaseInvoiceService);
+  private vendorService = inject(VendorService);
+  private partService = inject(PartService);
 
+  invoices: PurchaseInvoice[] = [];
+  filteredInvoices: PurchaseInvoice[] = [];
+  vendors: Vendor[] = [];
+  parts: Part[] = [];
+  
   searchQuery: string = '';
+  private searchSubject = new Subject<string>();
+  
+  showAddDialog: boolean = false;
+  isLoading: boolean = false;
 
-  get filteredInvoices() {
-    if (!this.searchQuery.trim()) {
-      return this.invoices;
-    }
-    const query = this.searchQuery.toLowerCase();
-    return this.invoices.filter(
-      (inv) =>
-        inv.vendorId.toLowerCase().includes(query) ||
-        inv.invoiceNumber.toLowerCase().includes(query) ||
-        inv.id.toString().includes(query)
+  newInvoice: any = {
+    vendorId: '',
+    invoiceNumber: '',
+    totalAmount: 0,
+    items: []
+  };
+
+  ngOnInit() {
+    this.loadInvoices();
+    this.loadVendors();
+    this.loadParts();
+
+    this.searchSubject.pipe(
+      debounceTime(300),
+      distinctUntilChanged()
+    ).subscribe(() => this.applyFilter());
+  }
+
+  loadInvoices() {
+    this.isLoading = true;
+    this.invoiceService.getAll().subscribe({
+      next: (data) => {
+        this.invoices = data;
+        this.applyFilter();
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error('Error loading invoices', err);
+        this.isLoading = false;
+      }
+    });
+  }
+
+  loadVendors() {
+    this.vendorService.getAll().subscribe(data => this.vendors = data);
+  }
+
+  loadParts() {
+    this.partService.getAll().subscribe(data => this.parts = data);
+  }
+
+  onSearchChange(query: string) {
+    this.searchSubject.next(query);
+  }
+
+  applyFilter() {
+    const q = this.searchQuery.toLowerCase().trim();
+    this.filteredInvoices = this.invoices.filter(inv => 
+      inv.invoiceNumber.toLowerCase().includes(q) ||
+      this.getVendorName(inv.vendorId).toLowerCase().includes(q)
     );
+  }
+
+  getVendorName(id: string): string {
+    return this.vendors.find(v => v.id === id)?.name || 'Unknown Vendor';
+  }
+
+  getPartName(id: string): string {
+    return this.parts.find(p => p.id === id)?.name || 'Unknown Part';
+  }
+
+  openAddDialog() {
+    this.showAddDialog = true;
+    this.resetForm();
+    this.addItem(); // Start with one item
+  }
+
+  closeAddDialog() {
+    this.showAddDialog = false;
+  }
+
+  resetForm() {
+    this.newInvoice = {
+      vendorId: '',
+      invoiceNumber: '',
+      totalAmount: 0,
+      items: []
+    };
+  }
+
+  addItem() {
+    this.newInvoice.items.push({
+      partId: '',
+      quantity: 1,
+      costPrice: 0
+    });
+  }
+
+  removeItem(index: number) {
+    this.newInvoice.items.splice(index, 1);
+    this.calculateTotal();
+  }
+
+  calculateTotal() {
+    this.newInvoice.totalAmount = this.newInvoice.items.reduce((acc: number, item: any) => acc + (item.quantity * item.costPrice), 0);
+  }
+
+  saveInvoice() {
+    if (!this.newInvoice.vendorId || !this.newInvoice.invoiceNumber || this.newInvoice.items.length === 0) return;
+
+    const dto: NewPurchaseInvoice = {
+      vendorId: this.newInvoice.vendorId,
+      invoiceNumber: this.newInvoice.invoiceNumber,
+      totalAmount: this.newInvoice.totalAmount,
+      items: this.newInvoice.items.map((i: any) => ({
+        partId: i.partId,
+        quantity: i.quantity,
+        costPrice: i.costPrice
+      }))
+    };
+
+    this.invoiceService.add(dto).subscribe({
+      next: () => {
+        this.loadInvoices();
+        this.closeAddDialog();
+      },
+      error: (err) => console.error('Error saving invoice', err)
+    });
+  }
+
+  deleteInvoice(id: string) {
+    if (confirm('Are you sure you want to delete this invoice?')) {
+      this.invoiceService.delete(id).subscribe({
+        next: () => {
+          this.invoices = this.invoices.filter(i => i.id !== id);
+          this.applyFilter();
+        },
+        error: (err) => console.error('Error deleting invoice', err)
+      });
+    }
   }
 }

@@ -25,6 +25,22 @@ public class AuthController(
         if (!result.IsSuccess) return BadRequest(result.Errors);
         return Ok(new { message = "User registered successfully" });
     }
+    
+    [HttpGet("confirm-email")]
+    public async Task<IActionResult> ConfirmEmail(Guid userId, string token)
+    {
+        var result = await _authService.ConfirmEmailAsync(userId, token);
+
+        if (!result.IsSuccess)
+        {
+            foreach (var e in result.Errors)
+                Console.WriteLine(e);
+
+            return BadRequest(result.Errors);
+        }
+
+        return Ok();
+    }
 
     [HttpPost("login")]
     [EnableRateLimiting("fixed")]

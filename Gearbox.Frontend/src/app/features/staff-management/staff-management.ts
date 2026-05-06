@@ -1,72 +1,95 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Navmenu } from '../../shared/components/navmenu/navmenu';
+import { StaffService } from '../../core/services/staff/staff.service';
+import { Staff, NewStaff } from '../../core/models/staff.model';
+import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 
 @Component({
   selector: 'app-staff-management',
-  imports: [Navmenu, FormsModule],
+  standalone: true,
+  imports: [Navmenu, FormsModule, CommonModule],
   templateUrl: './staff-management.html',
   styleUrl: './staff-management.css',
 })
-export class StaffManagement {
-  staff = [
-    {
-      id: 'STF-001',
-      name: 'Aarav Sharma',
-      email: 'aarav.sharma@gearbox.com',
-      department: 'Sales',
-      status: 'Active',
-    },
-    {
-      id: 'STF-002',
-      name: 'Priya Thapa',
-      email: 'priya.thapa@gearbox.com',
-      department: 'Mechanics',
-      status: 'Active',
-    },
-    {
-      id: 'STF-003',
-      name: 'Rohan Karki',
-      email: 'rohan.karki@gearbox.com',
-      department: 'Inventory',
-      status: 'Inactive',
-    },
-    {
-      id: 'STF-004',
-      name: 'Sita Gurung',
-      email: 'sita.gurung@gearbox.com',
-      department: 'Admin',
-      status: 'Active',
-    },
-    {
-      id: 'STF-005',
-      name: 'Bikash Rai',
-      email: 'bikash.rai@gearbox.com',
-      department: 'Sales',
-      status: 'Active',
-    },
-  ];
+export class StaffManagement implements OnInit {
+  private staffService = inject(StaffService);
 
+  staff: Staff[] = [];
+  filteredStaff: Staff[] = [];
+  
   searchQuery: string = '';
   departmentFilter: string = '';
-  statusFilter: string = '';
+  private searchSubject = new Subject<string>();
+  
   showRegisterDialog: boolean = false;
+  showEditDialog: boolean = false;
+  isLoading: boolean = false;
 
-  get filteredStaff() {
-    return this.staff.filter((s) => {
+  newStaff: NewStaff = {
+    userName: '',
+    firstName: '',
+    lastName: '',
+    phoneNumber: '',
+    address: '',
+    email: '',
+    password: '',
+    department: '',
+    jobTitle: ''
+  };
+
+  selectedStaff: Staff | null = null;
+
+  ngOnInit() {
+    this.loadStaff();
+
+    // Setup search debounce
+    this.searchSubject.pipe(
+      debounceTime(300),
+      distinctUntilChanged()
+    ).subscribe(query => {
+      this.applyFilter();
+    });
+  }
+
+  loadStaff() {
+    this.isLoading = true;
+    this.staffService.getAll().subscribe({
+      next: (data) => {
+        this.staff = data;
+        this.applyFilter();
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error('Error loading staff', err);
+        this.isLoading = false;
+      }
+    });
+  }
+
+  onSearchChange(query: string) {
+    this.searchSubject.next(query);
+  }
+
+  onFilterChange() {
+    this.applyFilter();
+  }
+
+  applyFilter() {
+    const query = this.searchQuery.toLowerCase().trim();
+    this.filteredStaff = this.staff.filter((s) => {
       const matchesSearch =
-        !this.searchQuery.trim() ||
-        s.name.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-        s.email.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-        s.id.toLowerCase().includes(this.searchQuery.toLowerCase());
+        !query ||
+        s.firstName.toLowerCase().includes(query) ||
+        s.lastName.toLowerCase().includes(query) ||
+        s.userId.toLowerCase().includes(query) ||
+        s.department.toLowerCase().includes(query);
 
       const matchesDept =
         !this.departmentFilter || s.department === this.departmentFilter;
 
-      const matchesStatus =
-        !this.statusFilter || s.status === this.statusFilter;
-
-      return matchesSearch && matchesDept && matchesStatus;
+      return matchesSearch && matchesDept;
     });
   }
 
@@ -76,5 +99,76 @@ export class StaffManagement {
 
   closeRegisterDialog() {
     this.showRegisterDialog = false;
+    this.resetForm();
+  }
+
+  openEditDialog(staff: Staff) {
+    this.selectedStaff = { ...staff };
+    this.showEditDialog = true;
+  }
+
+  closeEditDialog() {
+    this.showEditDialog = false;
+    this.selectedStaff = null;
+  }
+
+  resetForm() {
+    this.newStaff = {
+      userName: '',
+      firstName: '',
+      lastName: '',
+      phoneNumber: '',
+      address: '',
+      email: '',
+      password: '',
+      department: '',
+      jobTitle: ''
+    };
+  }
+
+  registerStaff() {
+    if (!this.newStaff.userName || !this.newStaff.email || !this.newStaff.password) return;
+
+    this.staffService.add(this.newStaff).subscribe({
+      next: () => {
+        this.loadStaff();
+        this.closeRegisterDialog();
+      },
+      error: (err) => {
+        console.error('Error registering staff', err);
+      }
+    });
+  }
+
+  updateStaff() {
+    if (!this.selectedStaff) return;
+
+    this.staffService.update(this.selectedStaff.userId, this.selectedStaff).subscribe({
+      next: () => {
+        const index = this.staff.findIndex(s => s.userId === this.selectedStaff?.userId);
+        if (index !== -1 && this.selectedStaff) {
+          this.staff[index] = { ...this.selectedStaff };
+          this.applyFilter();
+        }
+        this.closeEditDialog();
+      },
+      error: (err) => {
+        console.error('Error updating staff', err);
+      }
+    });
+  }
+
+  deleteStaff(id: string) {
+    if (confirm('Are you sure you want to delete this staff member?')) {
+      this.staffService.delete(id).subscribe({
+        next: () => {
+          this.staff = this.staff.filter(s => s.userId !== id);
+          this.applyFilter();
+        },
+        error: (err) => {
+          console.error('Error deleting staff', err);
+        }
+      });
+    }
   }
 }

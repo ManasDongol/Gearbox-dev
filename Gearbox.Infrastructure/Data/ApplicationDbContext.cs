@@ -19,9 +19,9 @@ namespace Gearbox.Infrastructure.Data
         public DbSet<PurchaseInvoice> PurchaseInvoices { get; set; }
         public DbSet<PurchaseInvoiceItem> PurchaseInvoiceItems { get; set; }
         public DbSet<Appointment> Appointments { get; set; }
-        public DbSet<ServiceDetails> ServiceDetails { get; set; } // Plural Dbset name might just be ServiceDetails
+        public DbSet<Service> Services { get; set; }
         public DbSet<ServiceHistory> ServiceHistories { get; set; }
-        public DbSet<ServiceBill> ServiceBills { get; set; }
+     
         public DbSet<ServiceReview> ServiceReviews { get; set; }
         public DbSet<PartRequest> PartRequests { get; set; }
         public DbSet<Notification> Notifications { get; set; }
@@ -127,11 +127,6 @@ namespace Gearbox.Infrastructure.Data
                 .HasForeignKey(a => a.VehicleId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Appointment - ServiceDetails (Many:Many)
-            modelBuilder.Entity<Appointment>()
-                .HasMany(a => a.Services)
-                .WithMany(s => s.Appointments)
-                .UsingEntity(j => j.ToTable("AppointmentServiceDetails"));
 
             // Customer - ServiceHistory (1:Many)
             modelBuilder.Entity<Customer>()
@@ -147,24 +142,9 @@ namespace Gearbox.Infrastructure.Data
                 .HasForeignKey(sh => sh.VehicleId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // ServiceHistory - ServiceDetails (Many:Many)
-            modelBuilder.Entity<ServiceHistory>()
-                .HasMany(sh => sh.Services)
-                .WithMany(s => s.ServiceHistories)
-                .UsingEntity(j => j.ToTable("ServiceHistoryServiceDetails"));
+            
 
-            // Appointment/ServiceHistory - ServiceBill (Optional FKs)
-            modelBuilder.Entity<ServiceBill>()
-                .HasOne(sb => sb.Appointment)
-                .WithMany()
-                .HasForeignKey(sb => sb.AppointmentId)
-                .OnDelete(DeleteBehavior.SetNull);
-
-            modelBuilder.Entity<ServiceBill>()
-                .HasOne(sb => sb.ServiceHistory)
-                .WithMany()
-                .HasForeignKey(sb => sb.ServiceHistoryId)
-                .OnDelete(DeleteBehavior.SetNull);
+          
 
             // Customer - ServiceReview (1:Many)
             modelBuilder.Entity<Customer>()
@@ -204,6 +184,10 @@ namespace Gearbox.Infrastructure.Data
                 .WithOne(ii => ii.SalesServicesInvoice)
                 .HasForeignKey(ii => ii.SalesServicesInvoiceId)
                 .OnDelete(DeleteBehavior.Cascade);
+            
+            
+     
+            //service - service reviews
                 
             // Precision for decimals
             modelBuilder.Entity<Part>().Property(p => p.SellingPrice).HasColumnType("decimal(18,2)");

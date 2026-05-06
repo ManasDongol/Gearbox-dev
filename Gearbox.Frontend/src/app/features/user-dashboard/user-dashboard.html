@@ -1,0 +1,117 @@
+<div class="page-layout">
+  <app-navmenu />
+
+  <main class="main-content">
+    <div class="flex items-center justify-between mb-8">
+      <div>
+        <h1 class="text-3xl font-bold text-[#1a3a3a]">Customer Dashboard</h1>
+        <p class="text-gray-500 mt-1">
+          Welcome back{{ customer ? ', ' + customer.firstName : '' }}. Your garage summary is ready.
+        </p>
+      </div>
+      <div class="w-10 h-10 rounded-full bg-[#1a3a3a]"></div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-6 mb-8">
+      <button class="dashboard-stat text-left" (click)="openInvoices()">
+        <span class="stat-label">Total Spent</span>
+        <span class="stat-value">Rs. {{ totalSpent | number }}</span>
+        <span class="stat-action">View my invoices</span>
+      </button>
+
+      <div class="dashboard-stat">
+        <span class="stat-label">Pending Credits</span>
+        <span class="stat-value text-red-700">Rs. {{ pendingCredits | number }}</span>
+        <button class="primary-action mt-4" (click)="payPendingCredits()">Pay Now</button>
+      </div>
+
+      <button class="dashboard-stat text-left" (click)="openVehicles()">
+        <span class="stat-label">Vehicles</span>
+        <span class="stat-value">{{ vehicles.length }}</span>
+        <span class="stat-action">View vehicles</span>
+      </button>
+
+      <button class="dashboard-stat text-left" (click)="openAppointments()">
+        <span class="stat-label">Appointments</span>
+        <span class="stat-value">{{ appointments.length }}</span>
+        <span class="stat-action">View appointments</span>
+      </button>
+
+      <button class="dashboard-stat text-left" (click)="openRequests()">
+        <span class="stat-label">Part Requests</span>
+        <span class="stat-value">{{ requests.length }}</span>
+        <span class="stat-action">Open requests</span>
+      </button>
+    </div>
+
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
+      <section class="xl:col-span-2 bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h2 class="text-lg font-bold text-[#1a3a3a]">Upcoming Appointments</h2>
+            <p class="text-sm text-gray-500 mt-1">Scheduled service visits for your vehicles.</p>
+          </div>
+          <button class="secondary-action" (click)="openAppointments()">View Appointments</button>
+        </div>
+
+        <div class="space-y-3">
+          @for (appointment of upcomingAppointments; track appointment.id) {
+            <div class="appointment-row">
+              <div>
+                <p class="font-semibold text-[#1a3a3a]">{{ getVehicleName(appointment.vehicleId) }}</p>
+                <p class="text-sm text-gray-500">{{ appointment.notes || 'Service appointment' }}</p>
+              </div>
+              <div class="text-right">
+                <p class="text-sm font-semibold text-[#1a3a3a]">
+                  {{ appointment.appointmentDate | date: 'mediumDate' }}
+                </p>
+                <p class="text-xs text-gray-500">{{ appointment.appointmentDate | date: 'shortTime' }}</p>
+              </div>
+              <span class="status-pill" [class]="getStatusClass(appointment.status)">
+                {{ appointment.status }}
+              </span>
+            </div>
+          } @empty {
+            <div class="empty-state">
+              @if (isLoading) {
+                Loading appointments...
+              } @else {
+                No upcoming appointments yet.
+              }
+            </div>
+          }
+        </div>
+      </section>
+
+      <aside class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h2 class="text-lg font-bold text-[#1a3a3a]">My Vehicles</h2>
+            <p class="text-sm text-gray-500 mt-1">Vehicles linked to your account.</p>
+          </div>
+          <button class="secondary-action" (click)="openVehicles()">View</button>
+        </div>
+
+        <div class="space-y-3">
+          @for (vehicle of recentVehicles; track vehicle.id) {
+            <div class="vehicle-row">
+              <div class="vehicle-icon">{{ vehicle.make.charAt(0) }}</div>
+              <div>
+                <p class="font-semibold text-[#1a3a3a]">{{ vehicle.make }} {{ vehicle.model }}</p>
+                <p class="text-sm text-gray-500">{{ vehicle.year }} - {{ getVehiclePlate(vehicle) }}</p>
+              </div>
+            </div>
+          } @empty {
+            <div class="empty-state">
+              @if (isLoading) {
+                Loading vehicles...
+              } @else {
+                No vehicles linked yet.
+              }
+            </div>
+          }
+        </div>
+      </aside>
+    </div>
+  </main>
+</div>

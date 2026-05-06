@@ -13,6 +13,7 @@ import { AppointmentManagement } from './features/appointment-management/appoint
 import { VendorManagement } from './features/vendor-management/vendor-management';
 
 import { roleGuard } from './core/guards/RoleGuard/role-guard';
+import { ConfirmEmailComponent } from './features/confirm-email/confirm-email';
 
 export const routes: Routes = [
 
@@ -42,6 +43,12 @@ export const routes: Routes = [
     path: 'purchase-invoices',
     canActivate: [roleGuard('Admin')],
     loadComponent: () => import('./features/purchase-invoices/purchase-invoices').then(m => m.PurchaseInvoices)
+  },
+
+  {
+    path: 'sales-invoices',
+    canActivate: [roleGuard('Admin', 'Staff')],
+    loadComponent: () => import('./features/sales-invoices/sales-invoices').then(m => m.SalesInvoices)
   },
 
   {
@@ -75,6 +82,39 @@ export const routes: Routes = [
     loadComponent: () => import('./features/vendor-management/vendor-management').then(m => m.VendorManagement)
   },
 
+
+   {
+    path: 'user-dashboard',
+    canActivate: [roleGuard('Customer')],
+    loadComponent: () => import('./features/user-dashboard/user-dashboard').then(m => m.UserDashboard)
+  },
+  {
+    path: 'my-vehicles',
+    canActivate: [roleGuard('Customer')],
+    loadComponent: () => import('./features/vehicle/vehicle').then(m => m.Vehicle)
+  },
+  {
+    path: 'vehicles',
+    canActivate: [roleGuard('Customer')],
+    loadComponent: () => import('./features/vehicle/vehicle').then(m => m.Vehicle)
+  },
+  {
+    path: 'my-appointments',
+    canActivate: [roleGuard('Customer')],
+    loadComponent: () => import('./features/my-appointments/my-appointments').then(m => m.MyAppointments)
+  },
+  {
+    path: 'my-invoices',
+    canActivate: [roleGuard('Customer')],
+    loadComponent: () => import('./features/my-invoices/my-invoices').then(m => m.MyInvoices)
+  },
+  {
+    path: 'requests',
+    canActivate: [roleGuard('Customer')],
+    loadComponent: () => import('./features/part-requests/part-requests').then(m => m.PartRequests)
+  },
+
+  { path: 'confirm-email', component: ConfirmEmailComponent },
   // Default
   {
     path: '',

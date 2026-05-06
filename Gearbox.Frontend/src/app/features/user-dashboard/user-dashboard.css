@@ -1,0 +1,53 @@
+@reference "tailwindcss";
+
+.page-layout {
+  @apply min-h-screen bg-[#F8FAFB] flex;
+}
+
+.main-content {
+  @apply flex-1 ml-56 p-8;
+}
+
+.dashboard-stat {
+  @apply bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-200;
+}
+
+.stat-label {
+  @apply block text-sm font-medium text-gray-500;
+}
+
+.stat-value {
+  @apply block text-3xl font-bold text-[#1a3a3a] mt-3;
+}
+
+.stat-action {
+  @apply block text-sm font-semibold text-[#1a6b5a] mt-4;
+}
+
+.primary-action {
+  @apply w-full px-4 py-2.5 bg-[#1a3a3a] text-white text-sm font-semibold rounded-lg hover:bg-[#1a4a4a] transition-colors duration-200;
+}
+
+.secondary-action {
+  @apply px-4 py-2 bg-white border border-gray-200 text-[#1a3a3a] text-sm font-semibold rounded-lg hover:bg-gray-50 transition-colors duration-200;
+}
+
+.appointment-row {
+  @apply grid grid-cols-[1fr_auto_auto] gap-4 items-center p-4 rounded-xl border border-gray-100 bg-gray-50/50;
+}
+
+.vehicle-row {
+  @apply flex items-center gap-3 p-4 rounded-xl border border-gray-100 bg-gray-50/50;
+}
+
+.vehicle-icon {
+  @apply w-10 h-10 rounded-lg bg-[#e8f0f0] text-[#1a3a3a] flex items-center justify-center font-bold;
+}
+
+.status-pill {
+  @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold;
+}
+
+.empty-state {
+  @apply px-4 py-12 text-center text-sm text-gray-400 bg-gray-50/60 rounded-xl border border-dashed border-gray-200;
+}

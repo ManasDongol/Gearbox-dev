@@ -16,13 +16,21 @@
 
     <!-- Search & Action Bar -->
     <div class="flex items-center justify-between mb-4">
-      <input
-        type="text"
-        placeholder="Search Staff Members"
-        [(ngModel)]="searchQuery"
-        class="w-full max-w-md px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm text-[#1a3a3a] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#1a3a3a]/15 focus:border-transparent transition-all duration-200"
-        id="search-staff"
-      />
+      <div class="relative w-full max-w-md">
+        <input
+          type="text"
+          placeholder="Search Staff Members"
+          [(ngModel)]="searchQuery"
+          (ngModelChange)="onSearchChange($event)"
+          class="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm text-[#1a3a3a] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#1a3a3a]/15 focus:border-transparent transition-all duration-200"
+          id="search-staff"
+        />
+        @if (isLoading) {
+          <div class="absolute right-3 top-1/2 -translate-y-1/2">
+            <div class="w-4 h-4 border-2 border-[#1a3a3a]/20 border-t-[#1a3a3a] rounded-full animate-spin"></div>
+          </div>
+        }
+      </div>
       <button
         (click)="openRegisterDialog()"
         class="flex items-center gap-2 px-5 py-2.5 bg-[#1a3a3a] text-white text-sm font-semibold rounded-lg hover:bg-[#1a4a4a] transition-all duration-200 cursor-pointer whitespace-nowrap"
@@ -36,6 +44,7 @@
     <div class="flex gap-3 mb-6">
       <select
         [(ngModel)]="departmentFilter"
+        (change)="onFilterChange()"
         class="filter-select"
         id="filter-department"
       >
@@ -45,15 +54,6 @@
         <option value="Mechanics">Mechanics</option>
         <option value="Admin">Admin</option>
       </select>
-      <select
-        [(ngModel)]="statusFilter"
-        class="filter-select"
-        id="filter-status"
-      >
-        <option value="">Status</option>
-        <option value="Active">Active</option>
-        <option value="Inactive">Inactive</option>
-      </select>
     </div>
 
     <!-- Staff Table -->
@@ -62,19 +62,16 @@
         <thead>
           <tr class="border-b border-gray-100">
             <th class="text-left px-6 py-4 text-sm font-semibold text-[#1a3a3a] bg-gray-50/50">
-              Staff ID
+              User ID
             </th>
             <th class="text-left px-6 py-4 text-sm font-semibold text-[#1a3a3a] bg-gray-50/50">
               Name
             </th>
             <th class="text-left px-6 py-4 text-sm font-semibold text-[#1a3a3a] bg-gray-50/50">
-              Email
-            </th>
-            <th class="text-left px-6 py-4 text-sm font-semibold text-[#1a3a3a] bg-gray-50/50">
               Department
             </th>
             <th class="text-left px-6 py-4 text-sm font-semibold text-[#1a3a3a] bg-gray-50/50">
-              Status
+              Job Title
             </th>
             <th class="text-left px-6 py-4 text-sm font-semibold text-[#1a3a3a] bg-gray-50/50">
               Actions
@@ -82,34 +79,35 @@
           </tr>
         </thead>
         <tbody>
-          @for (staff of filteredStaff; track staff.id) {
+          @for (s of filteredStaff; track s.userId) {
             <tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors duration-150">
-              <td class="px-6 py-4 text-sm text-[#3a3a3a]">{{ staff.id }}</td>
-              <td class="px-6 py-4 text-sm text-[#3a3a3a]">{{ staff.name }}</td>
-              <td class="px-6 py-4 text-sm text-[#3a3a3a]">{{ staff.email }}</td>
-              <td class="px-6 py-4 text-sm text-[#3a3a3a]">{{ staff.department }}</td>
-              <td class="px-6 py-4">
-                <span
-                  class="inline-block px-3 py-1 text-xs font-medium rounded-full"
-                  [class]="staff.status === 'Active'
-                    ? 'bg-green-50 text-green-700'
-                    : 'bg-red-50 text-red-700'"
-                >
-                  {{ staff.status }}
-                </span>
-              </td>
-              <td class="px-6 py-4">
+              <td class="px-6 py-4 text-sm text-[#3a3a3a]">{{ s.userId }}</td>
+              <td class="px-6 py-4 text-sm font-medium text-[#1a3a3a]">{{ s.firstName }} {{ s.lastName }}</td>
+              <td class="px-6 py-4 text-sm text-[#3a3a3a]">{{ s.department }}</td>
+              <td class="px-6 py-4 text-sm text-[#3a3a3a]">{{ s.jobTitle }}</td>
+              <td class="px-6 py-4 flex gap-3">
                 <button
+                  (click)="openEditDialog(s)"
                   class="text-sm text-[#1a6b5a] hover:text-[#1a3a3a] font-medium transition-colors duration-150 cursor-pointer"
                 >
-                  View
+                  Edit
+                </button>
+                <button
+                  (click)="deleteStaff(s.userId)"
+                  class="text-sm text-red-600 hover:text-red-800 font-medium transition-colors duration-150 cursor-pointer"
+                >
+                  Delete
                 </button>
               </td>
             </tr>
           } @empty {
             <tr>
-              <td colspan="6" class="px-6 py-16 text-center text-sm text-gray-400">
-                No staff members found
+              <td colspan="5" class="px-6 py-16 text-center text-sm text-gray-400">
+                @if (isLoading) {
+                  Loading staff members...
+                } @else {
+                  No staff members found
+                }
               </td>
             </tr>
           }
@@ -122,7 +120,7 @@
 <!-- Register Staff Dialog -->
 @if (showRegisterDialog) {
   <div class="modal-overlay" (click)="closeRegisterDialog()" id="register-staff-overlay">
-    <div class="modal-container" (click)="$event.stopPropagation()">
+    <div class="modal-container max-w-2xl" (click)="$event.stopPropagation()">
       <div class="modal-header">
         <h2 class="modal-title">Register Staff Member</h2>
         <button class="modal-close" (click)="closeRegisterDialog()" id="btn-close-dialog">
@@ -130,35 +128,94 @@
         </button>
       </div>
       <div class="modal-body">
-        <!-- First Name & Last Name -->
         <div class="form-row">
           <div class="flex-1">
             <label class="form-label">First Name</label>
-            <input type="text" class="form-input" placeholder="" id="input-first-name" />
+            <input type="text" class="form-input" [(ngModel)]="newStaff.firstName" id="input-first-name" />
           </div>
           <div class="flex-1">
             <label class="form-label">Last Name</label>
-            <input type="text" class="form-input" placeholder="" id="input-last-name" />
+            <input type="text" class="form-input" [(ngModel)]="newStaff.lastName" id="input-last-name" />
           </div>
         </div>
 
-        <!-- Email -->
-        <div class="form-group">
-          <label class="form-label">Email</label>
-          <input type="email" class="form-input" placeholder="" id="input-email" />
+        <div class="form-row">
+          <div class="flex-1">
+            <label class="form-label">Username</label>
+            <input type="text" class="form-input" [(ngModel)]="newStaff.userName" id="input-username" />
+          </div>
+          <div class="flex-1">
+            <label class="form-label">Email</label>
+            <input type="email" class="form-input" [(ngModel)]="newStaff.email" id="input-email" />
+          </div>
         </div>
 
-        <!-- Password -->
-        <div class="form-group">
-          <label class="form-label">Password</label>
-          <input type="password" class="form-input" placeholder="" id="input-password" />
+        <div class="form-row">
+          <div class="flex-1">
+            <label class="form-label">Password</label>
+            <input type="password" class="form-input" [(ngModel)]="newStaff.password" id="input-password" />
+          </div>
+          <div class="flex-1">
+            <label class="form-label">Phone Number</label>
+            <input type="text" class="form-input" [(ngModel)]="newStaff.phoneNumber" id="input-phone" />
+          </div>
         </div>
 
-        <!-- Department -->
+        <div class="form-group">
+          <label class="form-label">Address</label>
+          <input type="text" class="form-input" [(ngModel)]="newStaff.address" id="input-address" />
+        </div>
+
+        <div class="form-row">
+          <div class="flex-1">
+            <label class="form-label">Department</label>
+            <select class="form-select" [(ngModel)]="newStaff.department" id="select-department">
+              <option value="" disabled selected>Choose department</option>
+              <option value="Sales">Sales</option>
+              <option value="Inventory">Inventory</option>
+              <option value="Mechanics">Mechanics</option>
+              <option value="Admin">Admin</option>
+            </select>
+          </div>
+          <div class="flex-1">
+            <label class="form-label">Job Title</label>
+            <input type="text" class="form-input" [(ngModel)]="newStaff.jobTitle" id="input-job-title" />
+          </div>
+        </div>
+
+        <button class="btn-submit" (click)="registerStaff()" id="btn-add-member">
+          Register Member
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Edit Staff Dialog -->
+@if (showEditDialog && selectedStaff) {
+  <div class="modal-overlay" (click)="closeEditDialog()" id="edit-staff-overlay">
+    <div class="modal-container" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2 class="modal-title">Edit Staff Member</h2>
+        <button class="modal-close" (click)="closeEditDialog()" id="btn-close-edit-dialog">
+          ✕
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="form-row">
+          <div class="flex-1">
+            <label class="form-label">First Name</label>
+            <input type="text" class="form-input" [(ngModel)]="selectedStaff.firstName" id="edit-first-name" />
+          </div>
+          <div class="flex-1">
+            <label class="form-label">Last Name</label>
+            <input type="text" class="form-input" [(ngModel)]="selectedStaff.lastName" id="edit-last-name" />
+          </div>
+        </div>
+
         <div class="form-group">
           <label class="form-label">Department</label>
-          <select class="form-select" id="select-department">
-            <option value="" disabled selected>Choose department</option>
+          <select class="form-select" [(ngModel)]="selectedStaff.department" id="edit-department">
             <option value="Sales">Sales</option>
             <option value="Inventory">Inventory</option>
             <option value="Mechanics">Mechanics</option>
@@ -166,15 +223,13 @@
           </select>
         </div>
 
-        <!-- Job Title -->
         <div class="form-group">
           <label class="form-label">Job Title</label>
-          <input type="text" class="form-input" placeholder="Choose your department" id="input-job-title" />
+          <input type="text" class="form-input" [(ngModel)]="selectedStaff.jobTitle" id="edit-job-title" />
         </div>
 
-        <!-- Submit Button -->
-        <button class="btn-submit" id="btn-add-member">
-          Add Member
+        <button class="btn-submit" (click)="updateStaff()" id="btn-update-member">
+          Update Member
         </button>
       </div>
     </div>

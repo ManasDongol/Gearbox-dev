@@ -1,79 +1,64 @@
-<!-- Purchase Invoices Page -->
 <div class="page-layout">
-  <!-- Side Navigation -->
   <app-navmenu />
 
-  <!-- Main Content -->
   <main class="main-content">
-    <!-- Top Bar -->
     <div class="flex items-center justify-between mb-8">
       <h1 class="text-3xl font-bold text-[#1a3a3a]">Purchase Invoices</h1>
-      <!-- User Avatar -->
-      <div
-        class="w-10 h-10 rounded-full bg-[#1a3a3a] cursor-pointer hover:ring-2 hover:ring-[#1a3a3a]/30 transition-all duration-200"
-      ></div>
+      <div class="w-10 h-10 rounded-full bg-[#1a3a3a] cursor-pointer hover:ring-2 hover:ring-[#1a3a3a]/30 transition-all duration-200"></div>
     </div>
 
-    <!-- Search Bar -->
-    <div class="mb-6">
-      <input
-        type="text"
-        placeholder="Search Orders"
-        [(ngModel)]="searchQuery"
-        class="w-full max-w-md px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm text-[#1a3a3a] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#1a3a3a]/15 focus:border-transparent transition-all duration-200"
-        id="search-orders"
-      />
+    <div class="flex items-center justify-between mb-6">
+      <div class="relative w-full max-w-md">
+        <input
+          type="text"
+          placeholder="Search Invoices (Vendor, Inv #)..."
+          [(ngModel)]="searchQuery"
+          (ngModelChange)="onSearchChange($event)"
+          class="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm text-[#1a3a3a] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#1a3a3a]/15 focus:border-transparent transition-all duration-200"
+          id="search-purchase-invoices"
+        />
+        @if (isLoading) {
+          <div class="absolute right-3 top-1/2 -translate-y-1/2">
+            <div class="w-4 h-4 border-2 border-[#1a3a3a]/20 border-t-[#1a3a3a] rounded-full animate-spin"></div>
+          </div>
+        }
+      </div>
+      <button
+        (click)="openAddDialog()"
+        class="flex items-center gap-2 px-5 py-2.5 bg-[#1a3a3a] text-white text-sm font-semibold rounded-lg hover:bg-[#1a4a4a] transition-all duration-200 cursor-pointer whitespace-nowrap"
+        id="btn-add-purchase-invoice"
+      >
+        + Record Purchase
+      </button>
     </div>
 
-    <!-- Invoice Table -->
     <div class="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
       <table class="w-full">
         <thead>
           <tr class="border-b border-gray-100">
-            <th
-              class="text-left px-6 py-4 text-sm font-semibold text-[#1a3a3a] bg-gray-50/50"
-            >
-              ID
-            </th>
-            <th
-              class="text-left px-6 py-4 text-sm font-semibold text-[#1a3a3a] bg-gray-50/50"
-            >
-              Vendor ID
-            </th>
-            <th
-              class="text-left px-6 py-4 text-sm font-semibold text-[#1a3a3a] bg-gray-50/50"
-            >
-              Invoice Number
-            </th>
-            <th
-              class="text-left px-6 py-4 text-sm font-semibold text-[#1a3a3a] bg-gray-50/50"
-            >
-              Total Number
-            </th>
-            <th
-              class="text-left px-6 py-4 text-sm font-semibold text-[#1a3a3a] bg-gray-50/50"
-            >
-              Created Date
-            </th>
+            <th class="text-left px-6 py-4 text-sm font-semibold text-[#1a3a3a] bg-gray-50/50">Invoice #</th>
+            <th class="text-left px-6 py-4 text-sm font-semibold text-[#1a3a3a] bg-gray-50/50">Vendor</th>
+            <th class="text-left px-6 py-4 text-sm font-semibold text-[#1a3a3a] bg-gray-50/50">Total Amount</th>
+            <th class="text-left px-6 py-4 text-sm font-semibold text-[#1a3a3a] bg-gray-50/50">Date</th>
+            <th class="text-left px-6 py-4 text-sm font-semibold text-[#1a3a3a] bg-gray-50/50">Actions</th>
           </tr>
         </thead>
         <tbody>
-          @for (invoice of filteredInvoices; track invoice.id) {
-            <tr
-              class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors duration-150"
-            >
-              <td class="px-6 py-4 text-sm text-[#3a3a3a]">{{ invoice.id }}</td>
-              <td class="px-6 py-4 text-sm text-[#3a3a3a]">{{ invoice.vendorId }}</td>
-              <td class="px-6 py-4 text-sm text-[#3a3a3a]">{{ invoice.invoiceNumber }}</td>
-              <td class="px-6 py-4 text-sm text-[#3a3a3a]">
-                {{ invoice.totalNumber.toLocaleString() }}
+          @for (inv of filteredInvoices; track inv.id) {
+            <tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors duration-150">
+              <td class="px-6 py-4 text-sm font-medium text-[#1a3a3a]">{{ inv.invoiceNumber }}</td>
+              <td class="px-6 py-4 text-sm text-[#3a3a3a]">{{ getVendorName(inv.vendorId) }}</td>
+              <td class="px-6 py-4 text-sm font-semibold text-[#1a3a3a]">Rs. {{ inv.totalAmount | number }}</td>
+              <td class="px-6 py-4 text-sm text-[#3a3a3a]">{{ inv.createdDate | date:'mediumDate' }}</td>
+              <td class="px-6 py-4 flex gap-3">
+                <button class="text-sm text-[#1a6b5a] font-medium hover:text-[#1a3a3a]">View</button>
+                <button (click)="deleteInvoice(inv.id)" class="text-sm text-red-600 font-medium hover:text-red-800">Delete</button>
               </td>
-              <td class="px-6 py-4 text-sm text-[#3a3a3a]">{{ invoice.createdDate }}</td>
             </tr>
           } @empty {
             <tr>
               <td colspan="5" class="px-6 py-16 text-center text-sm text-gray-400">
-                No invoices found
+                @if (isLoading) { Loading... } @else { No invoices found }
               </td>
             </tr>
           }
@@ -82,3 +67,76 @@
     </div>
   </main>
 </div>
+
+<!-- Record Purchase Modal -->
+@if (showAddDialog) {
+  <div class="modal-overlay" (click)="closeAddDialog()">
+    <div class="modal-container max-w-4xl" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2 class="modal-title">Record Purchase Invoice</h2>
+        <button class="modal-close" (click)="closeAddDialog()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Vendor</label>
+            <select class="form-select" [(ngModel)]="newInvoice.vendorId">
+              <option value="" disabled selected>Select Vendor</option>
+              @for (v of vendors; track v.id) {
+                <option [value]="v.id">{{ v.name }}</option>
+              }
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Invoice Number</label>
+            <input type="text" class="form-input" [(ngModel)]="newInvoice.invoiceNumber" placeholder="e.g. INV-2024-001" />
+          </div>
+        </div>
+
+        <div class="mt-6">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="text-md font-semibold text-[#1a3a3a]">Invoice Items (Parts)</h3>
+            <button (click)="addItem()" class="text-sm text-[#1a6b5a] font-semibold hover:underline">+ Add Item</button>
+          </div>
+          
+          <div class="space-y-3">
+            @for (item of newInvoice.items; track $index) {
+              <div class="flex gap-3 items-end bg-gray-50 p-4 rounded-xl border border-gray-100">
+                <div class="flex-[3]">
+                  <label class="form-label !text-xs">Part</label>
+                  <select class="form-select" [(ngModel)]="item.partId">
+                    <option value="" disabled selected>Choose Part</option>
+                    @for (p of parts; track p.id) {
+                      <option [value]="p.id">{{ p.name }} ({{ p.partNumber }})</option>
+                    }
+                  </select>
+                </div>
+                <div class="flex-1">
+                  <label class="form-label !text-xs">Quantity</label>
+                  <input type="number" class="form-input" [(ngModel)]="item.quantity" (change)="calculateTotal()" />
+                </div>
+                <div class="flex-1">
+                  <label class="form-label !text-xs">Cost Price</label>
+                  <input type="number" class="form-input" [(ngModel)]="item.costPrice" (change)="calculateTotal()" />
+                </div>
+                <div class="flex-1 text-right px-2 py-2.5 text-sm font-semibold text-[#1a3a3a]">
+                  Rs. {{ item.quantity * item.costPrice | number }}
+                </div>
+                <button (click)="removeItem($index)" class="w-10 h-10 flex items-center justify-center text-red-400 hover:text-red-600">✕</button>
+              </div>
+            }
+          </div>
+        </div>
+
+        <div class="mt-8 pt-6 border-t border-gray-100 flex items-center justify-between">
+          <div class="text-lg font-bold text-[#1a3a3a]">
+            Total Amount: Rs. {{ newInvoice.totalAmount | number }}
+          </div>
+          <button (click)="saveInvoice()" class="px-8 py-3 bg-[#1a3a3a] text-white font-semibold rounded-lg hover:bg-[#1a4a4a] transition-all">
+            Save Invoice & Update Stock
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}

@@ -1,105 +1,166 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Navmenu } from '../../shared/components/navmenu/navmenu';
-
-interface Customer {
-  id: number;
-  name: string;
-  email: string;
-  phone: string;
-  address: string;
-  status: string;
-  moneySpent: number;
-  totalOrders: number;
-}
+import { CustomerService } from '../../core/services/customer/customer.service';
+import { Customer, NewCustomer } from '../../core/models/customer.model';
+import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 
 @Component({
   selector: 'app-customer-management',
-  imports: [Navmenu, FormsModule],
+  standalone: true,
+  imports: [Navmenu, FormsModule, CommonModule],
   templateUrl: './customer-management.html',
   styleUrl: './customer-management.css',
 })
-export class CustomerManagement {
-  customers: Customer[] = [
-    {
-      id: 1,
-      name: 'Ayush Das',
-      email: 'ayushdas@gmail.com',
-      phone: '9810556677',
-      address: 'Kharibot, Lalitpur',
-      status: 'Active',
-      moneySpent: 19000,
-      totalOrders: 16,
-    },
-    {
-      id: 2,
-      name: 'Suman Poudel',
-      email: 'suman.poudel@gmail.com',
-      phone: '9841234567',
-      address: 'Baneshwor, Kathmandu',
-      status: 'Active',
-      moneySpent: 45200,
-      totalOrders: 32,
-    },
-    {
-      id: 3,
-      name: 'Rita Shrestha',
-      email: 'rita.shrestha@gmail.com',
-      phone: '9812345678',
-      address: 'Pokhara, Kaski',
-      status: 'Inactive',
-      moneySpent: 8500,
-      totalOrders: 5,
-    },
-    {
-      id: 4,
-      name: 'Bikram Tamang',
-      email: 'bikram.t@gmail.com',
-      phone: '9823456789',
-      address: 'Bhaktapur, Bhaktapur',
-      status: 'Active',
-      moneySpent: 27300,
-      totalOrders: 21,
-    },
-    {
-      id: 5,
-      name: 'Anita Maharjan',
-      email: 'anita.m@gmail.com',
-      phone: '9834567890',
-      address: 'Patan, Lalitpur',
-      status: 'Active',
-      moneySpent: 15800,
-      totalOrders: 12,
-    },
-  ];
+export class CustomerManagement implements OnInit {
+  private customerService = inject(CustomerService);
 
+  customers: Customer[] = [];
+  filteredCustomers: Customer[] = [];
+  
   searchQuery: string = '';
-  statusFilter: string = '';
-  showCustomerModal: boolean = false;
+  private searchSubject = new Subject<string>();
+  
+  showAddDialog: boolean = false;
+  showEditDialog: boolean = false;
+  isLoading: boolean = false;
+
+  newCustomer: NewCustomer = {
+    userName: '',
+    firstName: '',
+    lastName: '',
+    phoneNumber: '',
+    email: '',
+    password: '',
+    address: '',
+    totalSpent: 0,
+    pendingCredits: 0
+  };
+
   selectedCustomer: Customer | null = null;
 
-  get filteredCustomers() {
-    return this.customers.filter((c) => {
-      const matchesSearch =
-        !this.searchQuery.trim() ||
-        c.name.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-        c.email.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-        c.id.toString().includes(this.searchQuery);
+  ngOnInit() {
+    this.loadCustomers();
 
-      const matchesStatus =
-        !this.statusFilter || c.status === this.statusFilter;
-
-      return matchesSearch && matchesStatus;
+    // Setup search debounce
+    this.searchSubject.pipe(
+      debounceTime(300),
+      distinctUntilChanged()
+    ).subscribe(query => {
+      this.applyFilter();
     });
   }
 
-  viewCustomer(customer: Customer) {
-    this.selectedCustomer = customer;
-    this.showCustomerModal = true;
+  loadCustomers() {
+    this.isLoading = true;
+    this.customerService.getAll().subscribe({
+      next: (data) => {
+        console.log(data)
+        this.customers = data;
+        this.applyFilter();
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error('Error loading customers', err);
+        this.isLoading = false;
+      }
+    });
   }
 
-  closeCustomerModal() {
-    this.showCustomerModal = false;
+  onSearchChange(query: string) {
+    this.searchSubject.next(query);
+  }
+
+  applyFilter() {
+    const query = this.searchQuery.toLowerCase().trim();
+    this.filteredCustomers = this.customers.filter((c) => {
+      return (
+        !query ||
+        c.firstName.toLowerCase().includes(query) ||
+        c.lastName.toLowerCase().includes(query) ||
+        c.phoneNumber.toLowerCase().includes(query) ||
+        c.address.toLowerCase().includes(query)
+      );
+    });
+  }
+
+  openAddDialog() {
+    this.showAddDialog = true;
+  }
+
+  closeAddDialog() {
+    this.showAddDialog = false;
+    this.resetForm();
+  }
+
+  openEditDialog(customer: Customer) {
+    this.selectedCustomer = { ...customer };
+    this.showEditDialog = true;
+  }
+
+  closeEditDialog() {
+    this.showEditDialog = false;
     this.selectedCustomer = null;
+  }
+
+  resetForm() {
+    this.newCustomer = {
+      userName: '',
+      firstName: '',
+      lastName: '',
+      phoneNumber: '',
+      email: '',
+      password: '',
+      address: '',
+      totalSpent: 0,
+      pendingCredits: 0
+    };
+  }
+
+  registerCustomer() {
+    if (!this.newCustomer.userName || !this.newCustomer.email || !this.newCustomer.password) return;
+
+    this.customerService.add(this.newCustomer).subscribe({
+      next: () => {
+        this.loadCustomers();
+        this.closeAddDialog();
+      },
+      error: (err) => {
+        console.error('Error registering customer', err);
+      }
+    });
+  }
+
+  updateCustomer() {
+    if (!this.selectedCustomer) return;
+
+    this.customerService.update(this.selectedCustomer.userId, this.selectedCustomer).subscribe({
+      next: () => {
+        const index = this.customers.findIndex(c => c.userId === this.selectedCustomer?.userId);
+        if (index !== -1 && this.selectedCustomer) {
+          this.customers[index] = { ...this.selectedCustomer };
+          this.applyFilter();
+        }
+        this.closeEditDialog();
+      },
+      error: (err) => {
+        console.error('Error updating customer', err);
+      }
+    });
+  }
+
+  deleteCustomer(userId: string) {
+    if (confirm('Are you sure you want to delete this customer?')) {
+      this.customerService.delete(userId).subscribe({
+        next: () => {
+          this.customers = this.customers.filter(c => c.userId !== userId);
+          this.applyFilter();
+        },
+        error: (err) => {
+          console.error('Error deleting customer', err);
+        }
+      });
+    }
   }
 }

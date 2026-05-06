@@ -24,6 +24,12 @@ namespace Gearbox.Application.Services
             return entities.Select(e => MapToDto(e));
         }
 
+        public async Task<IEnumerable<VehicleDto>> GetAllByVehicleIdAsync(Guid userId)
+        {
+            var entities = await _repository.GetCustomerVehicles(userId);
+            return entities.Select(e => MapToDto(e));
+        }
+
         public async Task<VehicleDto> GetByIdAsync(Guid id)
         {
             var entity = await _repository.GetByIdAsync(id);

@@ -10,8 +10,9 @@ public class SalesServicesInvoiceItem
     public Guid? PartId { get; set; }
     public Part? Part { get; set; }
 
-    public Guid? ServiceDetailsId { get; set; }
-    public ServiceDetails? ServiceDetails { get; set; }
+    public Guid? ServiceId { get; set; }
+      public Service? Service { get; set; }
+   
 
     public string Type { get; set; } // "Part" or "Service"
 

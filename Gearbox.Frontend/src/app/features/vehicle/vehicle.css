@@ -1,0 +1,33 @@
+@reference "tailwindcss";
+
+.page-layout {
+  @apply min-h-screen bg-[#F8FAFB] flex;
+}
+
+.main-content {
+  @apply flex-1 ml-56 p-8;
+}
+
+.vehicle-card {
+  @apply bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow duration-200;
+}
+
+.vehicle-badge {
+  @apply w-12 h-12 rounded-xl bg-[#1a3a3a] text-white flex items-center justify-center text-lg font-bold;
+}
+
+.empty-state {
+  @apply px-6 py-16 text-center text-sm text-gray-400 bg-white rounded-xl border border-dashed border-gray-200;
+}
+
+.primary-action {
+  @apply px-5 py-2.5 bg-[#1a3a3a] text-white text-sm font-semibold rounded-lg hover:bg-[#1a4a4a] transition-colors duration-200;
+}
+
+.secondary-action {
+  @apply flex-1 px-4 py-2 bg-white border border-gray-200 text-[#1a3a3a] text-sm font-semibold rounded-lg hover:bg-gray-50 transition-colors duration-200;
+}
+
+.danger-action {
+  @apply flex-1 px-4 py-2 bg-red-50 text-red-700 text-sm font-semibold rounded-lg hover:bg-red-100 transition-colors duration-200;
+}

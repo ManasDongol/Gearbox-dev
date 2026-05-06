@@ -82,11 +82,18 @@
               </td>
               <td class="px-6 py-4 text-sm text-[#3a3a3a]">Rs. {{ part.sellingPrice }}</td>
               <td class="px-6 py-4 text-sm text-[#3a3a3a]">{{ getVendorName(part.vendorId) }}</td>
-              <td class="px-6 py-4">
+              <td class="px-6 py-4 flex gap-3">
                 <button
+                  (click)="openEditDialog(part)"
                   class="text-sm text-[#1a6b5a] hover:text-[#1a3a3a] font-medium transition-colors duration-150 cursor-pointer"
                 >
                   Edit
+                </button>
+                <button
+                  (click)="deletePart(part.id)"
+                  class="text-sm text-red-600 hover:text-red-800 font-medium transition-colors duration-150 cursor-pointer"
+                >
+                  Delete
                 </button>
               </td>
             </tr>
@@ -198,6 +205,100 @@
           id="btn-save-part"
         >
           Save Part to Inventory
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Edit Part Dialog -->
+@if (showEditDialog && selectedPart) {
+  <div class="modal-overlay" (click)="closeEditDialog()" id="edit-part-overlay">
+    <div class="modal-container max-w-2xl" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2 class="modal-title">Edit Part</h2>
+        <button class="modal-close" (click)="closeEditDialog()" id="btn-close-edit-part-dialog">
+          ✕
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="form-row">
+          <!-- Name -->
+          <div class="form-group">
+            <label class="form-label">Part Name</label>
+            <input 
+              type="text" 
+              class="form-input" 
+              [(ngModel)]="selectedPart.name"
+              id="edit-part-name" 
+            />
+          </div>
+          <!-- Part Number -->
+          <div class="form-group">
+            <label class="form-label">Part Number</label>
+            <input 
+              type="text" 
+              class="form-input" 
+              [(ngModel)]="selectedPart.partNumber"
+              id="edit-part-number" 
+            />
+          </div>
+        </div>
+
+        <!-- Description -->
+        <div class="form-group">
+          <label class="form-label">Description</label>
+          <input 
+            type="text" 
+            class="form-input" 
+            [(ngModel)]="selectedPart.description"
+            id="edit-part-desc" 
+          />
+        </div>
+
+        <div class="form-row">
+          <!-- Price -->
+          <div class="form-group">
+            <label class="form-label">Selling Price (Rs.)</label>
+            <input 
+              type="number" 
+              class="form-input" 
+              [(ngModel)]="selectedPart.sellingPrice"
+              id="edit-part-price" 
+            />
+          </div>
+          <!-- Stock -->
+          <div class="form-group">
+            <label class="form-label">Stock Quantity</label>
+            <input 
+              type="number" 
+              class="form-input" 
+              [(ngModel)]="selectedPart.stockQuantity"
+              id="edit-part-stock" 
+            />
+          </div>
+        </div>
+
+        <!-- Vendor -->
+        <div class="form-group">
+          <label class="form-label">Vendor</label>
+          <select class="form-select" [(ngModel)]="selectedPart.vendorId" id="edit-select-part-vendor">
+            <option value="" disabled>Choose vendor</option>
+            @for (vendor of vendors; track vendor.id) {
+              <option [value]="vendor.id">{{ vendor.name }}</option>
+            }
+          </select>
+        </div>
+
+        <!-- Submit Button -->
+        <button 
+          class="btn-submit" 
+          (click)="updatePart()"
+          [disabled]="!selectedPart.name || !selectedPart.vendorId"
+          [class.opacity-50]="!selectedPart.name || !selectedPart.vendorId"
+          id="btn-update-part"
+        >
+          Update Part
         </button>
       </div>
     </div>

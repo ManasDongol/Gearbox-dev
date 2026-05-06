@@ -31,6 +31,15 @@ namespace Gearbox.Presentation.Controllers
             if (result == null) return NotFound();
             return Ok(result);
         }
+        
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetAllCustomerVehicles(Guid id)
+        {
+            var result = await _service.GetByIdAsync(id);
+            if (result == null) return NotFound();
+            return Ok(result);
+        }
+
 
         [HttpPost]
         public async Task<IActionResult> Add([FromBody] NewVehicleDto dto)

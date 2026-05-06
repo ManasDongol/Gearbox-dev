@@ -1,0 +1,91 @@
+<div class="page-layout">
+  <app-navmenu />
+
+  <main class="main-content">
+    <div class="flex items-center justify-between mb-8">
+      <div>
+        <h1 class="text-3xl font-bold text-[#1a3a3a]">Requests</h1>
+        <p class="text-gray-500 mt-1">Request parts that are not currently available.</p>
+      </div>
+      <button class="primary-action" (click)="openAddDialog()">+ New Part Request</button>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
+      <table class="w-full">
+        <thead>
+          <tr class="border-b border-gray-100">
+            <th class="table-heading">Part</th>
+            <th class="table-heading">Description</th>
+            <th class="table-heading">Requested</th>
+            <th class="table-heading">Status</th>
+            <th class="table-heading">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (request of requests; track request.id) {
+            <tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors duration-150">
+              <td class="table-cell font-semibold text-[#1a3a3a]">{{ request.partName }}</td>
+              <td class="table-cell">{{ request.description || 'No description' }}</td>
+              <td class="table-cell">{{ request.requestDate | date: 'mediumDate' }}</td>
+              <td class="table-cell">
+                <span
+                  class="status-pill"
+                  [class]="request.isFulfilled ? 'bg-green-50 text-green-700' : 'bg-yellow-50 text-yellow-700'"
+                >
+                  {{ request.isFulfilled ? 'Fulfilled' : 'Pending' }}
+                </span>
+              </td>
+              <td class="table-cell">
+                <div class="flex gap-3">
+                  <button class="link-action" (click)="openEditDialog(request)">Edit</button>
+                  <button class="danger-link" (click)="deleteRequest(request)">Delete</button>
+                </div>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="5" class="px-6 py-16 text-center text-sm text-gray-400">
+                @if (isLoading) {
+                  Loading requests...
+                } @else {
+                  No part requests found.
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </main>
+</div>
+
+@if (showDialog) {
+  <div class="modal-overlay" (click)="closeDialog()">
+    <div class="modal-container max-w-2xl" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2 class="modal-title">{{ editingRequest ? 'Edit Part Request' : 'New Part Request' }}</h2>
+        <button class="modal-close" (click)="closeDialog()">x</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Part Name</label>
+          <input class="form-input" [(ngModel)]="requestForm.partName" placeholder="Brake pads" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Description</label>
+          <textarea
+            class="form-input"
+            rows="4"
+            [(ngModel)]="requestForm.description"
+            placeholder="Brand, model, vehicle fitment, or other details"
+          ></textarea>
+        </div>
+
+        <button class="btn-submit" (click)="saveRequest()">
+          {{ editingRequest ? 'Update Request' : 'Create Request' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

@@ -35,17 +35,34 @@ namespace Gearbox.Application.Services
 
         public async Task<SalesServicesInvoiceItemDto> AddAsync(SalesServicesInvoiceItemDto dto)
         {
+            // Validation: Each item must have either PartId or ServiceId, but not both.
+            if (dto.PartId.HasValue && dto.ServiceId.HasValue)
+            {
+                throw new ArgumentException("Each item must have either PartId or ServiceId, but not both.");
+            }
+            if (!dto.PartId.HasValue && !dto.ServiceId.HasValue)
+            {
+                throw new ArgumentException("Each item must have either PartId or ServiceId.");
+            }
+
             var entity = MapToEntity(dto);
             
             // Reduce stock if it's a Part
             if (dto.Type == "Part" && dto.PartId.HasValue)
             {
                 var part = await _partRepository.GetByIdAsync(dto.PartId.Value);
-                if (part != null)
+                if (part == null)
                 {
-                    part.StockQuantity -= dto.Quantity;
-                    _partRepository.Update(part);
+                    throw new Exception($"Part with ID {dto.PartId.Value} does not exist.");
                 }
+
+                if (part.StockQuantity < dto.Quantity)
+                {
+                    throw new Exception($"Insufficient stock for part {part.Name}. Available: {part.StockQuantity}, Requested: {dto.Quantity}");
+                }
+
+                part.StockQuantity -= dto.Quantity;
+                _partRepository.Update(part);
             }
 
             await _repository.AddAsync(entity);
@@ -74,6 +91,10 @@ namespace Gearbox.Application.Services
                     var newPart = await _partRepository.GetByIdAsync(dto.PartId.Value);
                     if (newPart != null)
                     {
+                        if (newPart.StockQuantity < dto.Quantity)
+                        {
+                            throw new Exception($"Insufficient stock for part {newPart.Name}. Available: {newPart.StockQuantity}, Requested: {dto.Quantity}");
+                        }
                         newPart.StockQuantity -= dto.Quantity; // Subtract new stock
                         _partRepository.Update(newPart);
                     }
@@ -81,7 +102,7 @@ namespace Gearbox.Application.Services
 
                 // Assign new values from dto
                 entity.PartId = dto.PartId;
-                entity.ServiceDetailsId = dto.ServiceDetailsId;
+                entity.ServiceId = dto.ServiceId;
                 entity.Type = dto.Type;
                 entity.Quantity = dto.Quantity;
                 entity.UnitPrice = dto.UnitPrice;
@@ -119,7 +140,7 @@ namespace Gearbox.Application.Services
                 Id = entity.Id,
                 SalesServicesInvoiceId = entity.SalesServicesInvoiceId,
                 PartId = entity.PartId,
-                ServiceDetailsId = entity.ServiceDetailsId,
+                ServiceId = entity.ServiceId,
                 Type = entity.Type,
                 Quantity = entity.Quantity,
                 UnitPrice = entity.UnitPrice
@@ -131,10 +152,10 @@ namespace Gearbox.Application.Services
             if (dto == null) return null;
             return new SalesServicesInvoiceItem
             {
-                Id = dto.Id,
+                Id = dto.Id == Guid.Empty ? Guid.NewGuid() : dto.Id,
                 SalesServicesInvoiceId = dto.SalesServicesInvoiceId,
                 PartId = dto.PartId,
-                ServiceDetailsId = dto.ServiceDetailsId,
+                ServiceId = dto.ServiceId,
                 Type = dto.Type,
                 Quantity = dto.Quantity,
                 UnitPrice = dto.UnitPrice

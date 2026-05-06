@@ -6,6 +6,7 @@ using Gearbox.Application.DTOs;
 using Gearbox.Application.Interfaces;
 using Gearbox.Domain.Entities;
 using Gearbox.Domain.Interfaces;
+using Microsoft.AspNetCore.Identity;
 
 namespace Gearbox.Application.Services
 {
@@ -71,6 +72,10 @@ namespace Gearbox.Application.Services
                 Email = entity.Email,
                 PasswordHash = entity.PasswordHash,
                 IsActive = entity.IsActive,
+                FirstName = entity.FirstName,
+                LastName = entity.LastName,
+                Address = entity.Address,
+               
               
             };
         }

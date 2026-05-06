@@ -4,8 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { Navmenu } from '../../shared/components/navmenu/navmenu';
 import { PartService } from '../../core/services/parts/part.service';
 import { VendorService } from '../../core/services/vendor/vendor';
-import { Part, NewPart } from '../../core/Models/part.model';
-import { Vendor } from '../../core/Models/vendor.model';
+import { Part, NewPart } from '../../core/models/part.model';
+import { Vendor } from '../../core/models/vendor.model';
 import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 
 @Component({
@@ -27,6 +27,7 @@ export class Inventory implements OnInit {
   private searchSubject = new Subject<string>();
   
   showAddDialog: boolean = false;
+  showEditDialog: boolean = false;
   isLoading: boolean = false;
 
   newPart: NewPart = {
@@ -37,6 +38,8 @@ export class Inventory implements OnInit {
     stockQuantity: 0,
     vendorId: ''
   };
+
+  selectedPart: Part | null = null;
 
   ngOnInit() {
     this.loadParts();
@@ -103,6 +106,16 @@ export class Inventory implements OnInit {
     this.resetForm();
   }
 
+  openEditDialog(part: Part) {
+    this.selectedPart = { ...part };
+    this.showEditDialog = true;
+  }
+
+  closeEditDialog() {
+    this.showEditDialog = false;
+    this.selectedPart = null;
+  }
+
   resetForm() {
     this.newPart = {
       name: '',
@@ -127,6 +140,38 @@ export class Inventory implements OnInit {
         console.error('Error adding part', err);
       }
     });
+  }
+
+  updatePart() {
+    if (!this.selectedPart) return;
+
+    this.partService.update(this.selectedPart.id, this.selectedPart).subscribe({
+      next: () => {
+        const index = this.parts.findIndex(p => p.id === this.selectedPart?.id);
+        if (index !== -1 && this.selectedPart) {
+          this.parts[index] = { ...this.selectedPart };
+          this.applyFilter(this.searchQuery);
+        }
+        this.closeEditDialog();
+      },
+      error: (err) => {
+        console.error('Error updating part', err);
+      }
+    });
+  }
+
+  deletePart(id: string) {
+    if (confirm('Are you sure you want to delete this part from inventory?')) {
+      this.partService.delete(id).subscribe({
+        next: () => {
+          this.parts = this.parts.filter(p => p.id !== id);
+          this.applyFilter(this.searchQuery);
+        },
+        error: (err) => {
+          console.error('Error deleting part', err);
+        }
+      });
+    }
   }
 
   getVendorName(vendorId: string): string {

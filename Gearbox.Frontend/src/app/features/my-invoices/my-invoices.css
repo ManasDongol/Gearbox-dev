@@ -1,0 +1,21 @@
+@reference "tailwindcss";
+
+.page-layout {
+  @apply min-h-screen bg-[#F8FAFB] flex;
+}
+
+.main-content {
+  @apply flex-1 ml-56 p-8;
+}
+
+.summary-card {
+  @apply bg-white rounded-xl shadow-sm border border-gray-100 p-6;
+}
+
+.table-heading {
+  @apply text-left px-6 py-4 text-sm font-semibold text-[#1a3a3a] bg-gray-50/50;
+}
+
+.table-cell {
+  @apply px-6 py-4 text-sm text-[#3a3a3a];
+}

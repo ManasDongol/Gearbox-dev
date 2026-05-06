@@ -16,8 +16,9 @@ namespace Gearbox.Domain.Entities
         public string FirstName { get; set; } = string.Empty;
         [StringLength(50)]     
         public string LastName { get; set; } = string.Empty;
-       
-   
+        
+        
+
 
         // Navigations
         public Customer Customer { get; set; }

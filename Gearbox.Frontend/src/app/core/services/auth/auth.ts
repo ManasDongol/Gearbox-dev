@@ -38,6 +38,10 @@ loadUser() {
     return this.user?.roles?.includes(role) ?? false;
   }
 
+  getRole():string[] {
+    return this.user!.roles;
+  }
+
   hasAnyRole(roles: Role[]): boolean {
   return this.user?.roles?.some(r => roles.includes(r as Role)) ?? false;
 }

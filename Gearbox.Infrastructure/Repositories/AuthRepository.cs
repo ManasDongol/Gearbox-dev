@@ -17,5 +17,6 @@ public class AuthRepository(ApplicationDbContext _context)
         await _context.SaveChangesAsync();
     }
 
+    
     public async Task SaveChangesAsync() => await _context.SaveChangesAsync();
 }

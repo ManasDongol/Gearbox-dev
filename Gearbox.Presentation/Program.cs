@@ -1,6 +1,8 @@
 using System.Security.Claims;
 using System.Text;
 using System.Threading.RateLimiting;
+using Gearbox.Application.BackgroundJobs;
+using Gearbox.Application.BackgroundJobs.Email;
 using Gearbox.Domain.Entities;
 using Gearbox.Infrastructure.Data;
 using Microsoft.AspNetCore.Identity;
@@ -143,9 +145,7 @@ builder.Services.AddScoped<IVendorRepository, VendorRepository>();
 builder.Services.AddScoped<ISalesInvoiceRepository, SalesInvoiceRepository>();
 builder.Services.AddScoped<IPurchaseInvoiceRepository, PurchaseInvoiceRepository>();
 builder.Services.AddScoped<IAppointmentRepository, AppointmentRepository>();
-builder.Services.AddScoped<IServiceDetailsRepository, ServiceDetailsRepository>();
-builder.Services.AddScoped<IServiceHistoryRepository, ServiceHistoryRepository>();
-builder.Services.AddScoped<IServiceBillRepository, ServiceBillRepository>();
+
 builder.Services.AddScoped<IServiceReviewRepository, ServiceReviewRepository>();
 builder.Services.AddScoped<IPartRequestRepository, PartRequestRepository>();
 builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
@@ -153,6 +153,7 @@ builder.Services.AddScoped<IPurchaseInvoiceItemRepository, PurchaseInvoiceItemRe
 builder.Services.AddScoped<ISalesInvoiceItemRepository, SalesInvoiceItemRepository>();
 builder.Services.AddScoped<ISalesServicesInvoiceRepository, SalesServicesInvoiceRepository>();
 builder.Services.AddScoped<ISalesServicesInvoiceItemRepository, SalesServicesInvoiceItemRepository>();
+builder.Services.AddScoped<IServiceRepository, ServiceRepository>();
 builder.Services.AddScoped<AuthRepository>();
 
 builder.Services.AddScoped<AuthService>();
@@ -167,9 +168,7 @@ builder.Services.AddScoped<IVendorService,VendorService>();
 
 builder.Services.AddScoped<IPurchaseInvoiceService,PurchaseInvoiceService>();
 builder.Services.AddScoped<IAppointmentService,AppointmentService>();
-builder.Services.AddScoped<IServiceDetailsService,ServiceDetailsService>();
-builder.Services.AddScoped<IServiceHistoryService,ServiceHistoryService>();
-builder.Services.AddScoped<IServiceBillService,ServiceBillService>();
+
 builder.Services.AddScoped<IServiceReviewService,ServiceReviewService>();
 builder.Services.AddScoped<IPartRequestService,PartRequestService>();
 builder.Services.AddScoped<INotificationService,NotificationService>();
@@ -177,7 +176,15 @@ builder.Services.AddScoped<IPurchaseInvoiceItemService,PurchaseInvoiceItemServic
 
 builder.Services.AddScoped<ISalesServicesInvoiceService, SalesServicesInvoiceService>();
 builder.Services.AddScoped<ISalesServicesInvoiceItemService, SalesServicesInvoiceItemService>();
+builder.Services.AddScoped<IServiceService, ServiceService>();
 builder.Services.AddScoped<TokenService>();
+
+builder.Services.AddSingleton<EmailQueue>();
+builder.Services.AddSingleton<EmailTemplateService>();
+builder.Services.AddSingleton<EmailService>();
+
+builder.Services.AddHostedService<EmailBackgroundWorker>();
+
 
 var app = builder.Build();
 

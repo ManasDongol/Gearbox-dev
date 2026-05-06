@@ -1,0 +1,30 @@
+<div class="container">
+<div style="margin-bottom: 40px;">
+<img src="images/gearbox Logo.png" alt="gearbox logo" />
+</div>
+          
+
+@if(status==='loading'){
+  <h2>Verifying your email...</h2>
+}
+
+
+@if(status==='success'){
+   <div  class="success">
+    <h2> Email Verified!</h2>
+    <p>You can now log in to your account.</p>
+    <a routerLink="/login" class="btn">Go to Login</a>
+  </div>
+}
+
+ 
+@if(status==='error'){
+   <div class="error">
+    <h2> Verification Failed!</h2>
+    <p>Invalid or expired link. Try again later</p>
+  </div>
+}
+
+ 
+
+</div>

@@ -1,6 +1,7 @@
 using Gearbox.Domain.Entities;
 using Gearbox.Domain.Interfaces;
 using Gearbox.Infrastructure.Data;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace Gearbox.Infrastructure.Repositories
@@ -48,5 +49,15 @@ namespace Gearbox.Infrastructure.Repositories
                             c.Vehicles.Any(v => v.NumberPlate.ToLower().Contains(searchTerm)))
                 .ToListAsync();
         }
+
+        public async Task<IEnumerable<Customer>> GetCustomersWithUsersAsync()
+        {
+            return await _context.Customers
+                .Include(c => c.User)
+                .ToListAsync();
+        }
+        
+
+    
     }
 }

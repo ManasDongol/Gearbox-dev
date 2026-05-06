@@ -16,13 +16,21 @@
 
     <!-- Search & Action Bar -->
     <div class="flex items-center justify-between mb-4">
-      <input
-        type="text"
-        placeholder="Search Appointments"
-        [(ngModel)]="searchQuery"
-        class="w-full max-w-md px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm text-[#1a3a3a] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#1a3a3a]/15 focus:border-transparent transition-all duration-200"
-        id="search-appointment"
-      />
+      <div class="relative w-full max-w-md">
+        <input
+          type="text"
+          placeholder="Search by Customer, Vehicle or ID"
+          [(ngModel)]="searchQuery"
+          (ngModelChange)="onSearchChange($event)"
+          class="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm text-[#1a3a3a] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#1a3a3a]/15 focus:border-transparent transition-all duration-200"
+          id="search-appointment"
+        />
+        @if (isLoading) {
+          <div class="absolute right-3 top-1/2 -translate-y-1/2">
+            <div class="w-4 h-4 border-2 border-[#1a3a3a]/20 border-t-[#1a3a3a] rounded-full animate-spin"></div>
+          </div>
+        }
+      </div>
       <button
         (click)="openAddDialog()"
         class="flex items-center gap-2 px-5 py-2.5 bg-[#1a3a3a] text-white text-sm font-semibold rounded-lg hover:bg-[#1a4a4a] transition-all duration-200 cursor-pointer whitespace-nowrap"
@@ -36,6 +44,7 @@
     <div class="flex gap-3 mb-6 items-center">
       <select
         [(ngModel)]="statusFilter"
+        (change)="onFilterChange()"
         class="filter-select"
         id="filter-status"
       >
@@ -50,6 +59,7 @@
       <input
         type="date"
         [(ngModel)]="startDateFilter"
+        (change)="onFilterChange()"
         class="filter-select !pr-4"
         id="filter-start-date"
       />
@@ -57,6 +67,7 @@
       <input
         type="date"
         [(ngModel)]="endDateFilter"
+        (change)="onFilterChange()"
         class="filter-select !pr-4"
         id="filter-end-date"
       />
@@ -68,7 +79,7 @@
         <thead>
           <tr class="border-b border-gray-100">
             <th class="text-left px-6 py-4 text-sm font-semibold text-[#1a3a3a] bg-gray-50/50">
-              Appointment ID
+              ID
             </th>
             <th class="text-left px-6 py-4 text-sm font-semibold text-[#1a3a3a] bg-gray-50/50">
               Customer
@@ -83,9 +94,6 @@
               Status
             </th>
             <th class="text-left px-6 py-4 text-sm font-semibold text-[#1a3a3a] bg-gray-50/50">
-              Notes
-            </th>
-            <th class="text-left px-6 py-4 text-sm font-semibold text-[#1a3a3a] bg-gray-50/50">
               Actions
             </th>
           </tr>
@@ -93,9 +101,9 @@
         <tbody>
           @for (apt of filteredAppointments; track apt.id) {
             <tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors duration-150">
-              <td class="px-6 py-4 text-sm text-[#3a3a3a]">{{ apt.id }}</td>
-              <td class="px-6 py-4 text-sm text-[#3a3a3a]">{{ apt.customerName }}</td>
-              <td class="px-6 py-4 text-sm text-[#3a3a3a]">{{ apt.vehicle }}</td>
+              <td class="px-6 py-4 text-sm text-[#3a3a3a]">{{ apt.id.substring(0, 8) }}...</td>
+              <td class="px-6 py-4 text-sm text-[#3a3a3a]">{{ getCustomerName(apt.customerId) }}</td>
+              <td class="px-6 py-4 text-sm text-[#3a3a3a]">{{ getVehicleName(apt.vehicleId) }}</td>
               <td class="px-6 py-4 text-sm text-[#3a3a3a]">{{ apt.appointmentDate | date:'medium' }}</td>
               <td class="px-6 py-4">
                 <span
@@ -105,21 +113,29 @@
                   {{ apt.status }}
                 </span>
               </td>
-              <td class="px-6 py-4 text-sm text-[#3a3a3a] max-w-[200px] truncate" [title]="apt.notes">
-                {{ apt.notes }}
-              </td>
-              <td class="px-6 py-4">
+              <td class="px-6 py-4 flex gap-3">
                 <button
+                  (click)="openEditDialog(apt)"
                   class="text-sm text-[#1a6b5a] hover:text-[#1a3a3a] font-medium transition-colors duration-150 cursor-pointer"
                 >
-                  View
+                  Edit
+                </button>
+                <button
+                  (click)="deleteAppointment(apt.id)"
+                  class="text-sm text-red-600 hover:text-red-800 font-medium transition-colors duration-150 cursor-pointer"
+                >
+                  Cancel
                 </button>
               </td>
             </tr>
           } @empty {
             <tr>
-              <td colspan="7" class="px-6 py-16 text-center text-sm text-gray-400">
-                No appointments found
+              <td colspan="6" class="px-6 py-16 text-center text-sm text-gray-400">
+                @if (isLoading) {
+                  Loading appointments...
+                } @else {
+                  No appointments found
+                }
               </td>
             </tr>
           }
@@ -132,7 +148,7 @@
 <!-- Book Appointment Dialog -->
 @if (showAddDialog) {
   <div class="modal-overlay" (click)="closeAddDialog()" id="add-appointment-overlay">
-    <div class="modal-container" (click)="$event.stopPropagation()">
+    <div class="modal-container max-w-2xl" (click)="$event.stopPropagation()">
       <div class="modal-header">
         <h2 class="modal-title">Book New Appointment</h2>
         <button class="modal-close" (click)="closeAddDialog()" id="btn-close-dialog">
@@ -140,34 +156,109 @@
         </button>
       </div>
       <div class="modal-body">
-        <div class="form-group">
-          <label class="form-label">Customer</label>
-          <input type="text" class="form-input" placeholder="Search or select customer" id="input-customer" />
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">Vehicle</label>
-          <input type="text" class="form-input" placeholder="Select vehicle" id="input-vehicle" />
+        <div class="form-row">
+          <div class="flex-1">
+            <label class="form-label">Customer</label>
+            <select class="form-select" [(ngModel)]="newAppointment.customerId" id="input-customer">
+              <option value="" disabled selected>Select Customer</option>
+              @for (c of customers; track c.userId) {
+                <option [value]="c.userId">{{ c.firstName }} {{ c.lastName }}</option>
+              }
+            </select>
+          </div>
+          <div class="flex-1">
+            <label class="form-label">Vehicle</label>
+            <select class="form-select" [(ngModel)]="newAppointment.vehicleId" id="input-vehicle">
+              <option value="" disabled selected>Select Vehicle</option>
+              @for (v of vehicles; track v.id) {
+                <option [value]="v.id">{{ v.make }} {{ v.model }} ({{ v.licensePlate }})</option>
+              }
+            </select>
+          </div>
         </div>
 
         <div class="form-row">
           <div class="flex-1">
             <label class="form-label">Date</label>
-            <input type="date" class="form-input" id="input-date" />
+            <input type="date" class="form-input" [(ngModel)]="newAppointment.date" id="input-date" />
           </div>
           <div class="flex-1">
             <label class="form-label">Time</label>
-            <input type="time" class="form-input" id="input-time" />
+            <input type="time" class="form-input" [(ngModel)]="newAppointment.time" id="input-time" />
           </div>
         </div>
 
         <div class="form-group">
           <label class="form-label">Notes</label>
-          <textarea class="form-input" rows="3" placeholder="Additional details..." id="input-notes"></textarea>
+          <textarea class="form-input" rows="3" [(ngModel)]="newAppointment.notes" placeholder="Additional details..." id="input-notes"></textarea>
         </div>
 
-        <button class="btn-submit" id="btn-submit-appointment">
+        <button class="btn-submit" (click)="bookAppointment()" id="btn-submit-appointment">
           Book Appointment
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Edit Appointment Dialog -->
+@if (showEditDialog && selectedAppointment) {
+  <div class="modal-overlay" (click)="closeEditDialog()" id="edit-appointment-overlay">
+    <div class="modal-container max-w-2xl" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2 class="modal-title">Edit Appointment</h2>
+        <button class="modal-close" (click)="closeEditDialog()" id="btn-close-edit-dialog">
+          ✕
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="form-row">
+          <div class="flex-1">
+            <label class="form-label">Customer</label>
+            <select class="form-select" [(ngModel)]="selectedAppointment.customerId" id="edit-customer">
+              @for (c of customers; track c.userId) {
+                <option [value]="c.userId">{{ c.firstName }} {{ c.lastName }}</option>
+              }
+            </select>
+          </div>
+          <div class="flex-1">
+            <label class="form-label">Vehicle</label>
+            <select class="form-select" [(ngModel)]="selectedAppointment.vehicleId" id="edit-vehicle">
+              @for (v of vehicles; track v.id) {
+                <option [value]="v.id">{{ v.make }} {{ v.model }} ({{ v.licensePlate }})</option>
+              }
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="flex-1">
+            <label class="form-label">Date</label>
+            <input type="date" class="form-input" [(ngModel)]="selectedAppointment.date" id="edit-date" />
+          </div>
+          <div class="flex-1">
+            <label class="form-label">Time</label>
+            <input type="time" class="form-input" [(ngModel)]="selectedAppointment.time" id="edit-time" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Status</label>
+          <select class="form-select" [(ngModel)]="selectedAppointment.status" id="edit-status">
+            <option value="Pending">Pending</option>
+            <option value="Confirmed">Confirmed</option>
+            <option value="Completed">Completed</option>
+            <option value="Cancelled">Cancelled</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Notes</label>
+          <textarea class="form-input" rows="3" [(ngModel)]="selectedAppointment.notes" id="edit-notes"></textarea>
+        </div>
+
+        <button class="btn-submit" (click)="updateAppointment()" id="btn-update-appointment">
+          Update Appointment
         </button>
       </div>
     </div>

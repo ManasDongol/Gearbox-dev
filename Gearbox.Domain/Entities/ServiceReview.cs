@@ -7,6 +7,7 @@ namespace Gearbox.Domain.Entities
         public Guid Id { get; set; } = Guid.NewGuid();
         public Guid CustomerId { get; set; }
         public Guid? AppointmentId { get; set; }
+        public Guid? ServiceId { get; set; }
         
         public int Rating { get; set; } // e.g., 1 to 5
         public string Comment { get; set; }
@@ -15,5 +16,6 @@ namespace Gearbox.Domain.Entities
         // Navigations
         public Customer Customer { get; set; }
         public Appointment Appointment { get; set; }
+        public Service Service { get; set; }
     }
 }

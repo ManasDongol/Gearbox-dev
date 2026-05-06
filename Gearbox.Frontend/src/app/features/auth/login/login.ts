@@ -43,7 +43,8 @@ onSubmit() {
       if (this.auth.hasAnyRole(['Admin', 'Staff'])) {
         this.router.navigate(['/dashboard']);
       } else {
-        this.router.navigate(['/appointment']);
+        console.log(this.auth.getRole());
+        this.router.navigate([`/user-dashboard`]);
       }
     },
     error: () => {
