@@ -12,5 +12,10 @@ namespace Gearbox.Application.Interfaces
         Task<NotificationDto> AddAsync(NotificationDto dto);
         Task UpdateAsync(Guid id, NotificationDto dto);
         Task DeleteAsync(Guid id);
+        Task<IEnumerable<NotificationDto>> GetRecentNotifications(string userId);
+        Task BroadcastAdminsAsync(string message, Guid actorUserId);
+
+        public Task SendToRoleAsync(string role, string message);
     }
+    
 }

@@ -9,6 +9,7 @@ export type Role = 'Admin' | 'Staff' | 'Customer';
 export interface User {
   userId: string;
   email: string;
+  name?: string;
   roles: string[];
 }
 

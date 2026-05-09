@@ -12,10 +12,12 @@ namespace Gearbox.Application.Services
     public class PartRequestService : IPartRequestService
     {
         private readonly IPartRequestRepository _repository;
+        private readonly INotificationService _notificationService;
 
-        public PartRequestService(IPartRequestRepository repository)
+        public PartRequestService(IPartRequestRepository repository, INotificationService notificationService)
         {
             _repository = repository;
+            _notificationService =  notificationService;
         }
 
         public async Task<IEnumerable<PartRequestDto>> GetAllAsync()
@@ -36,6 +38,12 @@ namespace Gearbox.Application.Services
             var entity = MapToEntity(dto);
             await _repository.AddAsync(entity);
             await _repository.SaveChangesAsync();
+           
+            
+            await _notificationService.SendToRoleAsync(
+                "Admin",
+                $"New part {dto.PartName} requested by customer"
+            );
             return MapToDto(entity);
         }
 

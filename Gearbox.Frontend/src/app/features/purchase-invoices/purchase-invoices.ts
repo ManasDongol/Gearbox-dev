@@ -2,6 +2,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Navmenu } from '../../shared/components/navmenu/navmenu';
+import { Topbar } from '../../shared/components/topbar/topbar';
 import { PurchaseInvoiceService } from '../../core/services/purchase-invoice/purchase-invoice.service';
 import { VendorService } from '../../core/services/vendor/vendor';
 import { PartService } from '../../core/services/parts/part.service';
@@ -13,7 +14,7 @@ import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 @Component({
   selector: 'app-purchase-invoices',
   standalone: true,
-  imports: [Navmenu, FormsModule, CommonModule, DatePipe],
+  imports: [Navmenu, Topbar, FormsModule, CommonModule, DatePipe],
   providers: [DatePipe],
   templateUrl: './purchase-invoices.html',
   styleUrl: './purchase-invoices.css',

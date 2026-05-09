@@ -2,6 +2,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Navmenu } from '../../shared/components/navmenu/navmenu';
+import { Topbar } from '../../shared/components/topbar/topbar';
 import { AppointmentService } from '../../core/services/appointment/appointment.service';
 import { CustomerService } from '../../core/services/customer/customer.service';
 import { VehicleService, Vehicle } from '../../core/services/vehicle/vehicle.service';
@@ -12,7 +13,7 @@ import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 @Component({
   selector: 'app-appointment-management',
   standalone: true,
-  imports: [Navmenu, FormsModule, CommonModule, DatePipe],
+  imports: [Navmenu, Topbar, FormsModule, CommonModule, DatePipe],
   providers: [DatePipe],
   templateUrl: './appointment-management.html',
   styleUrl: './appointment-management.css',

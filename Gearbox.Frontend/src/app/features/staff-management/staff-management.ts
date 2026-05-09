@@ -2,6 +2,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Navmenu } from '../../shared/components/navmenu/navmenu';
+import { Topbar } from '../../shared/components/topbar/topbar';
 import { StaffService } from '../../core/services/staff/staff.service';
 import { Staff, NewStaff } from '../../core/models/staff.model';
 import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
@@ -9,7 +10,7 @@ import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 @Component({
   selector: 'app-staff-management',
   standalone: true,
-  imports: [Navmenu, FormsModule, CommonModule],
+  imports: [Navmenu, Topbar, FormsModule, CommonModule],
   templateUrl: './staff-management.html',
   styleUrl: './staff-management.css',
 })

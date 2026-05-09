@@ -2,6 +2,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Navmenu } from '../../shared/components/navmenu/navmenu';
+import { Topbar } from '../../shared/components/topbar/topbar';
 import { PartService } from '../../core/services/parts/part.service';
 import { VendorService } from '../../core/services/vendor/vendor';
 import { Part, NewPart } from '../../core/models/part.model';
@@ -11,7 +12,7 @@ import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 @Component({
   selector: 'app-inventory',
   standalone: true,
-  imports: [Navmenu, FormsModule, CommonModule],
+  imports: [Navmenu, Topbar, FormsModule, CommonModule],
   templateUrl: './inventory.html',
   styleUrl: './inventory.css',
 })

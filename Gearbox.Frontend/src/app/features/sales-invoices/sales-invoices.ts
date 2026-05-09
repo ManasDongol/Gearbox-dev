@@ -2,6 +2,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Navmenu } from '../../shared/components/navmenu/navmenu';
+import { Topbar } from '../../shared/components/topbar/topbar';
 import { SalesInvoiceService } from '../../core/services/sales-invoice/sales-invoice.service';
 import { CustomerService } from '../../core/services/customer/customer.service';
 import { StaffService } from '../../core/services/staff/staff.service';
@@ -15,7 +16,7 @@ import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 @Component({
   selector: 'app-sales-invoices',
   standalone: true,
-  imports: [Navmenu, FormsModule, CommonModule, DatePipe],
+  imports: [Navmenu, Topbar, FormsModule, CommonModule, DatePipe],
   providers: [DatePipe],
   templateUrl: './sales-invoices.html',
   styleUrl: './sales-invoices.css',

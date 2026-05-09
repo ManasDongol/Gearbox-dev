@@ -1,6 +1,7 @@
 using Gearbox.Domain.Entities;
 using Gearbox.Domain.Interfaces;
 using Gearbox.Infrastructure.Data;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,8 +9,10 @@ namespace Gearbox.Infrastructure.Repositories
 {
     public class CustomerRepository : GenericRepository<Customer>, ICustomerRepository
     {
-        public CustomerRepository(ApplicationDbContext context) : base(context)
+        UserManager<AppUser> _userManager;
+        public CustomerRepository(ApplicationDbContext context,UserManager<AppUser> userManager) : base(context)
         {
+            _userManager = userManager;
         }
 
         public async Task<Customer?> GetCustomerWithDetailsAsync(Guid id)
@@ -56,7 +59,7 @@ namespace Gearbox.Infrastructure.Repositories
                 .Include(c => c.User)
                 .ToListAsync();
         }
-        
+ 
 
     
     }

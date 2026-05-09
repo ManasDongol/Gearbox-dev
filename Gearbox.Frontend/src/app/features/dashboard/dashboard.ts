@@ -1,10 +1,11 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Navmenu } from '../../shared/components/navmenu/navmenu';
+import { Topbar } from '../../shared/components/topbar/topbar';
 
 @Component({
   selector: 'app-dashboard',
-  imports: [Navmenu, CommonModule],
+  imports: [Navmenu, Topbar, CommonModule],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css',
 })

@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Mvc;
 using Gearbox.Application.DTOs;
 using Gearbox.Application.DTOs.Staff;
 using Gearbox.Application.Interfaces;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace Gearbox.Presentation.Controllers
 {
@@ -12,10 +14,12 @@ namespace Gearbox.Presentation.Controllers
     public class StaffController : ControllerBase
     {
         private readonly IStaffService _service;
+        private readonly INotificationService _notificationService;
 
-        public StaffController(IStaffService service)
+        public StaffController(IStaffService service, INotificationService notificationService)
         {
             _service = service;
+            _notificationService = notificationService;
         }
 
         [HttpGet]
@@ -37,6 +41,7 @@ namespace Gearbox.Presentation.Controllers
         public async Task<IActionResult> Add([FromBody] NewStaffDto dto)
         {
             var result = await _service.AddAsync(dto);
+            await NotifyAdminsAsync($"{GetActorName()} added staff: {dto.FirstName} {dto.LastName}");
             return Ok();
         }
 
@@ -50,8 +55,28 @@ namespace Gearbox.Presentation.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {
+            var staff = await _service.GetByIdAsync(id);
             await _service.DeleteAsync(id);
+            var staffName = staff == null ? id.ToString() : $"{staff.FirstName} {staff.LastName}".Trim();
+            await NotifyAdminsAsync($"{GetActorName()} deleted staff: {staffName}");
             return NoContent();
+        }
+
+        private async Task NotifyAdminsAsync(string message)
+        {
+            if (User.Identity?.IsAuthenticated != true)
+                return;
+
+            var actorId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (Guid.TryParse(actorId, out var parsedActorId))
+            {
+                await _notificationService.BroadcastAdminsAsync(message, parsedActorId);
+            }
+        }
+
+        private string GetActorName()
+        {
+            return User.FindFirstValue(ClaimTypes.Name) ?? "A staff member";
         }
     }
 }

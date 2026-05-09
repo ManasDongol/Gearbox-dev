@@ -10,5 +10,8 @@ namespace Gearbox.Domain.Interfaces
         Task<IEnumerable<Customer>> GetCustomersWithPendingCreditsAsync();
         Task<IEnumerable<Customer>> SearchCustomersAsync(string searchTerm);
         Task<IEnumerable<Customer>> GetCustomersWithUsersAsync();
+
+
+      
     }
 }

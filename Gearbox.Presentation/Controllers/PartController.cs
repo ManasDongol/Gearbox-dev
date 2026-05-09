@@ -3,6 +3,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Gearbox.Application.DTOs;
 using Gearbox.Application.Interfaces;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace Gearbox.Presentation.Controllers
 {
@@ -11,10 +13,12 @@ namespace Gearbox.Presentation.Controllers
     public class PartController : ControllerBase
     {
         private readonly IPartService _service;
+        private readonly INotificationService _notificationService;
 
-        public PartController(IPartService service)
+        public PartController(IPartService service, INotificationService notificationService)
         {
             _service = service;
+            _notificationService = notificationService;
         }
 
         [HttpGet]
@@ -36,6 +40,7 @@ namespace Gearbox.Presentation.Controllers
         public async Task<IActionResult> Add([FromBody] NewPartDto dto)
         {
             var result = await _service.AddAsync(dto);
+            await NotifyAdminsAsync($"{GetActorName()} added a new part: {result.Name}");
             return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
         }
 
@@ -49,8 +54,27 @@ namespace Gearbox.Presentation.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {
+            var part = await _service.GetByIdAsync(id);
             await _service.DeleteAsync(id);
+            await NotifyAdminsAsync($"{GetActorName()} deleted part: {part?.Name ?? id.ToString()}");
             return NoContent();
+        }
+
+        private async Task NotifyAdminsAsync(string message)
+        {
+            if (User.Identity?.IsAuthenticated != true)
+                return;
+
+            var actorId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (Guid.TryParse(actorId, out var parsedActorId))
+            {
+                await _notificationService.BroadcastAdminsAsync(message, parsedActorId);
+            }
+        }
+
+        private string GetActorName()
+        {
+            return User.FindFirstValue(ClaimTypes.Name) ?? "A staff member";
         }
     }
 }

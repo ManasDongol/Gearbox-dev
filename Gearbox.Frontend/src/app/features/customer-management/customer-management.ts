@@ -2,6 +2,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Navmenu } from '../../shared/components/navmenu/navmenu';
+import { Topbar } from '../../shared/components/topbar/topbar';
 import { CustomerService } from '../../core/services/customer/customer.service';
 import { Customer, NewCustomer } from '../../core/models/customer.model';
 import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
@@ -9,7 +10,7 @@ import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 @Component({
   selector: 'app-customer-management',
   standalone: true,
-  imports: [Navmenu, FormsModule, CommonModule],
+  imports: [Navmenu, Topbar, FormsModule, CommonModule],
   templateUrl: './customer-management.html',
   styleUrl: './customer-management.css',
 })

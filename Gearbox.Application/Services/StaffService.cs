@@ -101,11 +101,13 @@ namespace Gearbox.Application.Services
         private StaffDto MapToDto(Staff entity)
         {
             if (entity == null) return null;
+            var user = _userManager.FindByIdAsync(entity.UserId.ToString()).GetAwaiter().GetResult();
             return new StaffDto
             {
            
                 UserId = entity.UserId,
-                
+                FirstName = user?.FirstName ?? string.Empty,
+                LastName = user?.LastName ?? string.Empty,
                 Department = entity.Department,
                 JobTitle = entity.JobTitle,
               

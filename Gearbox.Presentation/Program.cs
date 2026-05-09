@@ -12,8 +12,11 @@ using Gearbox.Domain.Interfaces;
 using Gearbox.Application.Interfaces;
 using  Gearbox.Infrastructure.Repositories;
 using  Gearbox.Application.Services;
+using Gearbox.Presentation.Helper;
+using Gearbox.Presentation.Hubs;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -70,8 +73,7 @@ builder.Services.AddAuthentication(options =>
     })
     .AddJwtBearer(options =>
     {
-        Console.WriteLine(key);
-        Console.WriteLine("HAHDHSAHSHSD");
+      
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
@@ -134,6 +136,8 @@ builder.Services.AddAuthentication(options =>
         };
     });
 
+
+builder.Services.AddSignalR();
 // Repositories
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 builder.Services.AddScoped<IUserRepository, UserRepository>();
@@ -185,9 +189,16 @@ builder.Services.AddSingleton<EmailService>();
 
 builder.Services.AddHostedService<EmailBackgroundWorker>();
 
+builder.Services.AddScoped<NotificationHub>();
+builder.Services.AddScoped<INotificationSender, NotificationSender>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
+
+builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
+
 
 var app = builder.Build();
 
+app.MapHub<NotificationHub>("/notificationHub");
 
 using (var scope = app.Services.CreateScope())
 {
@@ -205,18 +216,18 @@ using (var scope = app.Services.CreateScope())
     }
 
     // Seed default admin
-    var adminEmail = "admin@gearbox.com";
+    var adminEmail = "Manas@gearbox.com";
     if (await userManager.FindByEmailAsync(adminEmail) == null)
     {
         var adminUser = new AppUser
         {
-            UserName = "admin",
+            UserName = "Manas",
             Email = adminEmail,
             EmailConfirmed = true,
             IsActive = true,
             CreatedAt = DateTime.UtcNow
         };
-        await userManager.CreateAsync(adminUser, "Admin@123"); // temporary password
+        await userManager.CreateAsync(adminUser, "Manas@123"); // temporary password
         await userManager.AddToRoleAsync(adminUser, "Admin");
     }
 }

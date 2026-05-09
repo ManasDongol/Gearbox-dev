@@ -1,13 +1,16 @@
 ﻿using System;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Gearbox.Application.DTOs;
 using Gearbox.Application.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Gearbox.Presentation.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class NotificationController : ControllerBase
     {
         private readonly INotificationService _service;
@@ -51,6 +54,19 @@ namespace Gearbox.Presentation.Controllers
         {
             await _service.DeleteAsync(id);
             return NoContent();
+        }
+        
+        [HttpGet("recent")]
+        public async Task<IActionResult> GetRecent()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            var result = await _service.GetRecentNotifications(userId);
+
+            return Ok(result);
         }
     }
 }

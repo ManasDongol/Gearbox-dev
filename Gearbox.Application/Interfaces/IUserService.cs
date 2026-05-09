@@ -12,5 +12,8 @@ namespace Gearbox.Application.Interfaces
         Task<UserDto> AddAsync(UserDto dto);
         Task UpdateAsync(Guid id, UserDto dto);
         Task DeleteAsync(Guid id);
+        
+        
+        
     }
 }

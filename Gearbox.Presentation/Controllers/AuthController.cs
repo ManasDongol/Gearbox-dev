@@ -84,7 +84,7 @@ public class AuthController(
 
         var roles = User.FindAll(ClaimTypes.Role).Select(r => r.Value).ToList();           // "role" not ClaimTypes.Role
 
-        return Ok(new { userId, email, roles });
+        return Ok(new { userId, email, name, roles });
     }
 
     [HttpGet("test")]

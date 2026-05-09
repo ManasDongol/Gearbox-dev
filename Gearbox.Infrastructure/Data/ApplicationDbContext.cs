@@ -64,7 +64,8 @@ namespace Gearbox.Infrastructure.Data
                 .HasMany(u => u.Notifications)
                 .WithOne(n => n.User)
                 .HasForeignKey(n => n.UserId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.SetNull);
             
             // User - Notification (1:Many)
             modelBuilder.Entity<AppUser>()
