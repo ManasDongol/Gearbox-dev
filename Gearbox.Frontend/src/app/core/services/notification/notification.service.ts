@@ -12,4 +12,6 @@ export class NotificationService {
   getRecent(): Observable<NotificationItem[]> {
     return this.http.get<NotificationItem[]>(`${this.baseUrl}/recent`);
   }
+
+  
 }

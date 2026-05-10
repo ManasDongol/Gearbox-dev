@@ -9,11 +9,13 @@ import { VehicleService, Vehicle } from '../../core/services/vehicle/vehicle.ser
 import { Appointment, NewAppointment } from '../../core/models/appointment.model';
 import { Customer } from '../../core/models/customer.model';
 import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
+import { ToastService } from '../../shared/components/toast/toast.service';
+import { Spinner } from '../../shared/components/spinner/spinner';
 
 @Component({
   selector: 'app-appointment-management',
   standalone: true,
-  imports: [Navmenu, Topbar, FormsModule, CommonModule, DatePipe],
+  imports: [Navmenu, Topbar, FormsModule, CommonModule, DatePipe, Spinner],
   providers: [DatePipe],
   templateUrl: './appointment-management.html',
   styleUrl: './appointment-management.css',
@@ -22,6 +24,7 @@ export class AppointmentManagement implements OnInit {
   private appointmentService = inject(AppointmentService);
   private customerService = inject(CustomerService);
   private vehicleService = inject(VehicleService);
+  private toast = inject(ToastService);
 
   appointments: Appointment[] = [];
   filteredAppointments: Appointment[] = [];
@@ -73,17 +76,30 @@ export class AppointmentManagement implements OnInit {
       },
       error: (err) => {
         console.error('Error loading appointments', err);
+        this.toast.error('Unable to load appointments', 'Please try again.');
         this.isLoading = false;
       }
     });
   }
 
   loadCustomers() {
-    this.customerService.getAll().subscribe(data => this.customers = data);
+    this.customerService.getAll().subscribe({
+      next: data => this.customers = data,
+      error: err => {
+        console.error('Error loading customers', err);
+        this.toast.error('Unable to load customers', 'Appointment customer names may be incomplete.');
+      }
+    });
   }
 
   loadVehicles() {
-    this.vehicleService.getAll().subscribe(data => this.vehicles = data);
+    this.vehicleService.getAll().subscribe({
+      next: data => this.vehicles = data,
+      error: err => {
+        console.error('Error loading vehicles', err);
+        this.toast.error('Unable to load vehicles', 'Appointment vehicle names may be incomplete.');
+      }
+    });
   }
 
   onSearchChange(query: string) {
@@ -200,12 +216,18 @@ export class AppointmentManagement implements OnInit {
       createdDate: new Date().toISOString()
     };
 
+    this.isLoading = true;
     this.appointmentService.add(dto).subscribe({
       next: () => {
         this.loadAppointments();
         this.closeAddDialog();
+        this.toast.success('Appointment booked', 'The appointment was created.');
       },
-      error: (err) => console.error('Error booking appointment', err)
+      error: (err) => {
+        console.error('Error booking appointment', err);
+        this.isLoading = false;
+        this.toast.error('Unable to book appointment', 'Please check the details and try again.');
+      }
     });
   }
 
@@ -219,23 +241,36 @@ export class AppointmentManagement implements OnInit {
       appointmentDate: appointmentDate.toISOString()
     };
 
+    this.isLoading = true;
     this.appointmentService.update(dto.id, dto).subscribe({
       next: () => {
         this.loadAppointments();
         this.closeEditDialog();
+        this.toast.success('Appointment updated', 'The appointment changes were saved.');
       },
-      error: (err) => console.error('Error updating appointment', err)
+      error: (err) => {
+        console.error('Error updating appointment', err);
+        this.isLoading = false;
+        this.toast.error('Unable to update appointment', 'Please try again.');
+      }
     });
   }
 
   deleteAppointment(id: string) {
     if (confirm('Are you sure you want to cancel and delete this appointment?')) {
+      this.isLoading = true;
       this.appointmentService.delete(id).subscribe({
         next: () => {
           this.appointments = this.appointments.filter(a => a.id !== id);
           this.applyFilter();
+          this.isLoading = false;
+          this.toast.success('Appointment deleted', 'The appointment was removed.');
         },
-        error: (err) => console.error('Error deleting appointment', err)
+        error: (err) => {
+          console.error('Error deleting appointment', err);
+          this.isLoading = false;
+          this.toast.error('Unable to delete appointment', 'Please try again.');
+        }
       });
     }
   }

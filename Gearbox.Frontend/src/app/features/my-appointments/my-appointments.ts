@@ -2,17 +2,20 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Navmenu } from '../../shared/components/navmenu/navmenu';
+import { Topbar } from '../../shared/components/topbar/topbar';
 import { Auth } from '../../core/services/auth/auth';
 import { AppointmentService } from '../../core/services/appointment/appointment.service';
 import { CustomerService } from '../../core/services/customer/customer.service';
 import { VehicleService, Vehicle } from '../../core/services/vehicle/vehicle.service';
 import { Appointment, NewAppointment } from '../../core/models/appointment.model';
 import { Customer } from '../../core/models/customer.model';
+import { ToastService } from '../../shared/components/toast/toast.service';
+import { Spinner } from '../../shared/components/spinner/spinner';
 
 @Component({
   selector: 'app-my-appointments',
   standalone: true,
-  imports: [CommonModule, FormsModule, DatePipe, Navmenu],
+  imports: [CommonModule, FormsModule, DatePipe, Navmenu, Topbar],
   templateUrl: './my-appointments.html',
   styleUrl: './my-appointments.css',
 })

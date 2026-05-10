@@ -1,0 +1,28 @@
+/* spinner.css */
+.spinner-container {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 14px;
+  z-index: 9999;
+  background: rgba(26, 58, 58, 0.5);
+}
+
+.gear-spinner {
+  animation: gear-spin 1.8s linear infinite;
+}
+
+.spinner-label {
+  font-size: 11px;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: rgba(232, 240, 240, 0.65);
+  font-weight: 500;
+}
+
+@keyframes gear-spin {
+  to { transform: rotate(360deg); }
+}

@@ -1,3 +1,7 @@
+@if(isLoading){
+  <app-spinner></app-spinner>
+}
+
 <div class="page-layout">
   <app-navmenu />
 
@@ -9,7 +13,7 @@
           Welcome back{{ customer ? ', ' + customer.firstName : '' }}. Your garage summary is ready.
         </p>
       </div>
-      <div class="w-10 h-10 rounded-full bg-[#1a3a3a]"></div>
+      <app-topbar />
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-6 mb-8">

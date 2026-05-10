@@ -6,16 +6,19 @@ import { Topbar } from '../../shared/components/topbar/topbar';
 import { VendorService } from '../../core/services/vendor/vendor';
 import { Vendor, NewVendor } from '../../core/models/vendor.model';
 import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
+import { ToastService } from '../../shared/components/toast/toast.service';
+import { Spinner } from '../../shared/components/spinner/spinner';
 
 @Component({
   selector: 'app-vendor-management',
   standalone: true,
-  imports: [Navmenu, Topbar, FormsModule, CommonModule],
+  imports: [Navmenu, Topbar, FormsModule, CommonModule, Spinner],
   templateUrl: './vendor-management.html',
   styleUrl: './vendor-management.css',
 })
 export class VendorManagement implements OnInit {
   private vendorService = inject(VendorService);
+  private toast = inject(ToastService);
 
   vendors: Vendor[] = [];
   filteredVendors: Vendor[] = [];
@@ -58,6 +61,7 @@ export class VendorManagement implements OnInit {
       },
       error: (err) => {
         console.error('Error loading vendors', err);
+        this.toast.error('Unable to load vendors', 'Please try again.');
         this.isLoading = false;
       }
     });
@@ -112,14 +116,19 @@ export class VendorManagement implements OnInit {
   addVendor() {
     if (!this.newVendor.name || !this.newVendor.email) return;
 
+    this.isLoading = true;
     this.vendorService.add(this.newVendor).subscribe({
       next: (vendor) => {
         this.vendors.push(vendor);
         this.applyFilter(this.searchQuery);
         this.closeAddDialog();
+        this.isLoading = false;
+        this.toast.success('Vendor added', 'The vendor was saved successfully.');
       },
       error: (err) => {
         console.error('Error adding vendor', err);
+        this.isLoading = false;
+        this.toast.error('Unable to add vendor', 'Please check the details and try again.');
       }
     });
   }
@@ -127,6 +136,7 @@ export class VendorManagement implements OnInit {
   updateVendor() {
     if (!this.selectedVendor) return;
 
+    this.isLoading = true;
     this.vendorService.update(this.selectedVendor.id, this.selectedVendor).subscribe({
       next: () => {
         const index = this.vendors.findIndex(v => v.id === this.selectedVendor?.id);
@@ -135,22 +145,31 @@ export class VendorManagement implements OnInit {
           this.applyFilter(this.searchQuery);
         }
         this.closeEditDialog();
+        this.isLoading = false;
+        this.toast.success('Vendor updated', 'The vendor changes were saved.');
       },
       error: (err) => {
         console.error('Error updating vendor', err);
+        this.isLoading = false;
+        this.toast.error('Unable to update vendor', 'Please try again.');
       }
     });
   }
 
   deleteVendor(id: string) {
     if (confirm('Are you sure you want to delete this vendor?')) {
+      this.isLoading = true;
       this.vendorService.delete(id).subscribe({
         next: () => {
           this.vendors = this.vendors.filter(v => v.id !== id);
           this.applyFilter(this.searchQuery);
+          this.isLoading = false;
+          this.toast.success('Vendor deleted', 'The vendor was removed.');
         },
         error: (err) => {
           console.error('Error deleting vendor', err);
+          this.isLoading = false;
+          this.toast.error('Unable to delete vendor', 'Please try again.');
         }
       });
     }

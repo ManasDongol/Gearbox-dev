@@ -6,11 +6,13 @@ import { Topbar } from '../../shared/components/topbar/topbar';
 import { CustomerService } from '../../core/services/customer/customer.service';
 import { Customer, NewCustomer } from '../../core/models/customer.model';
 import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
+import { ToastService } from '../../shared/components/toast/toast.service';
+import { Spinner } from '../../shared/components/spinner/spinner';
 
 @Component({
   selector: 'app-customer-management',
   standalone: true,
-  imports: [Navmenu, Topbar, FormsModule, CommonModule],
+  imports: [Navmenu, Topbar, FormsModule, CommonModule,Spinner],
   templateUrl: './customer-management.html',
   styleUrl: './customer-management.css',
 })

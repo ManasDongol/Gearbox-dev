@@ -1,3 +1,7 @@
+@if(isLoading){
+  <app-spinner></app-spinner>
+}
+
 <div class="page-layout">
   <app-navmenu />
 
@@ -7,7 +11,7 @@
         <h1 class="text-3xl font-bold text-[#1a3a3a]">My Invoices</h1>
         <p class="text-gray-500 mt-1">A read-only view of your billing history.</p>
       </div>
-      <div class="w-10 h-10 rounded-full bg-[#1a3a3a]"></div>
+      <app-topbar />
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">

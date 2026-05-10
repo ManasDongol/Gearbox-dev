@@ -40,13 +40,16 @@ namespace Gearbox.Application.Services
             return MapToDto(entity);
         }
 
-        public async Task UpdateAsync(Guid id, UserDto dto)
+        public async Task UpdateAsync(string id, UserDto dto)
         {
-            var entity = await _repository.GetByIdAsync(id);
+            var entity = await _repository.GetByIdAsync(Guid.TryParse(id,out Guid guid) ? guid : Guid.Empty);
             if (entity != null)
             {
-                // Assign new values from dto
-                // (In a real scenario, you'd map individual properties)
+                entity.FirstName = dto.FirstName ?? string.Empty;
+                entity.LastName = dto.LastName ?? string.Empty;
+                entity.Address = dto.Address;
+                entity.PhoneNumber = dto.PhoneNumber;
+
                 _repository.Update(entity);
                 await _repository.SaveChangesAsync();
             }
@@ -75,6 +78,7 @@ namespace Gearbox.Application.Services
                 FirstName = entity.FirstName,
                 LastName = entity.LastName,
                 Address = entity.Address,
+                PhoneNumber = entity.PhoneNumber,
                
               
             };

@@ -1,0 +1,98 @@
+@if(isLoading || isSaving){
+  <app-spinner></app-spinner>
+}
+
+<div class="page-layout">
+  <app-navmenu />
+
+  <main class="main-content">
+    <div class="profile-header">
+      <div>
+        <h1>Profile</h1>
+        <p>View your account details and keep your contact information current.</p>
+      </div>
+      <app-topbar />
+    </div>
+
+    @if (isLoading) {
+      <section class="profile-shell">
+        <p class="profile-state">Loading profile...</p>
+      </section>
+    } @else if (profile) {
+      <section class="profile-shell">
+        <aside class="profile-summary">
+          <div class="profile-picture" aria-hidden="true">
+            <span>{{ initials }}</span>
+          </div>
+          <h2>{{ displayName }}</h2>
+          <p>{{ roles }}</p>
+          <span class="status-pill" [class.status-pill--inactive]="!profile.isActive">
+            {{ profile.isActive ? 'Active Account' : 'Inactive Account' }}
+          </span>
+        </aside>
+
+        <form class="profile-form" (ngSubmit)="saveProfile()">
+          <div class="section-heading">
+            <h2>Account Details</h2>
+            <p>Username and email are managed by account settings and cannot be edited here.</p>
+          </div>
+
+          <div class="form-grid">
+            <label class="profile-field">
+              <span>Username</span>
+              <input class="profile-input profile-input--locked" [value]="profile.username" disabled />
+            </label>
+
+            <label class="profile-field">
+              <span>Email</span>
+              <input class="profile-input profile-input--locked" [value]="profile.email" disabled />
+            </label>
+
+            <label class="profile-field">
+              <span>First Name</span>
+              <input class="profile-input" name="firstName" [(ngModel)]="profile.firstName" />
+            </label>
+
+            <label class="profile-field">
+              <span>Last Name</span>
+              <input class="profile-input" name="lastName" [(ngModel)]="profile.lastName" />
+            </label>
+
+            <label class="profile-field">
+              <span>Phone Number</span>
+              <input class="profile-input" name="phoneNumber" [(ngModel)]="profile.phoneNumber" />
+            </label>
+
+            <label class="profile-field profile-field--wide">
+              <span>Address</span>
+              <textarea
+                class="profile-input"
+                name="address"
+                rows="4"
+                [(ngModel)]="profile.address"
+              ></textarea>
+            </label>
+          </div>
+
+          @if (saveMessage) {
+            <p class="save-message">{{ saveMessage }}</p>
+          }
+
+          @if (errorMessage) {
+            <p class="error-message">{{ errorMessage }}</p>
+          }
+
+          <div class="profile-actions">
+            <button class="save-button" type="submit" [disabled]="isSaving">
+              {{ isSaving ? 'Saving...' : 'Save Changes' }}
+            </button>
+          </div>
+        </form>
+      </section>
+    } @else {
+      <section class="profile-shell">
+        <p class="profile-state">{{ errorMessage || 'Profile details are unavailable.' }}</p>
+      </section>
+    }
+  </main>
+</div>

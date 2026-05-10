@@ -2,6 +2,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Navmenu } from '../../shared/components/navmenu/navmenu';
+import { Topbar } from '../../shared/components/topbar/topbar';
 import { Auth } from '../../core/services/auth/auth';
 import { CustomerService } from '../../core/services/customer/customer.service';
 import {
@@ -10,11 +11,13 @@ import {
   Vehicle as CustomerVehicle,
 } from '../../core/services/vehicle/vehicle.service';
 import { Customer } from '../../core/models/customer.model';
+import { ToastService } from '../../shared/components/toast/toast.service';
+import { Spinner } from '../../shared/components/spinner/spinner';
 
 @Component({
   selector: 'app-vehicle',
   standalone: true,
-  imports: [CommonModule, FormsModule, Navmenu],
+  imports: [CommonModule, FormsModule, Navmenu, Topbar, Spinner],
   templateUrl: './vehicle.html',
   styleUrl: './vehicle.css',
 })
@@ -22,6 +25,7 @@ export class Vehicle implements OnInit {
   private auth = inject(Auth);
   private customerService = inject(CustomerService);
   private vehicleService = inject(VehicleService);
+  private toast = inject(ToastService);
 
   customer: Customer | null = null;
   vehicles: CustomerVehicle[] = [];
@@ -47,6 +51,7 @@ export class Vehicle implements OnInit {
       },
       error: (err) => {
         console.error('Error loading customer profile', err);
+        this.toast.error('Unable to load customer profile', 'Vehicle ownership may be incomplete.');
         this.loadVehicles();
       },
     });
@@ -65,6 +70,7 @@ export class Vehicle implements OnInit {
       },
       error: (err) => {
         console.error('Error loading vehicles', err);
+        this.toast.error('Unable to load vehicles', 'Please try again.');
         this.isLoading = false;
       },
     });
@@ -118,6 +124,7 @@ export class Vehicle implements OnInit {
     };
 
     if (this.editingVehicle) {
+      this.isLoading = true;
       this.vehicleService
         .update(this.editingVehicle.id, {
           id: this.editingVehicle.id,
@@ -127,29 +134,47 @@ export class Vehicle implements OnInit {
           next: () => {
             this.loadVehicles();
             this.closeDialog();
+            this.toast.success('Vehicle updated', 'The vehicle changes were saved.');
           },
-          error: (err) => console.error('Error updating vehicle', err),
+          error: (err) => {
+            console.error('Error updating vehicle', err);
+            this.isLoading = false;
+            this.toast.error('Unable to update vehicle', 'Please try again.');
+          },
         });
       return;
     }
 
+    this.isLoading = true;
     this.vehicleService.add(payload).subscribe({
       next: () => {
         this.loadVehicles();
         this.closeDialog();
+        this.toast.success('Vehicle added', 'The vehicle was saved.');
       },
-      error: (err) => console.error('Error adding vehicle', err),
+      error: (err) => {
+        console.error('Error adding vehicle', err);
+        this.isLoading = false;
+        this.toast.error('Unable to add vehicle', 'Please check the details and try again.');
+      },
     });
   }
 
   deleteVehicle(vehicle: CustomerVehicle) {
     if (!confirm(`Delete ${vehicle.make} ${vehicle.model}?`)) return;
 
+    this.isLoading = true;
     this.vehicleService.delete(vehicle.id).subscribe({
       next: () => {
         this.vehicles = this.vehicles.filter((item) => item.id !== vehicle.id);
+        this.isLoading = false;
+        this.toast.success('Vehicle deleted', 'The vehicle was removed.');
       },
-      error: (err) => console.error('Error deleting vehicle', err),
+      error: (err) => {
+        console.error('Error deleting vehicle', err);
+        this.isLoading = false;
+        this.toast.error('Unable to delete vehicle', 'Please try again.');
+      },
     });
   }
 

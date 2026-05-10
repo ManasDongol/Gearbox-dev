@@ -12,6 +12,8 @@ import { Customer } from '../../core/models/customer.model';
 import { Staff } from '../../core/models/staff.model';
 import { Part } from '../../core/models/part.model';
 import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
+import { ToastService } from '../../shared/components/toast/toast.service';
+import { Spinner } from '../../shared/components/spinner/spinner';
 
 @Component({
   selector: 'app-sales-invoices',

@@ -6,16 +6,19 @@ import { Topbar } from '../../shared/components/topbar/topbar';
 import { StaffService } from '../../core/services/staff/staff.service';
 import { Staff, NewStaff } from '../../core/models/staff.model';
 import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
+import { ToastService } from '../../shared/components/toast/toast.service';
+import { Spinner } from '../../shared/components/spinner/spinner';
 
 @Component({
   selector: 'app-staff-management',
   standalone: true,
-  imports: [Navmenu, Topbar, FormsModule, CommonModule],
+  imports: [Navmenu, Topbar, FormsModule, CommonModule, Spinner],
   templateUrl: './staff-management.html',
   styleUrl: './staff-management.css',
 })
 export class StaffManagement implements OnInit {
   private staffService = inject(StaffService);
+  private toast = inject(ToastService);
 
   staff: Staff[] = [];
   filteredStaff: Staff[] = [];
@@ -64,6 +67,7 @@ export class StaffManagement implements OnInit {
       },
       error: (err) => {
         console.error('Error loading staff', err);
+        this.toast.error('Unable to load staff', 'Please try again.');
         this.isLoading = false;
       }
     });
@@ -130,13 +134,17 @@ export class StaffManagement implements OnInit {
   registerStaff() {
     if (!this.newStaff.userName || !this.newStaff.email || !this.newStaff.password) return;
 
+    this.isLoading = true;
     this.staffService.add(this.newStaff).subscribe({
       next: () => {
         this.loadStaff();
         this.closeRegisterDialog();
+        this.toast.success('Staff member added', 'The staff account was created.');
       },
       error: (err) => {
         console.error('Error registering staff', err);
+        this.isLoading = false;
+        this.toast.error('Unable to add staff member', 'Please check the details and try again.');
       }
     });
   }
@@ -144,6 +152,7 @@ export class StaffManagement implements OnInit {
   updateStaff() {
     if (!this.selectedStaff) return;
 
+    this.isLoading = true;
     this.staffService.update(this.selectedStaff.userId, this.selectedStaff).subscribe({
       next: () => {
         const index = this.staff.findIndex(s => s.userId === this.selectedStaff?.userId);
@@ -152,22 +161,31 @@ export class StaffManagement implements OnInit {
           this.applyFilter();
         }
         this.closeEditDialog();
+        this.isLoading = false;
+        this.toast.success('Staff member updated', 'The staff changes were saved.');
       },
       error: (err) => {
         console.error('Error updating staff', err);
+        this.isLoading = false;
+        this.toast.error('Unable to update staff member', 'Please try again.');
       }
     });
   }
 
   deleteStaff(id: string) {
     if (confirm('Are you sure you want to delete this staff member?')) {
+      this.isLoading = true;
       this.staffService.delete(id).subscribe({
         next: () => {
           this.staff = this.staff.filter(s => s.userId !== id);
           this.applyFilter();
+          this.isLoading = false;
+          this.toast.success('Staff member deleted', 'The staff member was removed.');
         },
         error: (err) => {
           console.error('Error deleting staff', err);
+          this.isLoading = false;
+          this.toast.error('Unable to delete staff member', 'Please try again.');
         }
       });
     }

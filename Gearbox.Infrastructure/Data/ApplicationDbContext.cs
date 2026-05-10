@@ -1,3 +1,4 @@
+using AgroLink.Domain.Entities;
 using Gearbox.Domain.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -27,6 +28,9 @@ namespace Gearbox.Infrastructure.Data
         public DbSet<Notification> Notifications { get; set; }
         public DbSet<SalesServicesInvoice> SalesServicesInvoices { get; set; }
         public DbSet<SalesServicesInvoiceItem> SalesServicesInvoiceItems { get; set; }
+        
+        public DbSet<AiSession> AiSessions { get; set; }
+        public DbSet<AiMessage> AiMessages { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -186,7 +190,17 @@ namespace Gearbox.Infrastructure.Data
                 .HasForeignKey(ii => ii.SalesServicesInvoiceId)
                 .OnDelete(DeleteBehavior.Cascade);
             
-            
+            modelBuilder.Entity<AiSession>()
+                .HasOne(s => s.User)
+                .WithMany()
+                .HasForeignKey(s => s.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<AiMessage>()
+                .HasOne(m => m.AiSession)
+                .WithMany(s => s.AiMessages)
+                .HasForeignKey(m => m.AiSessionId)
+                .OnDelete(DeleteBehavior.Cascade);
      
             //service - service reviews
                 

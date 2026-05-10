@@ -3,12 +3,14 @@ import { RouterLink,Router } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';// Adjust path as needed
+import { ToastService } from '../../../shared/components/toast/toast.service';
+import { Spinner } from '../../../shared/components/spinner/spinner';
 
 @Component({
   selector: 'app-register',
   standalone: true,
-  // Add ReactiveFormsModule to your imports
-  imports: [RouterLink, ReactiveFormsModule], 
+  
+  imports: [RouterLink, ReactiveFormsModule,Spinner], 
   templateUrl: './register.html',
   styleUrl: './register.css',
 })
@@ -16,6 +18,7 @@ export class Register {
   private fb = inject(FormBuilder);
   private http = inject(HttpClient);
 private router = inject(Router);
+isLoading: boolean = false;
   // Define the form structure
   registerForm: FormGroup = this.fb.group({
     userName: ['', [Validators.required, Validators.minLength(3)]],

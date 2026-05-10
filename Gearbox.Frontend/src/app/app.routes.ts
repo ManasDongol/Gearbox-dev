@@ -113,6 +113,16 @@ export const routes: Routes = [
     canActivate: [roleGuard('Customer')],
     loadComponent: () => import('./features/part-requests/part-requests').then(m => m.PartRequests)
   },
+  {
+    path: 'profile',
+    canActivate: [roleGuard('Admin', 'Staff', 'Customer')],
+    loadComponent: () => import('./features/profile/profile').then(m => m.Profile)
+  },
+  {
+    path: 'gearbox-ai',
+    canActivate: [roleGuard('Customer','Staff','Admin')],
+    loadComponent: () => import('./features/ai-page/ai-page').then(m => m.GearboxAiPage)
+  },
 
   { path: 'confirm-email', component: ConfirmEmailComponent },
   // Default

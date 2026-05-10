@@ -2,6 +2,8 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Navmenu } from '../../shared/components/navmenu/navmenu';
 import { Topbar } from '../../shared/components/topbar/topbar';
+import { ToastService } from '../../shared/components/toast/toast.service';
+import { Spinner } from '../../shared/components/spinner/spinner';
 
 @Component({
   selector: 'app-dashboard',

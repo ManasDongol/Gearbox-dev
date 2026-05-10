@@ -2,16 +2,19 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Navmenu } from '../../shared/components/navmenu/navmenu';
+import { Topbar } from '../../shared/components/topbar/topbar';
 import { Auth } from '../../core/services/auth/auth';
 import { CustomerService } from '../../core/services/customer/customer.service';
 import { PartRequestService } from '../../core/services/part-request/part-request.service';
 import { Customer } from '../../core/models/customer.model';
 import { NewPartRequest, PartRequest } from '../../core/models/part-request.model';
+import { ToastService } from '../../shared/components/toast/toast.service';
+import { Spinner } from '../../shared/components/spinner/spinner';
 
 @Component({
   selector: 'app-part-requests',
   standalone: true,
-  imports: [CommonModule, FormsModule, DatePipe, Navmenu],
+  imports: [CommonModule, FormsModule, DatePipe, Navmenu, Topbar],
   templateUrl: './part-requests.html',
   styleUrl: './part-requests.css',
 })

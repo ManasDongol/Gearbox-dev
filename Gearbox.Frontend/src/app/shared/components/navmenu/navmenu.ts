@@ -26,24 +26,26 @@ export class Navmenu implements OnInit {
         {
           items: [
             { label: 'Dashboard', route: '/dashboard' },
-            { label: 'Staff Management', route: '/staff-management' },
-            { label: 'Customer Management', route: '/customer-management' },
-            { label: 'Appointments', route: '/appointment-management' },
+            { label: 'Staffs', route: '/staff-management' },
+            { label: 'Customers', route: '/customer-management' },
+            { label: 'Vendors', route: '/vendors' },
+        
           ],
         },
         {
           items: [
             { label: 'Inventory', route: '/inventory' },
-            { label: 'Vendors', route: '/vendors' },
-            { label: 'Purchase Invoices', route: '/purchase-invoices' },
+              { label: 'Appointments', route: '/appointment-management' },
+           
           ],
         },
         {
           items: [
+             { label: 'Purchase Invoices', route: '/purchase-invoices' },
             { label: 'Sales Invoices', route: '/sales-invoices' },
-            { label: 'Reports', route: '/reports' },
-            { label: 'Notifications', route: '/notifications' },
-            { label: 'Settings', route: '/settings' },
+            {label:'AI', route:'/gearbox-ai'}
+          
+           
           ],
         },
       ];

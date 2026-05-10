@@ -2,6 +2,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { Router } from '@angular/router';
 import { Navmenu } from '../../shared/components/navmenu/navmenu';
+import { Topbar } from '../../shared/components/topbar/topbar';
 import { Auth } from '../../core/services/auth/auth';
 import { CustomerService } from '../../core/services/customer/customer.service';
 import { VehicleService, Vehicle } from '../../core/services/vehicle/vehicle.service';
@@ -12,11 +13,13 @@ import { Customer } from '../../core/models/customer.model';
 import { Appointment } from '../../core/models/appointment.model';
 import { SalesInvoice } from '../../core/models/sales-invoice.model';
 import { PartRequest } from '../../core/models/part-request.model';
+import { ToastService } from '../../shared/components/toast/toast.service';
+import { Spinner } from '../../shared/components/spinner/spinner';
 
 @Component({
   selector: 'app-user-dashboard',
   standalone: true,
-  imports: [CommonModule, DatePipe, Navmenu],
+  imports: [CommonModule, DatePipe, Navmenu, Topbar, Spinner],
   templateUrl: './user-dashboard.html',
   styleUrl: './user-dashboard.css',
 })
@@ -28,6 +31,7 @@ export class UserDashboard implements OnInit {
   private appointmentService = inject(AppointmentService);
   private salesInvoiceService = inject(SalesInvoiceService);
   private partRequestService = inject(PartRequestService);
+  private toast = inject(ToastService);
 
   customer: Customer | null = null;
   vehicles: Vehicle[] = [];
@@ -74,6 +78,7 @@ export class UserDashboard implements OnInit {
       },
       error: (err) => {
         console.error('Error loading customer dashboard profile', err);
+        this.toast.error('Unable to load profile', 'Dashboard data may be incomplete.');
         this.loadCustomerData();
       },
     });
@@ -90,7 +95,10 @@ export class UserDashboard implements OnInit {
           (vehicle) => vehicle.customerId === customerId || vehicle.customerId === userId,
         );
       },
-      error: (err) => console.error('Error loading customer vehicles', err),
+      error: (err) => {
+        console.error('Error loading customer vehicles', err);
+        this.toast.error('Unable to load vehicles', 'Dashboard vehicle data may be incomplete.');
+      },
     });
 
     this.appointmentService.getAll().subscribe({
@@ -100,7 +108,10 @@ export class UserDashboard implements OnInit {
             appointment.customerId === customerId || appointment.customerId === userId,
         );
       },
-      error: (err) => console.error('Error loading customer appointments', err),
+      error: (err) => {
+        console.error('Error loading customer appointments', err);
+        this.toast.error('Unable to load appointments', 'Dashboard appointment data may be incomplete.');
+      },
     });
 
     this.salesInvoiceService.getAll().subscribe({
@@ -112,6 +123,7 @@ export class UserDashboard implements OnInit {
       },
       error: (err) => {
         console.error('Error loading customer invoices', err);
+        this.toast.error('Unable to load invoices', 'Please try again.');
         this.isLoading = false;
       },
     });
@@ -122,7 +134,10 @@ export class UserDashboard implements OnInit {
           (request) => request.customerId === customerId || request.customerId === userId,
         );
       },
-      error: (err) => console.error('Error loading customer part requests', err),
+      error: (err) => {
+        console.error('Error loading customer part requests', err);
+        this.toast.error('Unable to load part requests', 'Dashboard request data may be incomplete.');
+      },
     });
   }
 
@@ -165,6 +180,6 @@ export class UserDashboard implements OnInit {
   }
 
   payPendingCredits() {
-    alert('Payment flow will open here.');
+    this.toast.info('Payment flow', 'Payment flow will open here.');
   }
 }

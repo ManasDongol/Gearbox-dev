@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, HostListener, OnInit, inject } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { NotificationItem } from '../../../core/models/notification.model';
 import { Auth } from '../../../core/services/auth/auth';
 import { NotificationService } from '../../../core/services/notification/notification.service';
@@ -8,7 +9,7 @@ import { SignalRService } from '../../../core/services/SignalR/signalr.service';
 @Component({
   selector: 'app-topbar',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterLink],
   templateUrl: './topbar.html',
   styleUrl: './topbar.css',
 })

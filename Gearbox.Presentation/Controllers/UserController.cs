@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Gearbox.Application.DTOs;
@@ -40,9 +41,13 @@ namespace Gearbox.Presentation.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(Guid id, [FromBody] UserDto dto)
+        public async Task<IActionResult> Update([FromBody] UserDto dto)
         {
-            await _service.UpdateAsync(id, dto);
+            
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            
+            if(userId == null) return BadRequest();
+            await _service.UpdateAsync(userId, dto);
             return NoContent();
         }
 

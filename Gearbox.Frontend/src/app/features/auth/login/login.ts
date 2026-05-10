@@ -5,17 +5,21 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { LoginService } from '../../../core/services/login/login';
 import { Auth } from '../../../core/services/auth/auth';
 import { switchMap } from 'rxjs';
-
+import { ToastService } from '../../../shared/components/toast/toast.service';
+import { Spinner } from '../../../shared/components/spinner/spinner';
 @Component({
   selector: 'app-login',
-  imports: [RouterLink, ReactiveFormsModule],
+  standalone:true,
+  imports: [RouterLink, ReactiveFormsModule,Spinner],
   templateUrl: './login.html',
   styleUrl: './login.css',
 })
 export class Login {
+  isLoading: boolean =false;
   private fb = inject(FormBuilder);
   private router = inject(Router);
   private auth = inject(Auth);
+  private toast = inject(ToastService);
 
   authService = inject(LoginService);
 
@@ -32,22 +36,31 @@ onSubmit() {
     return;
   }
 
+  this.isLoading =true;
+
   this.authService.login(this.form.getRawValue()).pipe(
     switchMap(() => this.auth.loadUser())
   ).subscribe({
     next: (user) => {
       if (!user) {
         this.errorMessage = 'Could not load user info';
+         this.isLoading =false;
         return;
       }
       if (this.auth.hasAnyRole(['Admin', 'Staff'])) {
+         this.isLoading =false;
+        this.toast.success("login successful!, re-directing","");
         this.router.navigate(['/dashboard']);
       } else {
         console.log(this.auth.getRole());
+         this.isLoading =false;
+         this.toast.success("login successful!, re-directing","");
         this.router.navigate([`/user-dashboard`]);
       }
     },
     error: () => {
+       this.isLoading =false;
+       this.toast.error("login unsuccessful please try again!","");
       this.errorMessage = 'Invalid credentials';
     }
   });
