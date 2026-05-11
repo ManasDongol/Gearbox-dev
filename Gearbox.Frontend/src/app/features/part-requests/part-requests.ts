@@ -14,7 +14,7 @@ import { Spinner } from '../../shared/components/spinner/spinner';
 @Component({
   selector: 'app-part-requests',
   standalone: true,
-  imports: [CommonModule, FormsModule, DatePipe, Navmenu, Topbar],
+  imports: [CommonModule, FormsModule, DatePipe, Navmenu, Topbar,Spinner],
   templateUrl: './part-requests.html',
   styleUrl: './part-requests.css',
 })

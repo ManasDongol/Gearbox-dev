@@ -16,7 +16,7 @@ import { Spinner } from '../../shared/components/spinner/spinner';
 @Component({
   selector: 'app-purchase-invoices',
   standalone: true,
-  imports: [Navmenu, Topbar, FormsModule, CommonModule, DatePipe],
+  imports: [Navmenu, Topbar, FormsModule, CommonModule, DatePipe,Spinner],
   providers: [DatePipe],
   templateUrl: './purchase-invoices.html',
   styleUrl: './purchase-invoices.css',

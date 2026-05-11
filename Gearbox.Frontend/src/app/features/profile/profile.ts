@@ -12,7 +12,7 @@ import { Spinner } from '../../shared/components/spinner/spinner';
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [CommonModule, FormsModule, Navmenu, Topbar],
+  imports: [CommonModule, FormsModule, Navmenu, Topbar,Spinner],
   templateUrl: './profile.html',
   styleUrl: './profile.css',
 })

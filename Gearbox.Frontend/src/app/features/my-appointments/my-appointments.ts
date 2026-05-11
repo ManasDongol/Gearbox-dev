@@ -15,7 +15,7 @@ import { Spinner } from '../../shared/components/spinner/spinner';
 @Component({
   selector: 'app-my-appointments',
   standalone: true,
-  imports: [CommonModule, FormsModule, DatePipe, Navmenu, Topbar],
+  imports: [CommonModule, FormsModule, DatePipe, Navmenu, Topbar,Spinner],
   templateUrl: './my-appointments.html',
   styleUrl: './my-appointments.css',
 })

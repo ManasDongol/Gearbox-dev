@@ -7,7 +7,7 @@ import { Spinner } from '../../shared/components/spinner/spinner';
 
 @Component({
   selector: 'app-dashboard',
-  imports: [Navmenu, Topbar, CommonModule],
+  imports: [Navmenu, Topbar, CommonModule,Spinner],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css',
 })

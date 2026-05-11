@@ -14,7 +14,7 @@ import { Spinner } from '../../shared/components/spinner/spinner';
 @Component({
   selector: 'app-inventory',
   standalone: true,
-  imports: [Navmenu, Topbar, FormsModule, CommonModule],
+  imports: [Navmenu, Topbar, FormsModule, CommonModule,Spinner],
   templateUrl: './inventory.html',
   styleUrl: './inventory.css',
 })

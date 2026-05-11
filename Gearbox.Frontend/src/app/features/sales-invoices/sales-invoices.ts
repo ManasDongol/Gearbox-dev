@@ -18,7 +18,7 @@ import { Spinner } from '../../shared/components/spinner/spinner';
 @Component({
   selector: 'app-sales-invoices',
   standalone: true,
-  imports: [Navmenu, Topbar, FormsModule, CommonModule, DatePipe],
+  imports: [Navmenu, Topbar, FormsModule, CommonModule, DatePipe,Spinner],
   providers: [DatePipe],
   templateUrl: './sales-invoices.html',
   styleUrl: './sales-invoices.css',

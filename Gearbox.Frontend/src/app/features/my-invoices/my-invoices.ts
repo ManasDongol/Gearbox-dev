@@ -13,7 +13,7 @@ import { Spinner } from '../../shared/components/spinner/spinner';
 @Component({
   selector: 'app-my-invoices',
   standalone: true,
-  imports: [CommonModule, DatePipe, Navmenu, Topbar],
+  imports: [CommonModule, DatePipe, Navmenu, Topbar,Spinner],
   templateUrl: './my-invoices.html',
   styleUrl: './my-invoices.css',
 })

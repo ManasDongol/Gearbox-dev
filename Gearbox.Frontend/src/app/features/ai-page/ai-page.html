@@ -46,12 +46,12 @@
           *ngFor="let chat of chatHistory"
           class="gb-history-item"
           [class.active]="chat.id === activeChatId"
-        >
+         (click)="loadChat(chat.id)">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
           </svg>
           <span>{{ chat.title }}</span>
-          <button class="gb-delete-btn" title="Delete">
+          <button class="gb-delete-btn" (click)="deleteSession(chat.id, $event)" title="Delete">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <polyline points="3 6 5 6 21 6"/>
               <path d="M19 6l-1 14H6L5 6"/>
@@ -109,10 +109,7 @@
         <div *ngFor="let msg of messages" class="gb-msg-wrap" [class.gb-user-wrap]="msg.role === 'user'">
           <div class="gb-msg" [class.gb-user-msg]="msg.role === 'user'" [class.gb-ai-msg]="msg.role === 'ai'">
             <div class="gb-msg-avatar" *ngIf="msg.role === 'ai'">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="3"/>
-                <path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/>
-              </svg>
+                 <img src="images/whitelogo.png" style="width:24px;height:24px;">
             </div>
             <div class="gb-msg-body">
               <img *ngIf="msg.isImage && (msg.imagePreview || msg.imagePath)" [src]="msg.imagePreview || msg.imagePath" class="gb-msg-img" alt="uploaded" />
@@ -160,13 +157,13 @@
           <textarea
             #inputField
             [(ngModel)]="userInput"
-            
+             (keydown)="handleKeyDown($event)"
             placeholder="Ask about vehicles, services, invoices, inventory..."
             rows="1"
             class="gb-input"
             [disabled]="isLoading || conversationLocked">
           </textarea>
-          <button class="gb-send-btn"  [disabled]="(!userInput.trim() && !selectedImage) || isLoading || conversationLocked">
+          <button class="gb-send-btn" (click)="sendMessage()"  [disabled]="(!userInput.trim() && !selectedImage) || isLoading || conversationLocked">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
               <line x1="22" y1="2" x2="11" y2="13"/>
               <polygon points="22 2 15 22 11 13 2 9 22 2"/>

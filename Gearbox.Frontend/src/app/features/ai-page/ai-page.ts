@@ -27,8 +27,7 @@ interface ChatHistory {
   templateUrl: './ai-page.html',
   styleUrl: './ai-page.css',
 })
-export class GearboxAiPage {
-  //implements AfterViewChecked, OnInit {
+export class GearboxAiPage implements AfterViewChecked, OnInit {
   @ViewChild('messagesContainer') private messagesContainer!: ElementRef;
   @ViewChild('inputField') private inputField!: ElementRef;
 
@@ -52,24 +51,19 @@ export class GearboxAiPage {
 
   private shouldScrollToBottom = false;
   private toast = inject(ToastService);
+  private service = inject(AiService);
 
-  constructor(private service: AiService) {}
+  constructor() {}
 
   ngOnInit() {
-   // this.loadSessions();
+   this.loadSessions();
   }
 
   toggleSidebar() {
     this.sidebarCollapsed = !this.sidebarCollapsed;
   }
 
-  loadSessions() {}
 
-  startNewChat(){}
-
-  loadChat(){}
-
-  deleteSession(){}
 
   clearImage(){}
 
@@ -77,8 +71,8 @@ export class GearboxAiPage {
     this.router.navigate(['/dashboard']);
   }
 
-  sendSuggestion(val: string){}
-/*
+ 
+
   ngAfterViewChecked() {
     if (this.shouldScrollToBottom) {
       this.scrollToBottom();
@@ -143,21 +137,7 @@ export class GearboxAiPage {
     });
   }
 
-  // ── Image ─────────────────────────────────────────────
-  onImageSelected(event: Event) {
-    const input = event.target as HTMLInputElement;
-    if (input.files?.[0]) {
-      this.selectedImage = input.files[0];
-      const reader = new FileReader();
-      reader.onload = () => this.imagePreview = reader.result as string;
-      reader.readAsDataURL(this.selectedImage);
-    }
-  }
 
-  clearImage() {
-    this.selectedImage = null;
-    this.imagePreview = null;
-  }
 
   sendSuggestion(text: string) {
     this.userInput = text;
@@ -265,5 +245,5 @@ export class GearboxAiPage {
       const el = this.messagesContainer?.nativeElement;
       if (el) el.scrollTop = el.scrollHeight;
     } catch {}
-  }*/
+  }
 }

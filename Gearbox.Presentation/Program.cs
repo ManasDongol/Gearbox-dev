@@ -195,6 +195,8 @@ builder.Services.AddScoped<INotificationService, NotificationService>();
 
 builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
 
+builder.Services.AddHttpClient();
+
 
 var app = builder.Build();
 
