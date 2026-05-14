@@ -11,6 +11,7 @@ namespace Gearbox.Application.DTOs
         public Guid? AppointmentId { get; set; }
         public decimal TotalAmount { get; set; }
         public decimal DiscountAmount { get; set; }
+        public bool PaymentStatus { get; set; }
         public DateTime CreatedAt { get; set; }
         public List<SalesServicesInvoiceItemDto> Items { get; set; } = new List<SalesServicesInvoiceItemDto>();
     }
@@ -22,6 +23,7 @@ namespace Gearbox.Application.DTOs
         public Guid? PartId { get; set; }
         public Guid? ServiceId { get; set; }
         public string Type { get; set; } // "Part" or "Service"
+        public string? ItemName { get; set; }
         public int Quantity { get; set; }
         public decimal UnitPrice { get; set; }
     }

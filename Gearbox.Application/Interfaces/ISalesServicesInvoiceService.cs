@@ -11,6 +11,7 @@ namespace Gearbox.Application.Interfaces
         Task<SalesServicesInvoiceDto> GetByIdAsync(Guid id);
         Task<SalesServicesInvoiceDto> AddAsync(NewSalesServicesInvoiceDto dto);
         Task UpdateAsync(Guid id, SalesServicesInvoiceDto dto);
+        Task<SalesServicesInvoiceDto> MarkAsPaidAsync(Guid id);
         Task DeleteAsync(Guid id);
     }
 

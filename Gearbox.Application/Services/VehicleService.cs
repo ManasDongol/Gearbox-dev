@@ -85,6 +85,7 @@ namespace Gearbox.Application.Services
                 Model = entity.Model,
                 Year = entity.Year,
                 VIN = entity.VIN,
+                VehicleType = entity.VehicleType,
                 
             };
         }
@@ -101,6 +102,7 @@ namespace Gearbox.Application.Services
                 Model = dto.Model,
                 Year = dto.Year,
                 VIN = dto.VIN,
+                VehicleType = dto.VehicleType,
                
             };
         }

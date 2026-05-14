@@ -18,5 +18,7 @@ public class SalesServicesInvoice
 
     public DateTime CreatedAt { get; set; }
 
+    public bool PaymentStatus { get; set; } = false;
+
     public ICollection<SalesServicesInvoiceItem> Items { get; set; }
 }

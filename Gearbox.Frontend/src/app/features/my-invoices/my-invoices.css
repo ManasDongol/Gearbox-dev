@@ -19,3 +19,43 @@
 .table-cell {
   @apply px-6 py-4 text-sm text-[#3a3a3a];
 }
+
+.status-badge {
+  @apply inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold;
+}
+
+.status-badge.paid {
+  @apply bg-green-50 text-green-700;
+}
+
+.status-badge.unpaid {
+  @apply bg-red-50 text-red-700;
+}
+
+.action-button {
+  @apply rounded-lg px-4 py-2 text-sm font-semibold transition-all duration-200 disabled:cursor-not-allowed;
+}
+
+.view-button {
+  @apply border border-gray-200 bg-white text-[#1a3a3a] hover:bg-gray-50;
+}
+
+.pay-button {
+  @apply bg-[#1a3a3a] text-white hover:bg-[#1a4a4a] disabled:bg-gray-200 disabled:text-gray-500;
+}
+
+.pay-button.is-paid {
+  @apply bg-green-50 text-green-700;
+}
+
+.modal-backdrop {
+  @apply fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4;
+}
+
+.invoice-modal {
+  @apply w-full max-w-4xl max-h-[85vh] overflow-auto rounded-xl bg-white p-6 shadow-xl;
+}
+
+.close-button {
+  @apply h-9 w-9 rounded-full border border-gray-200 text-xl leading-none text-gray-500 hover:bg-gray-50 hover:text-[#1a3a3a];
+}

@@ -56,9 +56,34 @@ namespace Gearbox.Presentation.Controllers
         public async Task<IActionResult> Delete(Guid id)
         {
             var staff = await _service.GetByIdAsync(id);
-            await _service.DeleteAsync(id);
+            try
+            {
+                await _service.DeleteAsync(id);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
             var staffName = staff == null ? id.ToString() : $"{staff.FirstName} {staff.LastName}".Trim();
             await NotifyAdminsAsync($"{GetActorName()} deleted staff: {staffName}");
+            return NoContent();
+        }
+
+        [HttpPost("{id}/promote-admin")]
+        public async Task<IActionResult> PromoteToAdmin(Guid id)
+        {
+            try
+            {
+                await _service.PromoteToAdminAsync(id);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+
+            var staff = await _service.GetByIdAsync(id);
+            var staffName = staff == null ? id.ToString() : $"{staff.FirstName} {staff.LastName}".Trim();
+            await NotifyAdminsAsync($"{GetActorName()} promoted staff to admin: {staffName}");
             return NoContent();
         }
 

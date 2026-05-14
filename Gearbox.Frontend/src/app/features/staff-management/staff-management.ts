@@ -89,7 +89,8 @@ export class StaffManagement implements OnInit {
         s.firstName.toLowerCase().includes(query) ||
         s.lastName.toLowerCase().includes(query) ||
         s.userId.toLowerCase().includes(query) ||
-        s.department.toLowerCase().includes(query);
+        s.department.toLowerCase().includes(query) ||
+        s.role.toLowerCase().includes(query);
 
       const matchesDept =
         !this.departmentFilter || s.department === this.departmentFilter;
@@ -173,6 +174,12 @@ export class StaffManagement implements OnInit {
   }
 
   deleteStaff(id: string) {
+    const staffMember = this.staff.find(s => s.userId === id);
+    if (staffMember?.role === 'Admin') {
+      this.toast.error('Admins cannot be deleted', 'Demote or review the admin account separately.');
+      return;
+    }
+
     if (confirm('Are you sure you want to delete this staff member?')) {
       this.isLoading = true;
       this.staffService.delete(id).subscribe({
@@ -186,6 +193,27 @@ export class StaffManagement implements OnInit {
           console.error('Error deleting staff', err);
           this.isLoading = false;
           this.toast.error('Unable to delete staff member', 'Please try again.');
+        }
+      });
+    }
+  }
+
+  promoteToAdmin(staff: Staff) {
+    if (staff.role === 'Admin') return;
+
+    if (confirm(`Promote ${staff.firstName} ${staff.lastName} to Admin?`)) {
+      this.isLoading = true;
+      this.staffService.promoteToAdmin(staff.userId).subscribe({
+        next: () => {
+          staff.role = 'Admin';
+          this.applyFilter();
+          this.isLoading = false;
+          this.toast.success('Staff promoted', 'The account now has admin access.');
+        },
+        error: (err) => {
+          console.error('Error promoting staff', err);
+          this.isLoading = false;
+          this.toast.error('Unable to promote staff member', 'Please try again.');
         }
       });
     }

@@ -21,10 +21,14 @@ export class MyInvoices implements OnInit {
   private auth = inject(Auth);
   private customerService = inject(CustomerService);
   private salesInvoiceService = inject(SalesInvoiceService);
+  private toast = inject(ToastService);
 
   customer: Customer | null = null;
   invoices: SalesInvoice[] = [];
+  selectedInvoice: SalesInvoice | null = null;
   isLoading = true;
+  isLoadingInvoiceItems = false;
+  payingInvoiceId: string | null = null;
 
   ngOnInit() {
     this.customerService.getAll().subscribe({
@@ -61,5 +65,56 @@ export class MyInvoices implements OnInit {
         this.isLoading = false;
       },
     });
+  }
+
+  payInvoice(invoice: SalesInvoice) {
+    if (invoice.paymentStatus || this.payingInvoiceId) return;
+
+    this.payingInvoiceId = invoice.id;
+    this.salesInvoiceService.markAsPaid(invoice.id).subscribe({
+      next: (updatedInvoice) => {
+        this.invoices = this.invoices.map((item) =>
+          item.id === updatedInvoice.id ? { ...item, paymentStatus: updatedInvoice.paymentStatus } : item
+        );
+
+        if (this.selectedInvoice?.id === updatedInvoice.id) {
+          this.selectedInvoice = { ...this.selectedInvoice, paymentStatus: updatedInvoice.paymentStatus };
+        }
+
+        this.toast.success('Payment updated', 'Invoice marked as paid.');
+        this.payingInvoiceId = null;
+      },
+      error: (err) => {
+        console.error('Error updating invoice payment status', err);
+        this.toast.error('Payment failed', 'Could not update the invoice payment status.');
+        this.payingInvoiceId = null;
+      },
+    });
+  }
+
+  viewInvoice(invoice: SalesInvoice) {
+    this.selectedInvoice = invoice;
+    this.isLoadingInvoiceItems = true;
+
+    this.salesInvoiceService.getById(invoice.id).subscribe({
+      next: (invoiceDetails) => {
+        this.selectedInvoice = invoiceDetails;
+        this.isLoadingInvoiceItems = false;
+      },
+      error: (err) => {
+        console.error('Error loading invoice items', err);
+        this.toast.error('Invoice details failed', 'Could not load invoice items.');
+        this.isLoadingInvoiceItems = false;
+      },
+    });
+  }
+
+  closeInvoiceDetails() {
+    this.selectedInvoice = null;
+    this.isLoadingInvoiceItems = false;
+  }
+
+  itemTotal(item: SalesInvoice['items'][number]): number {
+    return item.quantity * item.unitPrice;
   }
 }

@@ -6,6 +6,8 @@ using Gearbox.Application.DTOs;
 using Gearbox.Application.Interfaces;
 using Gearbox.Domain.Entities;
 using Gearbox.Domain.Interfaces;
+using Gearbox.Infrastructure.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace Gearbox.Application.Services
 {
@@ -13,22 +15,41 @@ namespace Gearbox.Application.Services
     {
         private readonly ISalesServicesInvoiceRepository _repository;
         private readonly IPartRepository _partRepository;
+        private readonly ApplicationDbContext _context;
 
-        public SalesServicesInvoiceService(ISalesServicesInvoiceRepository repository, IPartRepository partRepository)
+        public SalesServicesInvoiceService(
+            ISalesServicesInvoiceRepository repository,
+            IPartRepository partRepository,
+            ApplicationDbContext context)
         {
             _repository = repository;
             _partRepository = partRepository;
+            _context = context;
         }
 
         public async Task<IEnumerable<SalesServicesInvoiceDto>> GetAllAsync()
         {
-            var entities = await _repository.GetAllAsync();
+            var entities = await _context.SalesServicesInvoices
+                .AsNoTracking()
+                .Include(i => i.Items)
+                    .ThenInclude(i => i.Part)
+                .Include(i => i.Items)
+                    .ThenInclude(i => i.Service)
+                .ToListAsync();
+
             return entities.Select(e => MapToDto(e));
         }
 
         public async Task<SalesServicesInvoiceDto> GetByIdAsync(Guid id)
         {
-            var entity = await _repository.GetByIdAsync(id);
+            var entity = await _context.SalesServicesInvoices
+                .AsNoTracking()
+                .Include(i => i.Items)
+                    .ThenInclude(i => i.Part)
+                .Include(i => i.Items)
+                    .ThenInclude(i => i.Service)
+                .FirstOrDefaultAsync(i => i.Id == id);
+
             if (entity == null) return null;
             return MapToDto(entity);
         }
@@ -118,12 +139,30 @@ namespace Gearbox.Application.Services
                 entity.AppointmentId = dto.AppointmentId;
                 entity.TotalAmount = dto.TotalAmount;
                 entity.DiscountAmount = dto.DiscountAmount;
+                entity.PaymentStatus = dto.PaymentStatus;
                 // Note: Updating items and restoring/reducing stock would be more complex and usually requires a business decision on how to handle it.
                 // For now, updating basic fields.
                 
                 _repository.Update(entity);
                 await _repository.SaveChangesAsync();
             }
+        }
+
+        public async Task<SalesServicesInvoiceDto> MarkAsPaidAsync(Guid id)
+        {
+            var entity = await _context.SalesServicesInvoices
+                .Include(i => i.Items)
+                    .ThenInclude(i => i.Part)
+                .Include(i => i.Items)
+                    .ThenInclude(i => i.Service)
+                .FirstOrDefaultAsync(i => i.Id == id);
+
+            if (entity == null) return null;
+
+            entity.PaymentStatus = true;
+            await _context.SaveChangesAsync();
+
+            return MapToDto(entity);
         }
 
         public async Task DeleteAsync(Guid id)
@@ -147,6 +186,7 @@ namespace Gearbox.Application.Services
                 AppointmentId = entity.AppointmentId,
                 TotalAmount = entity.TotalAmount,
                 DiscountAmount = entity.DiscountAmount,
+                PaymentStatus = entity.PaymentStatus,
                 CreatedAt = entity.CreatedAt,
                 Items = entity.Items?.Select(i => new SalesServicesInvoiceItemDto
                 {
@@ -155,6 +195,7 @@ namespace Gearbox.Application.Services
                     PartId = i.PartId,
                     ServiceId = i.ServiceId,
                     Type = i.Type,
+                    ItemName = i.Part?.Name ?? i.Service?.Name ?? i.Type,
                     Quantity = i.Quantity,
                     UnitPrice = i.UnitPrice
                 }).ToList() ?? new List<SalesServicesInvoiceItemDto>()
@@ -172,6 +213,7 @@ namespace Gearbox.Application.Services
                 AppointmentId = dto.AppointmentId,
                 TotalAmount = dto.TotalAmount,
                 DiscountAmount = dto.DiscountAmount,
+                PaymentStatus = dto.PaymentStatus,
                 CreatedAt = dto.CreatedAt == default ? DateTime.UtcNow : dto.CreatedAt,
                 Items = dto.Items?.Select(i => new SalesServicesInvoiceItem
                 {

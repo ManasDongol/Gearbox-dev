@@ -30,4 +30,8 @@ export class StaffService {
   delete(id: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
+
+  promoteToAdmin(id: string): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/${id}/promote-admin`, {});
+  }
 }

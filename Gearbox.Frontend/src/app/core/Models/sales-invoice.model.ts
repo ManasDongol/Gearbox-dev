@@ -5,6 +5,7 @@ export interface SalesInvoice {
   appointmentId?: string;
   totalAmount: number;
   discountAmount: number;
+  paymentStatus: boolean;
   createdAt: string;
   items: SalesInvoiceItem[];
 }
@@ -14,7 +15,9 @@ export interface SalesInvoiceItem {
   salesServicesInvoiceId?: string;
   partId?: string;
   serviceDetailsId?: string;
+  serviceId?: string;
   type: string; // "Part" or "Service"
+  itemName?: string;
   quantity: number;
   unitPrice: number;
 }

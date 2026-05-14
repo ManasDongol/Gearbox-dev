@@ -40,6 +40,10 @@ export class VehicleService {
     return this.http.get<Vehicle>(`${this.apiUrl}/${id}`);
   }
 
+  getByCustomerId(customerId: string): Observable<Vehicle[]> {
+    return this.http.get<Vehicle[]>(`${this.apiUrl}/customer/${customerId}`);
+  }
+
   add(vehicle: NewVehicle): Observable<Vehicle> {
     return this.http.post<Vehicle>(this.apiUrl, vehicle);
   }

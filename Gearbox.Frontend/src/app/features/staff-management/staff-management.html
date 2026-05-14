@@ -75,6 +75,9 @@
               Job Title
             </th>
             <th class="text-left px-6 py-4 text-sm font-semibold text-[#1a3a3a] bg-gray-50/50">
+              Role
+            </th>
+            <th class="text-left px-6 py-4 text-sm font-semibold text-[#1a3a3a] bg-gray-50/50">
               Actions
             </th>
           </tr>
@@ -86,6 +89,11 @@
               <td class="px-6 py-4 text-sm font-medium text-[#1a3a3a]">{{ s.firstName }} {{ s.lastName }}</td>
               <td class="px-6 py-4 text-sm text-[#3a3a3a]">{{ s.department }}</td>
               <td class="px-6 py-4 text-sm text-[#3a3a3a]">{{ s.jobTitle }}</td>
+              <td class="px-6 py-4 text-sm">
+                <span class="role-pill" [class.role-admin]="s.role === 'Admin'">
+                  {{ s.role }}
+                </span>
+              </td>
               <td class="px-6 py-4 flex gap-3">
                 <button
                   (click)="openEditDialog(s)"
@@ -93,17 +101,25 @@
                 >
                   Edit
                 </button>
-                <button
-                  (click)="deleteStaff(s.userId)"
-                  class="text-sm text-red-600 hover:text-red-800 font-medium transition-colors duration-150 cursor-pointer"
-                >
-                  Delete
-                </button>
+                @if (s.role !== 'Admin') {
+                  <button
+                    (click)="promoteToAdmin(s)"
+                    class="text-sm text-[#1a6b5a] hover:text-[#1a3a3a] font-medium transition-colors duration-150 cursor-pointer"
+                  >
+                    Promote
+                  </button>
+                  <button
+                    (click)="deleteStaff(s.userId)"
+                    class="text-sm text-red-600 hover:text-red-800 font-medium transition-colors duration-150 cursor-pointer"
+                  >
+                    Delete
+                  </button>
+                }
               </td>
             </tr>
           } @empty {
             <tr>
-              <td colspan="5" class="px-6 py-16 text-center text-sm text-gray-400">
+              <td colspan="6" class="px-6 py-16 text-center text-sm text-gray-400">
                 @if (isLoading) {
                   Loading staff members...
                 } @else {

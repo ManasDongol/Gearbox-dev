@@ -4,6 +4,7 @@ export interface Staff {
   lastName: string;
   department: string;
   jobTitle: string;
+  role: 'Admin' | 'Staff' | 'Unassigned' | string;
 }
 
 export interface NewStaff {

@@ -181,6 +181,7 @@ builder.Services.AddScoped<IPurchaseInvoiceItemService,PurchaseInvoiceItemServic
 builder.Services.AddScoped<ISalesServicesInvoiceService, SalesServicesInvoiceService>();
 builder.Services.AddScoped<ISalesServicesInvoiceItemService, SalesServicesInvoiceItemService>();
 builder.Services.AddScoped<IServiceService, ServiceService>();
+builder.Services.AddScoped<IPdfService, PdfService>();
 builder.Services.AddScoped<TokenService>();
 
 builder.Services.AddSingleton<EmailQueue>();

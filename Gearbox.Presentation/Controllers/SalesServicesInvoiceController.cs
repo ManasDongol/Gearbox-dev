@@ -46,6 +46,14 @@ namespace Gearbox.Presentation.Controllers
             return NoContent();
         }
 
+        [HttpPatch("{id}/mark-paid")]
+        public async Task<IActionResult> MarkAsPaid(Guid id)
+        {
+            var result = await _service.MarkAsPaidAsync(id);
+            if (result == null) return NotFound();
+            return Ok(result);
+        }
+
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {

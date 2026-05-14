@@ -1,6 +1,5 @@
 import ollama
 
-
 def generate_response(query: str) -> str:
     prompt = f"""
 You are Gearbox AI, an assistant for vehicle services, diagnostics, and maintenance.
@@ -15,7 +14,7 @@ Rules:
 """
 
     response = ollama.chat(
-        model="llama3",  # or your model
+        model="llama3",
         messages=[
             {"role": "user", "content": prompt}
         ],

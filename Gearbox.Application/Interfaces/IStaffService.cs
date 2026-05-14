@@ -13,5 +13,6 @@ namespace Gearbox.Application.Interfaces
         Task<StaffDto> AddAsync(NewStaffDto dto);
         Task UpdateAsync(Guid id, StaffDto dto);
         Task DeleteAsync(Guid id);
+        Task PromoteToAdminAsync(Guid id);
     }
 }

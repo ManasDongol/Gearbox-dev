@@ -27,6 +27,10 @@ export class SalesInvoiceService {
     return this.http.put<void>(`${this.apiUrl}/${id}`, invoice);
   }
 
+  markAsPaid(id: string): Observable<SalesInvoice> {
+    return this.http.patch<SalesInvoice>(`${this.apiUrl}/${id}/mark-paid`, {});
+  }
+
   delete(id: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }

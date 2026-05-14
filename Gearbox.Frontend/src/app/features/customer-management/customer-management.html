@@ -74,7 +74,13 @@
               <td class="px-6 py-4 text-sm text-[#3a3a3a]">{{ c.address }}</td>
               <td class="px-6 py-4 text-sm text-[#3a3a3a]">Rs. {{ c.totalSpent }}</td>
               <td class="px-6 py-4 text-sm text-red-600 font-medium">Rs. {{ c.pendingCredits }}</td>
-              <td class="px-6 py-4 flex gap-3">
+              <td class="px-6 py-4 flex flex-wrap gap-3">
+                <button
+                  (click)="openVehiclesPanel(c)"
+                  class="text-sm text-[#1a6b5a] hover:text-[#1a3a3a] font-medium transition-colors duration-150 cursor-pointer"
+                >
+                  Vehicles
+                </button>
                 <button
                   (click)="openEditDialog(c)"
                   class="text-sm text-[#1a6b5a] hover:text-[#1a3a3a] font-medium transition-colors duration-150 cursor-pointer"
@@ -103,6 +109,77 @@
         </tbody>
       </table>
     </div>
+
+    @if (selectedVehicleCustomer) {
+      <section class="vehicle-panel">
+        <div class="flex items-center justify-between gap-4 mb-5">
+          <div>
+            <h2 class="text-xl font-bold text-[#1a3a3a]">
+              {{ selectedVehicleCustomer.firstName }} {{ selectedVehicleCustomer.lastName }} Vehicles
+            </h2>
+            <p class="text-sm text-gray-500 mt-1">
+              {{ selectedVehicleCustomer.phoneNumber }} · {{ selectedVehicleCustomer.address }}
+            </p>
+          </div>
+          <div class="flex items-center gap-3">
+            <button class="secondary-action" (click)="closeVehiclesPanel()">Close</button>
+            <button class="primary-action" (click)="openAddVehicleDialog()">+ Add Vehicle</button>
+          </div>
+        </div>
+
+        <div class="overflow-hidden border border-gray-100 rounded-xl">
+          <table class="w-full bg-white">
+            <thead>
+              <tr class="border-b border-gray-100">
+                <th class="table-heading">Vehicle</th>
+                <th class="table-heading">Type</th>
+                <th class="table-heading">Year</th>
+                <th class="table-heading">Plate</th>
+                <th class="table-heading">VIN</th>
+                <th class="table-heading">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (vehicle of customerVehicles; track vehicle.id) {
+                <tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors duration-150">
+                  <td class="px-6 py-4 text-sm font-medium text-[#1a3a3a]">
+                    {{ vehicle.make }} {{ vehicle.model }}
+                  </td>
+                  <td class="px-6 py-4 text-sm text-[#3a3a3a]">{{ getVehicleTypeLabel(vehicle.vehicleType) }}</td>
+                  <td class="px-6 py-4 text-sm text-[#3a3a3a]">{{ vehicle.year }}</td>
+                  <td class="px-6 py-4 text-sm text-[#3a3a3a]">{{ getVehiclePlate(vehicle) }}</td>
+                  <td class="px-6 py-4 text-sm text-[#3a3a3a]">{{ vehicle.vin || 'Not provided' }}</td>
+                  <td class="px-6 py-4 flex gap-3">
+                    <button
+                      (click)="openEditVehicleDialog(vehicle)"
+                      class="text-sm text-[#1a6b5a] hover:text-[#1a3a3a] font-medium transition-colors duration-150 cursor-pointer"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      (click)="deleteVehicle(vehicle)"
+                      class="text-sm text-red-600 hover:text-red-800 font-medium transition-colors duration-150 cursor-pointer"
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="6" class="px-6 py-12 text-center text-sm text-gray-400">
+                    @if (isVehicleLoading) {
+                      Loading vehicles...
+                    } @else {
+                      No vehicles found for this customer.
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+    }
   </main>
 </div>
 
@@ -157,6 +234,62 @@
 
         <button class="btn-submit" (click)="registerCustomer()" id="btn-save-customer">
           Register Customer
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Add/Edit Vehicle Dialog -->
+@if (showVehicleDialog && selectedVehicleCustomer) {
+  <div class="modal-overlay" (click)="closeVehicleDialog()" id="vehicle-dialog-overlay">
+    <div class="modal-container max-w-2xl" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2 class="modal-title">{{ editingVehicle ? 'Edit Vehicle' : 'Add Vehicle' }}</h2>
+        <button class="modal-close" (click)="closeVehicleDialog()" id="btn-close-vehicle-dialog">
+          x
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Make</label>
+            <input class="form-input" [(ngModel)]="vehicleForm.make" placeholder="Toyota" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Model</label>
+            <input class="form-input" [(ngModel)]="vehicleForm.model" placeholder="Corolla" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Year</label>
+            <input type="number" class="form-input" [(ngModel)]="vehicleForm.year" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Vehicle Type</label>
+            <select class="form-select" [(ngModel)]="vehicleForm.vehicleType">
+              @for (type of vehicleTypes; track type.value) {
+                <option [value]="type.value">{{ type.label }}</option>
+              }
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Number Plate</label>
+            <input class="form-input" [(ngModel)]="vehicleForm.numberPlate" placeholder="BA 12 PA 1234" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">VIN</label>
+            <input class="form-input" [(ngModel)]="vehicleForm.vin" placeholder="Vehicle identification number" />
+          </div>
+        </div>
+
+        <button class="btn-submit" (click)="saveVehicle()" id="btn-save-vehicle">
+          {{ editingVehicle ? 'Update Vehicle' : 'Add Vehicle' }}
         </button>
       </div>
     </div>

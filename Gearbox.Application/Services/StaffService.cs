@@ -26,14 +26,53 @@ namespace Gearbox.Application.Services
         public async Task<IEnumerable<StaffDto>> GetAllAsync()
         {
             var entities = await _repository.GetAllAsync();
-            return entities.Select(e => MapToDto(e));
+            var staffDtos = new List<StaffDto>();
+
+            foreach (var entity in entities)
+            {
+                var dto = await MapToDtoAsync(entity);
+                if (dto != null)
+                {
+                    staffDtos.Add(dto);
+                }
+            }
+
+            var representedUserIds = staffDtos.Select(s => s.UserId).ToHashSet();
+            var adminUsers = await _userManager.GetUsersInRoleAsync("Admin");
+
+            foreach (var admin in adminUsers.Where(a => !representedUserIds.Contains(a.Id)))
+            {
+                staffDtos.Add(new StaffDto
+                {
+                    UserId = admin.Id,
+                    FirstName = admin.FirstName,
+                    LastName = admin.LastName,
+                    Department = "Admin",
+                    JobTitle = "Administrator",
+                    Role = "Admin"
+                });
+            }
+
+            return staffDtos;
         }
 
         public async Task<StaffDto> GetByIdAsync(Guid id)
         {
             var entity = await _repository.GetByIdAsync(id);
-            if (entity == null) return null;
-            return MapToDto(entity);
+            if (entity != null) return await MapToDtoAsync(entity);
+
+            var user = await _userManager.FindByIdAsync(id.ToString());
+            if (user == null || !await _userManager.IsInRoleAsync(user, "Admin")) return null;
+
+            return new StaffDto
+            {
+                UserId = user.Id,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                Department = "Admin",
+                JobTitle = "Administrator",
+                Role = "Admin"
+            };
         }
 
         public async Task<StaffDto> AddAsync(NewStaffDto dto)
@@ -64,6 +103,7 @@ namespace Gearbox.Application.Services
             {
                 entity.UserId = newUser.Id;
                 await _repository.AddAsync(entity);
+                await _userManager.AddToRoleAsync(newUser, "Staff");
                 await _repository.SaveChangesAsync();
 
             }
@@ -74,7 +114,7 @@ namespace Gearbox.Application.Services
             }
           
          
-            return MapToDto(entity);
+            return await MapToDtoAsync(entity);
         }
 
         public async Task UpdateAsync(Guid id, StaffDto dto)
@@ -82,6 +122,16 @@ namespace Gearbox.Application.Services
             var entity = await _repository.GetByIdAsync(id);
             if (entity != null)
             {
+                var user = await _userManager.FindByIdAsync(id.ToString());
+                if (user != null)
+                {
+                    user.FirstName = dto.FirstName;
+                    user.LastName = dto.LastName;
+                    await _userManager.UpdateAsync(user);
+                }
+
+                entity.Department = dto.Department;
+                entity.JobTitle = dto.JobTitle;
                
                 _repository.Update(entity);
                 await _repository.SaveChangesAsync();
@@ -90,6 +140,12 @@ namespace Gearbox.Application.Services
 
         public async Task DeleteAsync(Guid id)
         {
+            var user = await _userManager.FindByIdAsync(id.ToString());
+            if (user != null && await _userManager.IsInRoleAsync(user, "Admin"))
+            {
+                throw new InvalidOperationException("Admins cannot be removed from staff management.");
+            }
+
             var entity = await _repository.GetByIdAsync(id);
             if (entity != null)
             {
@@ -98,10 +154,29 @@ namespace Gearbox.Application.Services
             }
         }
 
-        private StaffDto MapToDto(Staff entity)
+        public async Task PromoteToAdminAsync(Guid id)
+        {
+            var user = await _userManager.FindByIdAsync(id.ToString());
+            if (user == null)
+            {
+                throw new InvalidOperationException("Staff user was not found.");
+            }
+
+            if (!await _userManager.IsInRoleAsync(user, "Admin"))
+            {
+                await _userManager.AddToRoleAsync(user, "Admin");
+            }
+
+            if (await _userManager.IsInRoleAsync(user, "Staff"))
+            {
+                await _userManager.RemoveFromRoleAsync(user, "Staff");
+            }
+        }
+
+        private async Task<StaffDto> MapToDtoAsync(Staff entity)
         {
             if (entity == null) return null;
-            var user = _userManager.FindByIdAsync(entity.UserId.ToString()).GetAwaiter().GetResult();
+            var user = await _userManager.FindByIdAsync(entity.UserId.ToString());
             return new StaffDto
             {
            
@@ -110,8 +185,16 @@ namespace Gearbox.Application.Services
                 LastName = user?.LastName ?? string.Empty,
                 Department = entity.Department,
                 JobTitle = entity.JobTitle,
+                Role = user == null ? "Staff" : await GetDisplayRoleAsync(user),
               
             };
+        }
+
+        private async Task<string> GetDisplayRoleAsync(AppUser user)
+        {
+            if (await _userManager.IsInRoleAsync(user, "Admin")) return "Admin";
+            if (await _userManager.IsInRoleAsync(user, "Staff")) return "Staff";
+            return "Unassigned";
         }
 
         private Staff MapToEntity(StaffDto dto)

@@ -10,6 +10,7 @@ namespace Gearbox.Application.DTOs
         public string LastName { get; set; }
         public string Department { get; set; }
         public string JobTitle { get; set; }
+        public string Role { get; set; }
       
     }
 }

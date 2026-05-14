@@ -32,11 +32,10 @@ namespace Gearbox.Presentation.Controllers
             return Ok(result);
         }
         
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetAllCustomerVehicles(Guid id)
+        [HttpGet("customer/{customerId}")]
+        public async Task<IActionResult> GetAllCustomerVehicles(Guid customerId)
         {
-            var result = await _service.GetByIdAsync(id);
-            if (result == null) return NotFound();
+            var result = await _service.GetAllByVehicleIdAsync(customerId);
             return Ok(result);
         }
 
