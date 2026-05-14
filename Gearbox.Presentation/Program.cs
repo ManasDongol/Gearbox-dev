@@ -169,10 +169,8 @@ builder.Services.AddScoped<IStaffService,StaffService>();
 builder.Services.AddScoped<IVehicleService,VehicleService>();
 builder.Services.AddScoped<IPartService,PartService>();
 builder.Services.AddScoped<IVendorService,VendorService>();
-
 builder.Services.AddScoped<IPurchaseInvoiceService,PurchaseInvoiceService>();
 builder.Services.AddScoped<IAppointmentService,AppointmentService>();
-
 builder.Services.AddScoped<IServiceReviewService,ServiceReviewService>();
 builder.Services.AddScoped<IPartRequestService,PartRequestService>();
 builder.Services.AddScoped<INotificationService,NotificationService>();
@@ -180,6 +178,7 @@ builder.Services.AddScoped<IPurchaseInvoiceItemService,PurchaseInvoiceItemServic
 
 builder.Services.AddScoped<ISalesServicesInvoiceService, SalesServicesInvoiceService>();
 builder.Services.AddScoped<ISalesServicesInvoiceItemService, SalesServicesInvoiceItemService>();
+builder.Services.AddScoped<IServiceHistoryService, ServiceHistoryService>();
 builder.Services.AddScoped<IServiceService, ServiceService>();
 builder.Services.AddScoped<IPdfService, PdfService>();
 builder.Services.AddScoped<TokenService>();
@@ -195,6 +194,7 @@ builder.Services.AddScoped<INotificationSender, NotificationSender>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 
 builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
+builder.Services.AddScoped<IServiceHistoryRepository, ServiceHistoryRepository>();
 
 builder.Services.AddHttpClient();
 

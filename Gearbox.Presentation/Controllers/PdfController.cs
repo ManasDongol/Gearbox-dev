@@ -29,4 +29,28 @@ public class PdfController : ControllerBase
         var fileName = $"gearbox-customer-report-{DateTime.UtcNow:yyyyMMdd-HHmm}.pdf";
         return File(pdf, "application/pdf", fileName);
     }
+
+    [HttpGet("regular-customers-report")]
+    public async Task<IActionResult> GenerateRegularCustomersReport()
+    {
+        var pdf = await _pdfService.GenerateRegularCustomersReportAsync();
+        var fileName = $"gearbox-regular-customers-report-{DateTime.UtcNow:yyyyMMdd-HHmm}.pdf";
+        return File(pdf, "application/pdf", fileName);
+    }
+
+    [HttpGet("high-spenders-report")]
+    public async Task<IActionResult> GenerateHighSpendersReport()
+    {
+        var pdf = await _pdfService.GenerateHighSpendersReportAsync();
+        var fileName = $"gearbox-high-spenders-report-{DateTime.UtcNow:yyyyMMdd-HHmm}.pdf";
+        return File(pdf, "application/pdf", fileName);
+    }
+
+    [HttpGet("pending-credits-report")]
+    public async Task<IActionResult> GeneratePendingCreditsReport()
+    {
+        var pdf = await _pdfService.GeneratePendingCreditsReportAsync();
+        var fileName = $"gearbox-pending-credits-report-{DateTime.UtcNow:yyyyMMdd-HHmm}.pdf";
+        return File(pdf, "application/pdf", fileName);
+    }
 }

@@ -1,4 +1,5 @@
 using Gearbox.Application.Interfaces;
+using Gearbox.Domain.Entities;
 using Gearbox.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using QuestPDF.Fluent;
@@ -217,6 +218,59 @@ public class PdfService : IPdfService
         }).GeneratePdf();
     }
 
+    public async Task<byte[]> GenerateRegularCustomersReportAsync()
+    {
+        var customers = await GetCustomersForReportsAsync();
+        var rankedCustomers = customers
+            .OrderByDescending(c => c.ServiceHistories.Count + c.SalesServicesInvoices.Count)
+            .ThenByDescending(c => c.TotalSpent)
+            .ToList();
+
+        return GenerateCustomerSegmentReport(
+            "Regular Customers Report",
+            "Customers ranked by service visits and invoice activity",
+            rankedCustomers,
+            "Regular Customers",
+            "Activity",
+            customer => (customer.ServiceHistories.Count + customer.SalesServicesInvoices.Count).ToString());
+    }
+
+    public async Task<byte[]> GenerateHighSpendersReportAsync()
+    {
+        var customers = await GetCustomersForReportsAsync();
+        var highSpenders = customers
+            .Where(c => c.TotalSpent > 0)
+            .OrderByDescending(c => c.TotalSpent)
+            .ThenBy(c => c.User.FirstName)
+            .ToList();
+
+        return GenerateCustomerSegmentReport(
+            "High Spenders Report",
+            "Customers ranked by total spending",
+            highSpenders,
+            "High Spenders",
+            "Total Spent",
+            customer => FormatCurrency(customer.TotalSpent));
+    }
+
+    public async Task<byte[]> GeneratePendingCreditsReportAsync()
+    {
+        var customers = await GetCustomersForReportsAsync();
+        var pendingCredits = customers
+            .Where(c => c.PendingCredits > 0)
+            .OrderByDescending(c => c.PendingCredits)
+            .ThenByDescending(c => c.TotalSpent)
+            .ToList();
+
+        return GenerateCustomerSegmentReport(
+            "Pending Credits Report",
+            "Customers with outstanding credit balances",
+            pendingCredits,
+            "Pending Credits",
+            "Credits",
+            customer => FormatCurrency(customer.PendingCredits));
+    }
+
     private static void ApplyPageDefaults(PageDescriptor page)
     {
         page.Size(PageSizes.A4);
@@ -308,5 +362,100 @@ public class PdfService : IPdfService
 
         var fullName = $"{user.FirstName} {user.LastName}".Trim();
         return string.IsNullOrWhiteSpace(fullName) ? user.UserName ?? user.Email ?? "Unknown" : fullName;
+    }
+
+    private async Task<List<Customer>> GetCustomersForReportsAsync()
+    {
+        return await _context.Customers
+            .AsNoTracking()
+            .Include(c => c.User)
+            .Include(c => c.Vehicles)
+            .Include(c => c.SalesServicesInvoices)
+            .Include(c => c.ServiceHistories)
+            .ToListAsync();
+    }
+
+    private static byte[] GenerateCustomerSegmentReport(
+        string title,
+        string subtitle,
+        IReadOnlyCollection<Customer> customers,
+        string sectionTitle,
+        string metricHeader,
+        Func<Customer, string> metricValue)
+    {
+        var totalSpent = customers.Sum(c => c.TotalSpent);
+        var pendingCredits = customers.Sum(c => c.PendingCredits);
+        var totalVehicles = customers.Sum(c => c.Vehicles.Count);
+        var totalActivity = customers.Sum(c => c.ServiceHistories.Count + c.SalesServicesInvoices.Count);
+
+        return Document.Create(container =>
+        {
+            container.Page(page =>
+            {
+                ApplyPageDefaults(page);
+                ComposeHeader(page, title, subtitle);
+
+                page.Content().Column(column =>
+                {
+                    column.Spacing(18);
+
+                    column.Item().Row(row =>
+                    {
+                        row.RelativeItem().Element(StatCard).Column(card =>
+                        {
+                            card.Item().Text("Customers").FontSize(10).FontColor(Colors.Grey.Darken1);
+                            card.Item().Text(customers.Count.ToString()).FontSize(18).Bold();
+                        });
+                        row.RelativeItem().Element(StatCard).Column(card =>
+                        {
+                            card.Item().Text("Activity").FontSize(10).FontColor(Colors.Grey.Darken1);
+                            card.Item().Text(totalActivity.ToString()).FontSize(18).Bold();
+                        });
+                        row.RelativeItem().Element(StatCard).Column(card =>
+                        {
+                            card.Item().Text("Vehicles").FontSize(10).FontColor(Colors.Grey.Darken1);
+                            card.Item().Text(totalVehicles.ToString()).FontSize(18).Bold();
+                        });
+                        row.RelativeItem().Element(StatCard).Column(card =>
+                        {
+                            card.Item().Text("Pending Credits").FontSize(10).FontColor(Colors.Grey.Darken1);
+                            card.Item().Text(FormatCurrency(pendingCredits)).FontSize(18).Bold();
+                        });
+                    });
+
+                    column.Item().Element(SectionTitle).Text(sectionTitle);
+                    column.Item().Table(table =>
+                    {
+                        table.ColumnsDefinition(columns =>
+                        {
+                            columns.RelativeColumn(2);
+                            columns.RelativeColumn(2);
+                            columns.RelativeColumn(1.1f);
+                            columns.RelativeColumn(1.1f);
+                            columns.RelativeColumn(1.5f);
+                            columns.RelativeColumn(1.5f);
+                        });
+
+                        ComposeTableHeader(table, "Customer", "Contact", "Vehicles", "Services", metricHeader, "Credits");
+
+                        foreach (var customer in customers.Take(30))
+                        {
+                            table.Cell().Element(TableCell).Text(GetUserName(customer.User));
+                            table.Cell().Element(TableCell).Text(customer.User.PhoneNumber ?? customer.User.Email ?? "N/A");
+                            table.Cell().Element(TableCell).AlignRight().Text(customer.Vehicles.Count.ToString());
+                            table.Cell().Element(TableCell).AlignRight().Text(customer.ServiceHistories.Count.ToString());
+                            table.Cell().Element(TableCell).AlignRight().Text(metricValue(customer));
+                            table.Cell().Element(TableCell).AlignRight().Text(FormatCurrency(customer.PendingCredits));
+                        }
+                    });
+
+                    column.Item().Text($"Total tracked spending in this report: {FormatCurrency(totalSpent)}")
+                        .FontSize(11)
+                        .FontColor(Colors.Grey.Darken2);
+                });
+
+                ComposeFooter(page);
+            });
+        }).GeneratePdf();
     }
 }

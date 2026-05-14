@@ -7,10 +7,13 @@ import { SalesInvoiceService } from '../../core/services/sales-invoice/sales-inv
 import { CustomerService } from '../../core/services/customer/customer.service';
 import { StaffService } from '../../core/services/staff/staff.service';
 import { PartService } from '../../core/services/parts/part.service';
-import { SalesInvoice, NewSalesInvoice, SalesInvoiceItem } from '../../core/models/sales-invoice.model';
+import { ServiceService } from '../../core/services/service/service.service';
+import { Vehicle, VehicleService } from '../../core/services/vehicle/vehicle.service';
+import { SalesInvoice, NewSalesInvoice } from '../../core/models/sales-invoice.model';
 import { Customer } from '../../core/models/customer.model';
 import { Staff } from '../../core/models/staff.model';
 import { Part } from '../../core/models/part.model';
+import { Service } from '../../core/models/service.model';
 import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 import { ToastService } from '../../shared/components/toast/toast.service';
 import { Spinner } from '../../shared/components/spinner/spinner';
@@ -28,18 +31,25 @@ export class SalesInvoices implements OnInit {
   private customerService = inject(CustomerService);
   private staffService = inject(StaffService);
   private partService = inject(PartService);
+  private serviceService = inject(ServiceService);
+  private vehicleService = inject(VehicleService);
+  private toast = inject(ToastService);
 
   invoices: SalesInvoice[] = [];
   filteredInvoices: SalesInvoice[] = [];
   customers: Customer[] = [];
   staff: Staff[] = [];
   parts: Part[] = [];
+  services: Service[] = [];
+  customerVehicles: Vehicle[] = [];
   
   searchQuery: string = '';
   private searchSubject = new Subject<string>();
   
   showAddDialog: boolean = false;
   isLoading: boolean = false;
+  isLoadingInvoiceItems: boolean = false;
+  selectedInvoice: SalesInvoice | null = null;
 
   newInvoice: any = {
     customerId: '',
@@ -47,7 +57,8 @@ export class SalesInvoices implements OnInit {
     invoiceNumber: '',
     totalAmount: 0,
     discountAmount: 0,
-    items: []
+    items: [],
+    serviceItems: []
   };
 
   ngOnInit() {
@@ -55,6 +66,7 @@ export class SalesInvoices implements OnInit {
     this.loadCustomers();
     this.loadStaff();
     this.loadParts();
+    this.loadServices();
 
     this.searchSubject.pipe(
       debounceTime(300),
@@ -89,6 +101,10 @@ export class SalesInvoices implements OnInit {
     this.partService.getAll().subscribe(data => this.parts = data);
   }
 
+  loadServices() {
+    this.serviceService.getAll().subscribe(data => this.services = data);
+  }
+
   onSearchChange(query: string) {
     this.searchSubject.next(query);
   }
@@ -114,11 +130,52 @@ export class SalesInvoices implements OnInit {
   openAddDialog() {
     this.showAddDialog = true;
     this.resetForm();
-    this.addItem();
+    this.addPartItem();
   }
 
   closeAddDialog() {
     this.showAddDialog = false;
+  }
+
+  onCustomerChange() {
+    this.customerVehicles = [];
+    this.newInvoice.serviceItems = this.newInvoice.serviceItems.map((item: any) => ({
+      ...item,
+      vehicleId: ''
+    }));
+
+    if (!this.newInvoice.customerId) return;
+
+    this.vehicleService.getByCustomerId(this.newInvoice.customerId).subscribe({
+      next: (vehicles) => {
+        this.customerVehicles = vehicles;
+      },
+      error: (err) => {
+        console.error('Error loading customer vehicles', err);
+        this.customerVehicles = [];
+      }
+    });
+  }
+
+  viewInvoice(invoice: SalesInvoice) {
+    this.selectedInvoice = invoice;
+    this.isLoadingInvoiceItems = true;
+
+    this.invoiceService.getById(invoice.id).subscribe({
+      next: (invoiceDetails) => {
+        this.selectedInvoice = invoiceDetails;
+        this.isLoadingInvoiceItems = false;
+      },
+      error: (err) => {
+        console.error('Error loading sales invoice details', err);
+        this.isLoadingInvoiceItems = false;
+      }
+    });
+  }
+
+  closeInvoiceDetails() {
+    this.selectedInvoice = null;
+    this.isLoadingInvoiceItems = false;
   }
 
   resetForm() {
@@ -127,11 +184,13 @@ export class SalesInvoices implements OnInit {
       staffId: '',
       totalAmount: 0,
       discountAmount: 0,
-      items: []
+      items: [],
+      serviceItems: []
     };
+    this.customerVehicles = [];
   }
 
-  addItem() {
+  addPartItem() {
     this.newInvoice.items.push({
       partId: '',
       type: 'Part',
@@ -140,8 +199,23 @@ export class SalesInvoices implements OnInit {
     });
   }
 
-  removeItem(index: number) {
+  addServiceItem() {
+    this.newInvoice.serviceItems.push({
+      serviceId: '',
+      vehicleId: '',
+      type: 'Service',
+      quantity: 1,
+      unitPrice: 0
+    });
+  }
+
+  removePartItem(index: number) {
     this.newInvoice.items.splice(index, 1);
+    this.calculateTotal();
+  }
+
+  removeServiceItem(index: number) {
+    this.newInvoice.serviceItems.splice(index, 1);
     this.calculateTotal();
   }
 
@@ -153,25 +227,58 @@ export class SalesInvoices implements OnInit {
     }
   }
 
+  onServiceChange(item: any) {
+    const service = this.services.find(s => s.id === item.serviceId);
+    if (service) {
+      item.unitPrice = service.price;
+      this.calculateTotal();
+    }
+  }
+
   calculateTotal() {
-    const subtotal = this.newInvoice.items.reduce((acc: number, item: any) => acc + (item.quantity * item.unitPrice), 0);
+    const partSubtotal = this.newInvoice.items.reduce((acc: number, item: any) => acc + (item.quantity * item.unitPrice), 0);
+    const serviceSubtotal = this.newInvoice.serviceItems.reduce((acc: number, item: any) => acc + (item.quantity * item.unitPrice), 0);
+    const subtotal = partSubtotal + serviceSubtotal;
     this.newInvoice.totalAmount = subtotal - this.newInvoice.discountAmount;
   }
 
   saveInvoice() {
-    if (!this.newInvoice.customerId || !this.newInvoice.staffId || this.newInvoice.items.length === 0) return;
+    const serviceMissingVehicle = this.newInvoice.serviceItems.some((i: any) => i.serviceId && !i.vehicleId);
+    if (serviceMissingVehicle) {
+      this.toast.error('Vehicle required', 'Select a customer vehicle for every service item.');
+      return;
+    }
+
+    const invoiceItems = [
+      ...this.newInvoice.items
+        .filter((i: any) => i.partId)
+        .map((i: any) => ({
+          partId: i.partId,
+          serviceId: undefined,
+          type: 'Part',
+          quantity: i.quantity,
+          unitPrice: i.unitPrice
+        })),
+      ...this.newInvoice.serviceItems
+        .filter((i: any) => i.serviceId)
+        .map((i: any) => ({
+          partId: undefined,
+          serviceId: i.serviceId,
+          vehicleId: i.vehicleId,
+          type: 'Service',
+          quantity: i.quantity,
+          unitPrice: i.unitPrice
+        }))
+    ];
+
+    if (!this.newInvoice.customerId || !this.newInvoice.staffId || invoiceItems.length === 0) return;
 
     const dto: NewSalesInvoice = {
       customerId: this.newInvoice.customerId,
       staffId: this.newInvoice.staffId,
       totalAmount: this.newInvoice.totalAmount,
       discountAmount: this.newInvoice.discountAmount,
-      items: this.newInvoice.items.map((i: any) => ({
-        partId: i.partId,
-        type: 'Part',
-        quantity: i.quantity,
-        unitPrice: i.unitPrice
-      }))
+      items: invoiceItems
     };
 
     this.invoiceService.add(dto).subscribe({
@@ -193,5 +300,9 @@ export class SalesInvoices implements OnInit {
         error: (err) => console.error('Error deleting invoice', err)
       });
     }
+  }
+
+  itemTotal(item: SalesInvoice['items'][number]): number {
+    return item.quantity * item.unitPrice;
   }
 }

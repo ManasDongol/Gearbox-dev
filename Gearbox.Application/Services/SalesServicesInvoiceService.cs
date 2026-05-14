@@ -68,6 +68,9 @@ namespace Gearbox.Application.Services
         if (!item.PartId.HasValue && !item.ServiceId.HasValue)
             throw new ArgumentException("Each item must have either PartId or ServiceId.");
 
+        if (item.Type == "Service" && !item.VehicleId.HasValue)
+            throw new ArgumentException("Each service item must have a vehicle.");
+
         if (item.Quantity <= 0)
             throw new ArgumentException("Quantity must be greater than 0.");
 
@@ -77,6 +80,7 @@ namespace Gearbox.Application.Services
 
     // Create items first
     var items = new List<SalesServicesInvoiceItem>();
+    var serviceHistoryItems = new List<NewSalesServicesInvoiceItemDto>();
 
     foreach (var item in dto.Items)
     {
@@ -93,6 +97,21 @@ namespace Gearbox.Application.Services
 
             part.StockQuantity -= item.Quantity;
             _partRepository.Update(part);
+        }
+
+        if (item.Type == "Service" && item.ServiceId.HasValue && item.VehicleId.HasValue)
+        {
+            var serviceExists = await _context.Services.AnyAsync(s => s.Id == item.ServiceId.Value);
+            if (!serviceExists)
+                throw new Exception($"Service with ID {item.ServiceId} not found.");
+
+            var vehicleBelongsToCustomer = await _context.Vehicles.AnyAsync(v =>
+                v.Id == item.VehicleId.Value && v.CustomerId == dto.CustomerId);
+
+            if (!vehicleBelongsToCustomer)
+                throw new Exception("Selected vehicle does not belong to the invoice customer.");
+
+            serviceHistoryItems.Add(item);
         }
 
         items.Add(new SalesServicesInvoiceItem
@@ -122,6 +141,20 @@ namespace Gearbox.Application.Services
         CreatedAt = DateTime.UtcNow,
         Items = items
     };
+
+    foreach (var serviceItem in serviceHistoryItems)
+    {
+        await _context.ServiceHistories.AddAsync(new ServiceHistory
+        {
+            Id = Guid.NewGuid(),
+            CustomerId = dto.CustomerId,
+            VehicleId = serviceItem.VehicleId!.Value,
+            ServiceId = serviceItem.ServiceId!.Value,
+            ServiceDate = DateTime.UtcNow,
+            Notes = $"Created from sales invoice {invoice.Id}",
+            TotalCost = serviceItem.Quantity * serviceItem.UnitPrice
+        });
+    }
 
     // Save everything in one go
     await _repository.AddAsync(invoice);
@@ -194,6 +227,7 @@ namespace Gearbox.Application.Services
                     SalesServicesInvoiceId = i.SalesServicesInvoiceId,
                     PartId = i.PartId,
                     ServiceId = i.ServiceId,
+                    VehicleId = null,
                     Type = i.Type,
                     ItemName = i.Part?.Name ?? i.Service?.Name ?? i.Type,
                     Quantity = i.Quantity,

@@ -64,7 +64,6 @@ namespace Gearbox.Application.Services
                 part.StockQuantity -= dto.Quantity;
                 _partRepository.Update(part);
             }
-
             await _repository.AddAsync(entity);
             await _repository.SaveChangesAsync();
             return MapToDto(entity);

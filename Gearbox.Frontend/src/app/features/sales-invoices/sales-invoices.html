@@ -7,7 +7,10 @@
 
   <main class="main-content">
     <div class="flex items-center justify-between mb-8">
-      <h1 class="text-3xl font-bold text-[#1a3a3a]">Sales Invoices</h1>
+      <div>
+        <h1 class="text-3xl font-bold text-[#1a3a3a]">Sales Invoices</h1>
+        <p class="text-gray-500 mt-1">Create customer invoices with parts, services, discounts, and staff attribution.</p>
+      </div>
       <app-topbar />
     </div>
 
@@ -56,9 +59,11 @@
               <td class="px-6 py-4 text-sm font-semibold text-[#1a3a3a]">Rs. {{ inv.totalAmount | number }}</td>
               <td class="px-6 py-4 text-sm text-[#3a3a3a]">{{ getStaffName(inv.staffId) }}</td>
               <td class="px-6 py-4 text-sm text-[#3a3a3a]">{{ inv.createdAt | date:'mediumDate' }}</td>
-              <td class="px-6 py-4 flex gap-3">
-                <button class="text-sm text-[#1a6b5a] font-medium hover:text-[#1a3a3a]">View</button>
-                <button (click)="deleteInvoice(inv.id)" class="text-sm text-red-600 font-medium hover:text-red-800">Delete</button>
+              <td class="px-6 py-4">
+                <div class="flex gap-2">
+                  <button type="button" (click)="viewInvoice(inv)" class="table-action view-action">View</button>
+                  <button type="button" (click)="deleteInvoice(inv.id)" class="table-action delete-action">Delete</button>
+                </div>
               </td>
             </tr>
           } @empty {
@@ -77,16 +82,19 @@
 <!-- Create Sales Invoice Modal -->
 @if (showAddDialog) {
   <div class="modal-overlay" (click)="closeAddDialog()">
-    <div class="modal-container max-w-4xl" (click)="$event.stopPropagation()">
+    <div class="modal-container max-w-5xl" (click)="$event.stopPropagation()">
       <div class="modal-header">
-        <h2 class="modal-title">Create Sales Invoice</h2>
-        <button class="modal-close" (click)="closeAddDialog()">✕</button>
+        <div>
+          <h2 class="modal-title">Create Sales Invoice</h2>
+          <p class="text-sm text-gray-500 mt-1">Add parts and services to the same customer invoice.</p>
+        </div>
+        <button class="modal-close" (click)="closeAddDialog()">x</button>
       </div>
       <div class="modal-body">
         <div class="form-row">
           <div class="form-group flex-1">
             <label class="form-label">Customer</label>
-            <select class="form-select" [(ngModel)]="newInvoice.customerId">
+            <select class="form-select" [(ngModel)]="newInvoice.customerId" (change)="onCustomerChange()">
               <option value="" disabled selected>Select Customer</option>
               @for (c of customers; track c.userId) {
                 <option [value]="c.userId">{{ c.firstName }} {{ c.lastName }}</option>
@@ -104,15 +112,15 @@
           </div>
         </div>
 
-        <div class="mt-6">
+        <div class="invoice-item-section">
           <div class="flex items-center justify-between mb-3">
             <h3 class="text-md font-semibold text-[#1a3a3a]">Items (Parts)</h3>
-            <button (click)="addItem()" class="text-sm text-[#1a6b5a] font-semibold hover:underline">+ Add Item</button>
+            <button type="button" (click)="addPartItem()" class="mini-add-button">+ Add Part</button>
           </div>
           
           <div class="space-y-3">
             @for (item of newInvoice.items; track $index) {
-              <div class="flex gap-3 items-end bg-gray-50 p-4 rounded-xl border border-gray-100">
+              <div class="invoice-item-row">
                 <div class="flex-[3]">
                   <label class="form-label !text-xs">Part</label>
                   <select class="form-select" [(ngModel)]="item.partId" (change)="onPartChange(item)">
@@ -133,7 +141,59 @@
                 <div class="flex-1 text-right px-2 py-2.5 text-sm font-semibold text-[#1a3a3a]">
                   Rs. {{ item.quantity * item.unitPrice | number }}
                 </div>
-                <button (click)="removeItem($index)" class="w-10 h-10 flex items-center justify-center text-red-400 hover:text-red-600">✕</button>
+                <button type="button" (click)="removePartItem($index)" class="remove-row-button">x</button>
+              </div>
+            }
+          </div>
+        </div>
+
+        <div class="invoice-item-section">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="text-md font-semibold text-[#1a3a3a]">Items (Services)</h3>
+            <button type="button" (click)="addServiceItem()" class="mini-add-button">+ Add Service</button>
+          </div>
+
+          <div class="space-y-3">
+            @for (item of newInvoice.serviceItems; track $index) {
+              <div class="invoice-item-row service-item-row">
+                <div class="flex-[3]">
+                  <label class="form-label !text-xs">Service</label>
+                  <select class="form-select" [(ngModel)]="item.serviceId" (change)="onServiceChange(item)">
+                    <option value="" disabled selected>Choose Service</option>
+                    @for (service of services; track service.id) {
+                      <option [value]="service.id">{{ service.name }} - Rs. {{ service.price | number }}</option>
+                    }
+                  </select>
+                </div>
+                <div class="flex-[2]">
+                  <label class="form-label !text-xs">Vehicle</label>
+                  <select class="form-select" [(ngModel)]="item.vehicleId">
+                    <option value="" disabled selected>
+                      {{ newInvoice.customerId ? 'Choose Vehicle' : 'Select customer first' }}
+                    </option>
+                    @for (vehicle of customerVehicles; track vehicle.id) {
+                      <option [value]="vehicle.id">
+                        {{ vehicle.make }} {{ vehicle.model }} - {{ vehicle.numberPlate || vehicle.licensePlate || 'No plate' }}
+                      </option>
+                    }
+                  </select>
+                </div>
+                <div class="flex-1">
+                  <label class="form-label !text-xs">Qty</label>
+                  <input type="number" class="form-input" [(ngModel)]="item.quantity" (change)="calculateTotal()" />
+                </div>
+                <div class="flex-1">
+                  <label class="form-label !text-xs">Unit Price</label>
+                  <input type="number" class="form-input" [(ngModel)]="item.unitPrice" (change)="calculateTotal()" />
+                </div>
+                <div class="flex-1 text-right px-2 py-2.5 text-sm font-semibold text-[#1a3a3a]">
+                  Rs. {{ item.quantity * item.unitPrice | number }}
+                </div>
+                <button type="button" (click)="removeServiceItem($index)" class="remove-row-button">x</button>
+              </div>
+            } @empty {
+              <div class="px-4 py-5 text-sm text-gray-400 bg-gray-50 rounded-xl border border-dashed border-gray-200">
+                No services added to this invoice.
               </div>
             }
           </div>
@@ -153,11 +213,83 @@
            
            <div class="mt-6 flex justify-end">
               <button (click)="saveInvoice()" class="px-10 py-3 bg-[#1a3a3a] text-white font-semibold rounded-lg hover:bg-[#1a4a4a] transition-all">
-                Finalize Sale & Reduce Stock
+                Finalize Invoice
               </button>
            </div>
         </div>
       </div>
+    </div>
+  </div>
+}
+
+@if (selectedInvoice) {
+  <div class="modal-overlay" (click)="closeInvoiceDetails()">
+    <div class="invoice-details-modal" (click)="$event.stopPropagation()">
+      <div class="flex items-start justify-between gap-4 mb-6">
+        <div>
+          <h2 class="text-xl font-bold text-[#1a3a3a]">Invoice {{ selectedInvoice.id.substring(0, 8) }}</h2>
+          <p class="text-sm text-gray-500 mt-1">
+            {{ selectedInvoice.createdAt | date:'mediumDate' }} - {{ getCustomerName(selectedInvoice.customerId) }}
+          </p>
+        </div>
+        <button type="button" class="modal-close" (click)="closeInvoiceDetails()">x</button>
+      </div>
+
+      <div class="invoice-summary-strip">
+        <div>
+          <p class="summary-label">Staff</p>
+          <p class="summary-value">{{ getStaffName(selectedInvoice.staffId) }}</p>
+        </div>
+        <div>
+          <p class="summary-label">Discount</p>
+          <p class="summary-value">Rs. {{ selectedInvoice.discountAmount | number }}</p>
+        </div>
+        <div>
+          <p class="summary-label">Status</p>
+          <span class="status-badge" [class.paid]="selectedInvoice.paymentStatus" [class.unpaid]="!selectedInvoice.paymentStatus">
+            {{ selectedInvoice.paymentStatus ? 'Paid' : 'Unpaid' }}
+          </span>
+        </div>
+        <div class="text-right">
+          <p class="summary-label">Total</p>
+          <p class="text-xl font-bold text-[#1a3a3a]">Rs. {{ selectedInvoice.totalAmount | number }}</p>
+        </div>
+      </div>
+
+      @if (isLoadingInvoiceItems) {
+        <div class="py-12 text-center text-sm text-gray-400">Loading invoice items...</div>
+      } @else {
+        <div class="border border-gray-100 rounded-lg overflow-hidden">
+          <table class="w-full">
+            <thead>
+              <tr class="border-b border-gray-100">
+                <th class="detail-heading">Item</th>
+                <th class="detail-heading">Type</th>
+                <th class="detail-heading text-right">Qty</th>
+                <th class="detail-heading text-right">Unit Price</th>
+                <th class="detail-heading text-right">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (item of selectedInvoice.items; track item.id ?? item.partId ?? item.serviceId) {
+                <tr class="border-b border-gray-50">
+                  <td class="detail-cell font-medium text-[#1a3a3a]">{{ item.itemName || item.partId || item.serviceId || 'Invoice item' }}</td>
+                  <td class="detail-cell">{{ item.type }}</td>
+                  <td class="detail-cell text-right">{{ item.quantity }}</td>
+                  <td class="detail-cell text-right">Rs. {{ item.unitPrice | number }}</td>
+                  <td class="detail-cell text-right font-semibold">Rs. {{ itemTotal(item) | number }}</td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="5" class="px-6 py-12 text-center text-sm text-gray-400">
+                    No items found for this invoice.
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
     </div>
   </div>
 }

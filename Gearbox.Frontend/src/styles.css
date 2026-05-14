@@ -36,8 +36,8 @@
   }
 
   .modal-overlay {
-    @apply fixed inset-0 bg-black/40 backdrop-blur-sm z-[1000] flex items-center justify-center p-4;
-  }
+  @apply fixed inset-0 bg-black/40 flex justify-center items-start overflow-y-auto p-6;
+}
 
   .modal-container {
     @apply bg-white rounded-2xl shadow-2xl w-full  duration-200 overflow-hidden;

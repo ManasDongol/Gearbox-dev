@@ -17,4 +17,16 @@ export class PdfService {
   generateCustomerReport(): Observable<Blob> {
     return this.http.get(`${this.apiUrl}/customer-report`, { responseType: 'blob' });
   }
+
+  generateRegularCustomersReport(): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/regular-customers-report`, { responseType: 'blob' });
+  }
+
+  generateHighSpendersReport(): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/high-spenders-report`, { responseType: 'blob' });
+  }
+
+  generatePendingCreditsReport(): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/pending-credits-report`, { responseType: 'blob' });
+  }
 }

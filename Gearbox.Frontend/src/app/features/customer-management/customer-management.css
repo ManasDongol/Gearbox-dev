@@ -80,6 +80,18 @@
   @apply px-5 py-2.5 bg-white border border-gray-200 text-[#1a3a3a] text-sm font-semibold rounded-lg hover:bg-gray-50 transition-colors duration-200 cursor-pointer whitespace-nowrap;
 }
 
+.report-actions {
+  @apply flex flex-wrap gap-3 mb-6;
+}
+
+.report-button {
+  @apply px-5 py-2.5 bg-white border border-gray-200 text-[#1a3a3a] text-sm font-semibold rounded-lg hover:bg-gray-50 disabled:opacity-60 disabled:cursor-not-allowed transition-all duration-200 cursor-pointer shadow-sm;
+}
+
+.report-button-warning {
+  @apply text-red-700 bg-red-50 border-red-100 hover:bg-red-100;
+}
+
 /* Customer Profile Header */
 .customer-profile-header {
   @apply flex items-center gap-4 mb-6;

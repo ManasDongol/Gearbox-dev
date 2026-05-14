@@ -5,6 +5,7 @@ import { Navmenu } from '../../shared/components/navmenu/navmenu';
 import { Topbar } from '../../shared/components/topbar/topbar';
 import { CustomerService } from '../../core/services/customer/customer.service';
 import { Customer, NewCustomer } from '../../core/models/customer.model';
+import { PdfService } from '../../core/services/pdf/pdf.service';
 import {
   NewVehicle,
   Vehicle,
@@ -24,6 +25,7 @@ import { Spinner } from '../../shared/components/spinner/spinner';
 export class CustomerManagement implements OnInit {
   private customerService = inject(CustomerService);
   private vehicleService = inject(VehicleService);
+  private pdfService = inject(PdfService);
   private toast = inject(ToastService);
 
   customers: Customer[] = [];
@@ -38,6 +40,7 @@ export class CustomerManagement implements OnInit {
   showVehicleDialog: boolean = false;
   isLoading: boolean = false;
   isVehicleLoading: boolean = false;
+  generatingReport: 'regulars' | 'high-spenders' | 'pending-credits' | null = null;
 
   newCustomer: NewCustomer = {
     userName: '',
@@ -320,6 +323,43 @@ export class CustomerManagement implements OnInit {
     });
   }
 
+  generateCustomerReport(type: 'regulars' | 'high-spenders' | 'pending-credits') {
+    if (this.generatingReport) return;
+
+    this.generatingReport = type;
+    const reportMap = {
+      regulars: {
+        request: this.pdfService.generateRegularCustomersReport(),
+        fileName: 'regular-customers',
+        success: 'Regular customers report downloaded.',
+      },
+      'high-spenders': {
+        request: this.pdfService.generateHighSpendersReport(),
+        fileName: 'high-spenders',
+        success: 'High spenders report downloaded.',
+      },
+      'pending-credits': {
+        request: this.pdfService.generatePendingCreditsReport(),
+        fileName: 'pending-credits',
+        success: 'Pending credits report downloaded.',
+      },
+    };
+
+    const report = reportMap[type];
+    report.request.subscribe({
+      next: (pdf) => {
+        this.downloadPdf(pdf, this.createFileName(report.fileName));
+        this.toast.success('Report ready', report.success);
+        this.generatingReport = null;
+      },
+      error: (err) => {
+        console.error('Error generating customer report', err);
+        this.toast.error('Report failed', 'Could not generate the customer report.');
+        this.generatingReport = null;
+      }
+    });
+  }
+
   getVehiclePlate(vehicle: Vehicle): string {
     return vehicle.numberPlate || vehicle.licensePlate || 'No plate';
   }
@@ -339,5 +379,19 @@ export class CustomerManagement implements OnInit {
       vin: '',
       vehicleType: 1,
     };
+  }
+
+  private downloadPdf(pdf: Blob, fileName: string) {
+    const url = URL.createObjectURL(pdf);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = fileName;
+    link.click();
+    URL.revokeObjectURL(url);
+  }
+
+  private createFileName(reportName: string): string {
+    const date = new Date().toISOString().slice(0, 10);
+    return `gearbox-${reportName}-report-${date}.pdf`;
   }
 }

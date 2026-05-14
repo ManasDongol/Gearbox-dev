@@ -16,6 +16,7 @@ export interface SalesInvoiceItem {
   partId?: string;
   serviceDetailsId?: string;
   serviceId?: string;
+  vehicleId?: string;
   type: string; // "Part" or "Service"
   itemName?: string;
   quantity: number;

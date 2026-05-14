@@ -8,8 +8,8 @@
   <main class="main-content">
     <div class="flex items-center justify-between mb-8">
       <div>
-        <h1 class="text-3xl font-bold text-[#1a3a3a]">My Invoices</h1>
-        <p class="text-gray-500 mt-1">A read-only view of your billing history.</p>
+        <h1 class="text-3xl font-bold text-[#1a3a3a]">My Invoices & Service History</h1>
+        <p class="text-gray-500 mt-1">A read-only view of your purchases, services, and billing history.</p>
       </div>
       <app-topbar />
     </div>
@@ -94,6 +94,50 @@
         </tbody>
       </table>
     </div>
+
+    <section class="history-section">
+      <div class="flex items-center justify-between mb-5">
+        <div>
+          <h2 class="text-xl font-bold text-[#1a3a3a]">Service History</h2>
+          <p class="text-sm text-gray-500 mt-1">Completed service work linked to your customer account.</p>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
+        <table class="w-full">
+          <thead>
+            <tr class="border-b border-gray-100">
+              <th class="table-heading">Date</th>
+              <th class="table-heading">Vehicle</th>
+              <th class="table-heading">Notes</th>
+              <th class="table-heading text-right">Cost</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (history of serviceHistory; track history.id) {
+              <tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors duration-150">
+                <td class="table-cell">{{ history.serviceDate | date: 'mediumDate' }}</td>
+                <td class="table-cell font-semibold text-[#1a3a3a]">{{ history.vehicleId.substring(0, 8) }}...</td>
+                <td class="table-cell">{{ history.notes || 'No notes provided' }}</td>
+                <td class="table-cell text-right font-semibold text-[#1a3a3a]">
+                  Rs. {{ history.totalCost | number }}
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="4" class="px-6 py-16 text-center text-sm text-gray-400">
+                  @if (isLoadingServiceHistory) {
+                    Loading service history...
+                  } @else {
+                    No service history found.
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
   </main>
 </div>
 

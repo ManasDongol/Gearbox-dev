@@ -1,3 +1,8 @@
 @reference "tailwindcss";
 
 /* Styles are now handled globally in styles.css */
+.modal-overlay {
+  @apply fixed inset-0 bg-black/50 flex items-center justify-center z-50;
+  backdrop-filter: blur(4px);
+  animation: fadeIn 0.2s ease-out;
+}

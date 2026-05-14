@@ -5,6 +5,10 @@ import { Topbar } from '../../shared/components/topbar/topbar';
 import { Auth } from '../../core/services/auth/auth';
 import { CustomerService } from '../../core/services/customer/customer.service';
 import { SalesInvoiceService } from '../../core/services/sales-invoice/sales-invoice.service';
+import {
+  ServiceHistory,
+  ServiceHistoryService,
+} from '../../core/services/service-history/service-history.service';
 import { Customer } from '../../core/models/customer.model';
 import { SalesInvoice } from '../../core/models/sales-invoice.model';
 import { ToastService } from '../../shared/components/toast/toast.service';
@@ -21,12 +25,15 @@ export class MyInvoices implements OnInit {
   private auth = inject(Auth);
   private customerService = inject(CustomerService);
   private salesInvoiceService = inject(SalesInvoiceService);
+  private serviceHistoryService = inject(ServiceHistoryService);
   private toast = inject(ToastService);
 
   customer: Customer | null = null;
   invoices: SalesInvoice[] = [];
+  serviceHistory: ServiceHistory[] = [];
   selectedInvoice: SalesInvoice | null = null;
   isLoading = true;
+  isLoadingServiceHistory = true;
   isLoadingInvoiceItems = false;
   payingInvoiceId: string | null = null;
 
@@ -37,10 +44,12 @@ export class MyInvoices implements OnInit {
         this.customer =
           customers.find((customer) => customer.userId === userId || customer.userId === userId) ?? null;
         this.loadInvoices();
+        this.loadServiceHistory();
       },
       error: (err) => {
         console.error('Error loading customer profile', err);
         this.loadInvoices();
+        this.loadServiceHistory();
       },
     });
   }
@@ -63,6 +72,25 @@ export class MyInvoices implements OnInit {
       error: (err) => {
         console.error('Error loading invoices', err);
         this.isLoading = false;
+      },
+    });
+  }
+
+  loadServiceHistory() {
+    const customerId = this.customer?.userId;
+    const userId = this.auth.user?.userId;
+
+    this.serviceHistoryService.getAll().subscribe({
+      next: (history) => {
+        this.serviceHistory = history
+          .filter((item) => item.customerId === customerId || item.customerId === userId)
+          .sort((a, b) => new Date(b.serviceDate).getTime() - new Date(a.serviceDate).getTime());
+        this.isLoadingServiceHistory = false;
+      },
+      error: (err) => {
+        console.error('Error loading service history', err);
+        this.toast.error('Service history failed', 'Could not load service history.');
+        this.isLoadingServiceHistory = false;
       },
     });
   }
