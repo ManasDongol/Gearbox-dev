@@ -10,6 +10,7 @@ import { Vendor } from '../../core/models/vendor.model';
 import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 import { ToastService } from '../../shared/components/toast/toast.service';
 import { Spinner } from '../../shared/components/spinner/spinner';
+import { ConfirmCardService } from '../../shared/components/confirm-card/confirm-card.service';
 
 @Component({
   selector: 'app-inventory',
@@ -21,6 +22,7 @@ import { Spinner } from '../../shared/components/spinner/spinner';
 export class Inventory implements OnInit {
   private partService = inject(PartService);
   private vendorService = inject(VendorService);
+  private confirmCard = inject(ConfirmCardService);
 
   parts: Part[] = [];
   filteredParts: Part[] = [];
@@ -163,18 +165,23 @@ export class Inventory implements OnInit {
     });
   }
 
-  deletePart(id: string) {
-    if (confirm('Are you sure you want to delete this part from inventory?')) {
-      this.partService.delete(id).subscribe({
-        next: () => {
-          this.parts = this.parts.filter(p => p.id !== id);
-          this.applyFilter(this.searchQuery);
-        },
-        error: (err) => {
-          console.error('Error deleting part', err);
-        }
-      });
-    }
+  async deletePart(id: string) {
+    const confirmed = await this.confirmCard.confirm({
+      title: 'Delete part?',
+      message: 'Are you sure you want to delete this part from inventory?',
+      confirmText: 'OK',
+    });
+    if (!confirmed) return;
+
+    this.partService.delete(id).subscribe({
+      next: () => {
+        this.parts = this.parts.filter(p => p.id !== id);
+        this.applyFilter(this.searchQuery);
+      },
+      error: (err) => {
+        console.error('Error deleting part', err);
+      }
+    });
   }
 
   getVendorName(vendorId: string): string {

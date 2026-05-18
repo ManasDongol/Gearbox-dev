@@ -39,6 +39,30 @@
       </button>
     </div>
 
+    <div class="report-actions">
+      <button
+        class="report-button"
+        (click)="generateCustomerReport('regulars')"
+        [disabled]="generatingReport !== null"
+      >
+        {{ generatingReport === 'regulars' ? 'Generating...' : 'Regular Customers' }}
+      </button>
+      <button
+        class="report-button"
+        (click)="generateCustomerReport('high-spenders')"
+        [disabled]="generatingReport !== null"
+      >
+        {{ generatingReport === 'high-spenders' ? 'Generating...' : 'High Spenders' }}
+      </button>
+      <button
+        class="report-button report-button-warning"
+        (click)="generateCustomerReport('pending-credits')"
+        [disabled]="generatingReport !== null"
+      >
+        {{ generatingReport === 'pending-credits' ? 'Generating...' : 'Pending Credits' }}
+      </button>
+    </div>
+
     <div class="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
       <table class="w-full">
         <thead>

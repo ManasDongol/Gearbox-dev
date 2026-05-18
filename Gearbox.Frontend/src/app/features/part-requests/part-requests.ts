@@ -10,6 +10,7 @@ import { Customer } from '../../core/models/customer.model';
 import { NewPartRequest, PartRequest } from '../../core/models/part-request.model';
 import { ToastService } from '../../shared/components/toast/toast.service';
 import { Spinner } from '../../shared/components/spinner/spinner';
+import { ConfirmCardService } from '../../shared/components/confirm-card/confirm-card.service';
 
 @Component({
   selector: 'app-part-requests',
@@ -22,6 +23,7 @@ export class PartRequests implements OnInit {
   private auth = inject(Auth);
   private customerService = inject(CustomerService);
   private requestService = inject(PartRequestService);
+  private confirmCard = inject(ConfirmCardService);
 
   customer: Customer | null = null;
   requests: PartRequest[] = [];
@@ -123,8 +125,13 @@ export class PartRequests implements OnInit {
     });
   }
 
-  deleteRequest(request: PartRequest) {
-    if (!confirm(`Delete request for ${request.partName}?`)) return;
+  async deleteRequest(request: PartRequest) {
+    const confirmed = await this.confirmCard.confirm({
+      title: 'Delete request?',
+      message: `Delete request for ${request.partName}?`,
+      confirmText: 'OK',
+    });
+    if (!confirmed) return;
 
     this.requestService.delete(request.id).subscribe({
       next: () => {

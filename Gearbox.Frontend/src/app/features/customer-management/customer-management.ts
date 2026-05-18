@@ -5,7 +5,6 @@ import { Navmenu } from '../../shared/components/navmenu/navmenu';
 import { Topbar } from '../../shared/components/topbar/topbar';
 import { CustomerService } from '../../core/services/customer/customer.service';
 import { Customer, NewCustomer } from '../../core/models/customer.model';
-import { PdfService } from '../../core/services/pdf/pdf.service';
 import {
   NewVehicle,
   Vehicle,
@@ -14,6 +13,7 @@ import {
 import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 import { ToastService } from '../../shared/components/toast/toast.service';
 import { Spinner } from '../../shared/components/spinner/spinner';
+import { ConfirmCardService } from '../../shared/components/confirm-card/confirm-card.service';
 
 @Component({
   selector: 'app-customer-management',
@@ -25,8 +25,8 @@ import { Spinner } from '../../shared/components/spinner/spinner';
 export class CustomerManagement implements OnInit {
   private customerService = inject(CustomerService);
   private vehicleService = inject(VehicleService);
-  private pdfService = inject(PdfService);
   private toast = inject(ToastService);
+  private confirmCard = inject(ConfirmCardService);
 
   customers: Customer[] = [];
   filteredCustomers: Customer[] = [];
@@ -40,7 +40,6 @@ export class CustomerManagement implements OnInit {
   showVehicleDialog: boolean = false;
   isLoading: boolean = false;
   isVehicleLoading: boolean = false;
-  generatingReport: 'regulars' | 'high-spenders' | 'pending-credits' | null = null;
 
   newCustomer: NewCustomer = {
     userName: '',
@@ -181,23 +180,28 @@ export class CustomerManagement implements OnInit {
     });
   }
 
-  deleteCustomer(userId: string) {
-    if (confirm('Are you sure you want to delete this customer?')) {
-      this.customerService.delete(userId).subscribe({
-        next: () => {
-          this.customers = this.customers.filter(c => c.userId !== userId);
-          this.applyFilter();
-          if (this.selectedVehicleCustomer?.userId === userId) {
-            this.closeVehiclesPanel();
-          }
-          this.toast.success('Customer deleted', 'The customer was removed.');
-        },
-        error: (err) => {
-          console.error('Error deleting customer', err);
-          this.toast.error('Unable to delete customer', 'Please try again.');
+  async deleteCustomer(userId: string) {
+    const confirmed = await this.confirmCard.confirm({
+      title: 'Delete customer?',
+      message: 'Are you sure you want to delete this customer?',
+      confirmText: 'OK',
+    });
+    if (!confirmed) return;
+
+    this.customerService.delete(userId).subscribe({
+      next: () => {
+        this.customers = this.customers.filter(c => c.userId !== userId);
+        this.applyFilter();
+        if (this.selectedVehicleCustomer?.userId === userId) {
+          this.closeVehiclesPanel();
         }
-      });
-    }
+        this.toast.success('Customer deleted', 'The customer was removed.');
+      },
+      error: (err) => {
+        console.error('Error deleting customer', err);
+        this.toast.error('Unable to delete customer', 'Please try again.');
+      }
+    });
   }
 
   openVehiclesPanel(customer: Customer) {
@@ -305,8 +309,13 @@ export class CustomerManagement implements OnInit {
     });
   }
 
-  deleteVehicle(vehicle: Vehicle) {
-    if (!confirm(`Delete ${vehicle.make} ${vehicle.model}?`)) return;
+  async deleteVehicle(vehicle: Vehicle) {
+    const confirmed = await this.confirmCard.confirm({
+      title: 'Delete vehicle?',
+      message: `Delete ${vehicle.make} ${vehicle.model}?`,
+      confirmText: 'OK',
+    });
+    if (!confirmed) return;
 
     this.isVehicleLoading = true;
     this.vehicleService.delete(vehicle.id).subscribe({
@@ -319,43 +328,6 @@ export class CustomerManagement implements OnInit {
         console.error('Error deleting vehicle', err);
         this.isVehicleLoading = false;
         this.toast.error('Unable to delete vehicle', 'Please try again.');
-      }
-    });
-  }
-
-  generateCustomerReport(type: 'regulars' | 'high-spenders' | 'pending-credits') {
-    if (this.generatingReport) return;
-
-    this.generatingReport = type;
-    const reportMap = {
-      regulars: {
-        request: this.pdfService.generateRegularCustomersReport(),
-        fileName: 'regular-customers',
-        success: 'Regular customers report downloaded.',
-      },
-      'high-spenders': {
-        request: this.pdfService.generateHighSpendersReport(),
-        fileName: 'high-spenders',
-        success: 'High spenders report downloaded.',
-      },
-      'pending-credits': {
-        request: this.pdfService.generatePendingCreditsReport(),
-        fileName: 'pending-credits',
-        success: 'Pending credits report downloaded.',
-      },
-    };
-
-    const report = reportMap[type];
-    report.request.subscribe({
-      next: (pdf) => {
-        this.downloadPdf(pdf, this.createFileName(report.fileName));
-        this.toast.success('Report ready', report.success);
-        this.generatingReport = null;
-      },
-      error: (err) => {
-        console.error('Error generating customer report', err);
-        this.toast.error('Report failed', 'Could not generate the customer report.');
-        this.generatingReport = null;
       }
     });
   }
@@ -381,17 +353,4 @@ export class CustomerManagement implements OnInit {
     };
   }
 
-  private downloadPdf(pdf: Blob, fileName: string) {
-    const url = URL.createObjectURL(pdf);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = fileName;
-    link.click();
-    URL.revokeObjectURL(url);
-  }
-
-  private createFileName(reportName: string): string {
-    const date = new Date().toISOString().slice(0, 10);
-    return `gearbox-${reportName}-report-${date}.pdf`;
-  }
 }

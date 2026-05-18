@@ -13,6 +13,7 @@ import {
 import { Customer } from '../../core/models/customer.model';
 import { ToastService } from '../../shared/components/toast/toast.service';
 import { Spinner } from '../../shared/components/spinner/spinner';
+import { ConfirmCardService } from '../../shared/components/confirm-card/confirm-card.service';
 
 @Component({
   selector: 'app-vehicle',
@@ -26,6 +27,7 @@ export class Vehicle implements OnInit {
   private customerService = inject(CustomerService);
   private vehicleService = inject(VehicleService);
   private toast = inject(ToastService);
+  private confirmCard = inject(ConfirmCardService);
 
   customer: Customer | null = null;
   vehicles: CustomerVehicle[] = [];
@@ -160,8 +162,13 @@ export class Vehicle implements OnInit {
     });
   }
 
-  deleteVehicle(vehicle: CustomerVehicle) {
-    if (!confirm(`Delete ${vehicle.make} ${vehicle.model}?`)) return;
+  async deleteVehicle(vehicle: CustomerVehicle) {
+    const confirmed = await this.confirmCard.confirm({
+      title: 'Delete vehicle?',
+      message: `Delete ${vehicle.make} ${vehicle.model}?`,
+      confirmText: 'OK',
+    });
+    if (!confirmed) return;
 
     this.isLoading = true;
     this.vehicleService.delete(vehicle.id).subscribe({

@@ -77,6 +77,12 @@ export const routes: Routes = [
   },
 
   {
+    path: 'reviews',
+    canActivate: [roleGuard('Admin', 'Staff')],
+    loadComponent: () => import('./features/service-reviews/service-reviews').then(m => m.ServiceReviews)
+  },
+
+  {
     path: 'vendors',
     canActivate: [roleGuard('Admin')],
     loadComponent: () => import('./features/vendor-management/vendor-management').then(m => m.VendorManagement)

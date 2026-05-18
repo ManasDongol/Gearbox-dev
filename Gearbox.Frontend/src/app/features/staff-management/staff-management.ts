@@ -8,6 +8,7 @@ import { Staff, NewStaff } from '../../core/models/staff.model';
 import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 import { ToastService } from '../../shared/components/toast/toast.service';
 import { Spinner } from '../../shared/components/spinner/spinner';
+import { ConfirmCardService } from '../../shared/components/confirm-card/confirm-card.service';
 
 @Component({
   selector: 'app-staff-management',
@@ -19,6 +20,7 @@ import { Spinner } from '../../shared/components/spinner/spinner';
 export class StaffManagement implements OnInit {
   private staffService = inject(StaffService);
   private toast = inject(ToastService);
+  private confirmCard = inject(ConfirmCardService);
 
   staff: Staff[] = [];
   filteredStaff: Staff[] = [];
@@ -173,49 +175,60 @@ export class StaffManagement implements OnInit {
     });
   }
 
-  deleteStaff(id: string) {
+  async deleteStaff(id: string) {
     const staffMember = this.staff.find(s => s.userId === id);
     if (staffMember?.role === 'Admin') {
       this.toast.error('Admins cannot be deleted', 'Demote or review the admin account separately.');
       return;
     }
 
-    if (confirm('Are you sure you want to delete this staff member?')) {
-      this.isLoading = true;
-      this.staffService.delete(id).subscribe({
-        next: () => {
-          this.staff = this.staff.filter(s => s.userId !== id);
-          this.applyFilter();
-          this.isLoading = false;
-          this.toast.success('Staff member deleted', 'The staff member was removed.');
-        },
-        error: (err) => {
-          console.error('Error deleting staff', err);
-          this.isLoading = false;
-          this.toast.error('Unable to delete staff member', 'Please try again.');
-        }
-      });
-    }
+    const confirmed = await this.confirmCard.confirm({
+      title: 'Delete staff member?',
+      message: 'Are you sure you want to delete this staff member?',
+      confirmText: 'OK',
+    });
+    if (!confirmed) return;
+
+    this.isLoading = true;
+    this.staffService.delete(id).subscribe({
+      next: () => {
+        this.staff = this.staff.filter(s => s.userId !== id);
+        this.applyFilter();
+        this.isLoading = false;
+        this.toast.success('Staff member deleted', 'The staff member was removed.');
+      },
+      error: (err) => {
+        console.error('Error deleting staff', err);
+        this.isLoading = false;
+        this.toast.error('Unable to delete staff member', 'Please try again.');
+      }
+    });
   }
 
-  promoteToAdmin(staff: Staff) {
+  async promoteToAdmin(staff: Staff) {
     if (staff.role === 'Admin') return;
 
-    if (confirm(`Promote ${staff.firstName} ${staff.lastName} to Admin?`)) {
-      this.isLoading = true;
-      this.staffService.promoteToAdmin(staff.userId).subscribe({
-        next: () => {
-          staff.role = 'Admin';
-          this.applyFilter();
-          this.isLoading = false;
-          this.toast.success('Staff promoted', 'The account now has admin access.');
-        },
-        error: (err) => {
-          console.error('Error promoting staff', err);
-          this.isLoading = false;
-          this.toast.error('Unable to promote staff member', 'Please try again.');
-        }
-      });
-    }
+    const confirmed = await this.confirmCard.confirm({
+      title: 'Promote to admin?',
+      message: `Promote ${staff.firstName} ${staff.lastName} to Admin?`,
+      confirmText: 'OK',
+      tone: 'default',
+    });
+    if (!confirmed) return;
+
+    this.isLoading = true;
+    this.staffService.promoteToAdmin(staff.userId).subscribe({
+      next: () => {
+        staff.role = 'Admin';
+        this.applyFilter();
+        this.isLoading = false;
+        this.toast.success('Staff promoted', 'The account now has admin access.');
+      },
+      error: (err) => {
+        console.error('Error promoting staff', err);
+        this.isLoading = false;
+        this.toast.error('Unable to promote staff member', 'Please try again.');
+      }
+    });
   }
 }

@@ -1,3 +1,7 @@
+@if(isLoadingDashboard){
+  <app-spinner></app-spinner>
+}
+
 <!-- Dashboard Page -->
 <div class="page-layout">
   <!-- Side Navigation -->
@@ -71,17 +75,21 @@
           </select>
         </div>
         <div class="h-64 flex items-end justify-between gap-2 px-4">
-          <!-- Dummy Chart Bars -->
-          <div class="w-full bg-blue-50 rounded-t-sm h-[40%] relative group"><div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity">Mon</div></div>
-          <div class="w-full bg-blue-50 rounded-t-sm h-[60%] relative group"><div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity">Tue</div></div>
-          <div class="w-full bg-[#1a3a3a] rounded-t-sm h-[85%] relative group shadow-sm"><div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity">Wed</div></div>
-          <div class="w-full bg-blue-50 rounded-t-sm h-[45%] relative group"><div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity">Thu</div></div>
-          <div class="w-full bg-blue-50 rounded-t-sm h-[70%] relative group"><div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity">Fri</div></div>
-          <div class="w-full bg-blue-50 rounded-t-sm h-[55%] relative group"><div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity">Sat</div></div>
-          <div class="w-full bg-blue-50 rounded-t-sm h-[30%] relative group"><div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity">Sun</div></div>
+          @for (bar of revenueBars; track bar.label) {
+            <div
+              class="w-full rounded-t-sm relative group transition-all"
+              [class]="bar.isPeak ? 'bg-[#1a3a3a] shadow-sm' : 'bg-blue-50'"
+              [style.height.%]="bar.height">
+              <div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                Rs. {{ bar.value | number }}
+              </div>
+            </div>
+          }
         </div>
         <div class="flex justify-between mt-4 text-xs text-gray-400 px-4">
-          <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+          @for (bar of revenueBars; track bar.label) {
+            <span>{{ bar.label }}</span>
+          }
         </div>
       </div>
 
@@ -120,6 +128,8 @@
                 <p class="text-xs text-gray-400 mt-1">{{ activity.time }}</p>
               </div>
             </div>
+          } @empty {
+            <div class="text-sm text-gray-500">No recent backend activity yet.</div>
           }
         </div>
       </div>

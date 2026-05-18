@@ -36,6 +36,7 @@ export class Navmenu implements OnInit {
           items: [
             { label: 'Inventory', route: '/inventory' },
               { label: 'Appointments', route: '/appointment-management' },
+            { label: 'Reviews', route: '/reviews' },
            
           ],
         },

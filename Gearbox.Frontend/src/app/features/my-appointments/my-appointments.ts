@@ -11,6 +11,7 @@ import { Appointment, NewAppointment } from '../../core/models/appointment.model
 import { Customer } from '../../core/models/customer.model';
 import { ToastService } from '../../shared/components/toast/toast.service';
 import { Spinner } from '../../shared/components/spinner/spinner';
+import { ConfirmCardService } from '../../shared/components/confirm-card/confirm-card.service';
 
 @Component({
   selector: 'app-my-appointments',
@@ -24,6 +25,7 @@ export class MyAppointments implements OnInit {
   private appointmentService = inject(AppointmentService);
   private customerService = inject(CustomerService);
   private vehicleService = inject(VehicleService);
+  private confirmCard = inject(ConfirmCardService);
 
   customer: Customer | null = null;
   appointments: Appointment[] = [];
@@ -167,8 +169,13 @@ export class MyAppointments implements OnInit {
     });
   }
 
-  cancelAppointment(appointment: Appointment) {
-    if (!confirm('Cancel this appointment request?')) return;
+  async cancelAppointment(appointment: Appointment) {
+    const confirmed = await this.confirmCard.confirm({
+      title: 'Cancel appointment?',
+      message: 'Cancel this appointment request?',
+      confirmText: 'OK',
+    });
+    if (!confirmed) return;
 
     this.appointmentService.delete(appointment.id).subscribe({
       next: () => {

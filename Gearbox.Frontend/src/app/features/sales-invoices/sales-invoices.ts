@@ -10,6 +10,7 @@ import { PartService } from '../../core/services/parts/part.service';
 import { ServiceService } from '../../core/services/service/service.service';
 import { Vehicle, VehicleService } from '../../core/services/vehicle/vehicle.service';
 import { SalesInvoice, NewSalesInvoice } from '../../core/models/sales-invoice.model';
+import { PdfService } from '../../core/services/pdf/pdf.service';
 import { Customer } from '../../core/models/customer.model';
 import { Staff } from '../../core/models/staff.model';
 import { Part } from '../../core/models/part.model';
@@ -17,6 +18,7 @@ import { Service } from '../../core/models/service.model';
 import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 import { ToastService } from '../../shared/components/toast/toast.service';
 import { Spinner } from '../../shared/components/spinner/spinner';
+import { ConfirmCardService } from '../../shared/components/confirm-card/confirm-card.service';
 
 @Component({
   selector: 'app-sales-invoices',
@@ -33,7 +35,9 @@ export class SalesInvoices implements OnInit {
   private partService = inject(PartService);
   private serviceService = inject(ServiceService);
   private vehicleService = inject(VehicleService);
+  private pdfService = inject(PdfService);
   private toast = inject(ToastService);
+  private confirmCard = inject(ConfirmCardService);
 
   invoices: SalesInvoice[] = [];
   filteredInvoices: SalesInvoice[] = [];
@@ -49,6 +53,7 @@ export class SalesInvoices implements OnInit {
   showAddDialog: boolean = false;
   isLoading: boolean = false;
   isLoadingInvoiceItems: boolean = false;
+  generatingReport: 'regulars' | 'high-spenders' | 'pending-credits' | null = null;
   selectedInvoice: SalesInvoice | null = null;
 
   newInvoice: any = {
@@ -290,19 +295,75 @@ export class SalesInvoices implements OnInit {
     });
   }
 
-  deleteInvoice(id: string) {
-    if (confirm('Are you sure you want to delete this invoice?')) {
-      this.invoiceService.delete(id).subscribe({
-        next: () => {
-          this.invoices = this.invoices.filter(i => i.id !== id);
-          this.applyFilter();
-        },
-        error: (err) => console.error('Error deleting invoice', err)
-      });
-    }
+  async deleteInvoice(id: string) {
+    const confirmed = await this.confirmCard.confirm({
+      title: 'Delete invoice?',
+      message: 'Are you sure you want to delete this invoice?',
+      confirmText: 'OK',
+    });
+    if (!confirmed) return;
+
+    this.invoiceService.delete(id).subscribe({
+      next: () => {
+        this.invoices = this.invoices.filter(i => i.id !== id);
+        this.applyFilter();
+      },
+      error: (err) => console.error('Error deleting invoice', err)
+    });
+  }
+
+  generateCustomerReport(type: 'regulars' | 'high-spenders' | 'pending-credits') {
+    if (this.generatingReport) return;
+
+    this.generatingReport = type;
+    const reportMap = {
+      regulars: {
+        request: this.pdfService.generateRegularCustomersReport(),
+        fileName: 'regular-customers',
+        success: 'Regular customers report downloaded.',
+      },
+      'high-spenders': {
+        request: this.pdfService.generateHighSpendersReport(),
+        fileName: 'high-spenders',
+        success: 'High spenders report downloaded.',
+      },
+      'pending-credits': {
+        request: this.pdfService.generatePendingCreditsReport(),
+        fileName: 'pending-credits',
+        success: 'Pending credits report downloaded.',
+      },
+    };
+
+    const report = reportMap[type];
+    report.request.subscribe({
+      next: (pdf) => {
+        this.downloadPdf(pdf, this.createFileName(report.fileName));
+        this.toast.success('Report ready', report.success);
+        this.generatingReport = null;
+      },
+      error: (err) => {
+        console.error('Error generating sales invoice report', err);
+        this.toast.error('Report failed', 'Could not generate the invoice report.');
+        this.generatingReport = null;
+      }
+    });
   }
 
   itemTotal(item: SalesInvoice['items'][number]): number {
     return item.quantity * item.unitPrice;
+  }
+
+  private downloadPdf(pdf: Blob, fileName: string) {
+    const url = URL.createObjectURL(pdf);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = fileName;
+    link.click();
+    URL.revokeObjectURL(url);
+  }
+
+  private createFileName(reportName: string): string {
+    const date = new Date().toISOString().slice(0, 10);
+    return `gearbox-${reportName}-report-${date}.pdf`;
   }
 }

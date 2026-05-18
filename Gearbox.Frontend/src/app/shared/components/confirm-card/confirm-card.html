@@ -1,0 +1,34 @@
+@if (confirmCard.active(); as card) {
+  <div class="confirm-card-backdrop" (click)="confirmCard.dismiss()">
+    <section
+      class="confirm-card"
+      role="dialog"
+      aria-modal="true"
+      [attr.aria-labelledby]="'confirm-card-title'"
+      [attr.aria-describedby]="'confirm-card-message'"
+      (click)="$event.stopPropagation()"
+    >
+      <div class="confirm-card__icon" [class.confirm-card__icon--danger]="card.tone === 'danger'">
+        !
+      </div>
+      <div class="confirm-card__content">
+        <h2 id="confirm-card-title">{{ card.title }}</h2>
+        <p id="confirm-card-message">{{ card.message }}</p>
+      </div>
+      <div class="confirm-card__actions">
+        <button type="button" class="confirm-card__button confirm-card__button--ghost" (click)="confirmCard.dismiss()">
+          {{ card.cancelText }}
+        </button>
+        <button
+          type="button"
+          class="confirm-card__button confirm-card__button--primary"
+          [class.confirm-card__button--danger]="card.tone === 'danger'"
+          (click)="confirmCard.accept()"
+          autofocus
+        >
+          {{ card.confirmText }}
+        </button>
+      </div>
+    </section>
+  </div>
+}

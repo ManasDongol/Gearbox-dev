@@ -12,6 +12,7 @@ import { Part } from '../../core/models/part.model';
 import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 import { ToastService } from '../../shared/components/toast/toast.service';
 import { Spinner } from '../../shared/components/spinner/spinner';
+import { ConfirmCardService } from '../../shared/components/confirm-card/confirm-card.service';
 
 @Component({
   selector: 'app-purchase-invoices',
@@ -25,6 +26,7 @@ export class PurchaseInvoices implements OnInit {
   private invoiceService = inject(PurchaseInvoiceService);
   private vendorService = inject(VendorService);
   private partService = inject(PartService);
+  private confirmCard = inject(ConfirmCardService);
 
   invoices: PurchaseInvoice[] = [];
   filteredInvoices: PurchaseInvoice[] = [];
@@ -157,15 +159,20 @@ export class PurchaseInvoices implements OnInit {
     });
   }
 
-  deleteInvoice(id: string) {
-    if (confirm('Are you sure you want to delete this invoice?')) {
-      this.invoiceService.delete(id).subscribe({
-        next: () => {
-          this.invoices = this.invoices.filter(i => i.id !== id);
-          this.applyFilter();
-        },
-        error: (err) => console.error('Error deleting invoice', err)
-      });
-    }
+  async deleteInvoice(id: string) {
+    const confirmed = await this.confirmCard.confirm({
+      title: 'Delete invoice?',
+      message: 'Are you sure you want to delete this invoice?',
+      confirmText: 'OK',
+    });
+    if (!confirmed) return;
+
+    this.invoiceService.delete(id).subscribe({
+      next: () => {
+        this.invoices = this.invoices.filter(i => i.id !== id);
+        this.applyFilter();
+      },
+      error: (err) => console.error('Error deleting invoice', err)
+    });
   }
 }

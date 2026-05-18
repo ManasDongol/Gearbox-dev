@@ -55,7 +55,13 @@ export class MyInvoices implements OnInit {
   }
 
   get totalSpent(): number {
-    return this.customer?.totalSpent ?? this.invoices.reduce((sum, invoice) => sum + invoice.totalAmount, 0);
+    return this.invoices.reduce((sum, invoice) => sum + invoice.totalAmount, 0);
+  }
+
+  get pendingCredits(): number {
+    return this.invoices
+      .filter((invoice) => !invoice.paymentStatus)
+      .reduce((sum, invoice) => sum + invoice.totalAmount, 0);
   }
 
   loadInvoices() {

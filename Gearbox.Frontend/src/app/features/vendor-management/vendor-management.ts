@@ -8,6 +8,7 @@ import { Vendor, NewVendor } from '../../core/models/vendor.model';
 import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 import { ToastService } from '../../shared/components/toast/toast.service';
 import { Spinner } from '../../shared/components/spinner/spinner';
+import { ConfirmCardService } from '../../shared/components/confirm-card/confirm-card.service';
 
 @Component({
   selector: 'app-vendor-management',
@@ -19,6 +20,7 @@ import { Spinner } from '../../shared/components/spinner/spinner';
 export class VendorManagement implements OnInit {
   private vendorService = inject(VendorService);
   private toast = inject(ToastService);
+  private confirmCard = inject(ConfirmCardService);
 
   vendors: Vendor[] = [];
   filteredVendors: Vendor[] = [];
@@ -156,22 +158,27 @@ export class VendorManagement implements OnInit {
     });
   }
 
-  deleteVendor(id: string) {
-    if (confirm('Are you sure you want to delete this vendor?')) {
-      this.isLoading = true;
-      this.vendorService.delete(id).subscribe({
-        next: () => {
-          this.vendors = this.vendors.filter(v => v.id !== id);
-          this.applyFilter(this.searchQuery);
-          this.isLoading = false;
-          this.toast.success('Vendor deleted', 'The vendor was removed.');
-        },
-        error: (err) => {
-          console.error('Error deleting vendor', err);
-          this.isLoading = false;
-          this.toast.error('Unable to delete vendor', 'Please try again.');
-        }
-      });
-    }
+  async deleteVendor(id: string) {
+    const confirmed = await this.confirmCard.confirm({
+      title: 'Delete vendor?',
+      message: 'Are you sure you want to delete this vendor?',
+      confirmText: 'OK',
+    });
+    if (!confirmed) return;
+
+    this.isLoading = true;
+    this.vendorService.delete(id).subscribe({
+      next: () => {
+        this.vendors = this.vendors.filter(v => v.id !== id);
+        this.applyFilter(this.searchQuery);
+        this.isLoading = false;
+        this.toast.success('Vendor deleted', 'The vendor was removed.');
+      },
+      error: (err) => {
+        console.error('Error deleting vendor', err);
+        this.isLoading = false;
+        this.toast.error('Unable to delete vendor', 'Please try again.');
+      }
+    });
   }
 }

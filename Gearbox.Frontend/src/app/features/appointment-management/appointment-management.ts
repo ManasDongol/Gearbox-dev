@@ -11,6 +11,7 @@ import { Customer } from '../../core/models/customer.model';
 import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 import { ToastService } from '../../shared/components/toast/toast.service';
 import { Spinner } from '../../shared/components/spinner/spinner';
+import { ConfirmCardService } from '../../shared/components/confirm-card/confirm-card.service';
 
 @Component({
   selector: 'app-appointment-management',
@@ -25,6 +26,7 @@ export class AppointmentManagement implements OnInit {
   private customerService = inject(CustomerService);
   private vehicleService = inject(VehicleService);
   private toast = inject(ToastService);
+  private confirmCard = inject(ConfirmCardService);
 
   appointments: Appointment[] = [];
   filteredAppointments: Appointment[] = [];
@@ -256,22 +258,27 @@ export class AppointmentManagement implements OnInit {
     });
   }
 
-  deleteAppointment(id: string) {
-    if (confirm('Are you sure you want to cancel and delete this appointment?')) {
-      this.isLoading = true;
-      this.appointmentService.delete(id).subscribe({
-        next: () => {
-          this.appointments = this.appointments.filter(a => a.id !== id);
-          this.applyFilter();
-          this.isLoading = false;
-          this.toast.success('Appointment deleted', 'The appointment was removed.');
-        },
-        error: (err) => {
-          console.error('Error deleting appointment', err);
-          this.isLoading = false;
-          this.toast.error('Unable to delete appointment', 'Please try again.');
-        }
-      });
-    }
+  async deleteAppointment(id: string) {
+    const confirmed = await this.confirmCard.confirm({
+      title: 'Delete appointment?',
+      message: 'Are you sure you want to cancel and delete this appointment?',
+      confirmText: 'OK',
+    });
+    if (!confirmed) return;
+
+    this.isLoading = true;
+    this.appointmentService.delete(id).subscribe({
+      next: () => {
+        this.appointments = this.appointments.filter(a => a.id !== id);
+        this.applyFilter();
+        this.isLoading = false;
+        this.toast.success('Appointment deleted', 'The appointment was removed.');
+      },
+      error: (err) => {
+        console.error('Error deleting appointment', err);
+        this.isLoading = false;
+        this.toast.error('Unable to delete appointment', 'Please try again.');
+      }
+    });
   }
 }

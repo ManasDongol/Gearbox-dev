@@ -1,0 +1,58 @@
+@if (isLoading) {
+  <app-spinner></app-spinner>
+}
+
+<div class="page-layout">
+  <app-navmenu />
+
+  <main class="main-content">
+    <div class="flex items-center justify-between mb-8">
+      <div>
+        <h1 class="text-3xl font-bold text-[#1a3a3a]">Customer Reviews</h1>
+        <p class="mt-1 text-sm text-gray-500">Service feedback submitted by customers.</p>
+      </div>
+      <app-topbar />
+    </div>
+
+    <section class="review-summary">
+      <div>
+        <span class="summary-label">Total reviews</span>
+        <strong>{{ reviews.length }}</strong>
+      </div>
+      <div>
+        <span class="summary-label">Average rating</span>
+        <strong>{{ averageRating }} / 5</strong>
+      </div>
+    </section>
+
+    <section class="reviews-list">
+      @for (review of reviews; track review.id) {
+        <article class="review-row">
+          <div class="review-row__main">
+            <div class="review-row__header">
+              <div>
+                <h2>{{ getCustomerName(review.customerId) }}</h2>
+                <p>{{ getServiceName(review.serviceId) }}</p>
+              </div>
+              <span class="rating-pill">{{ getRatingLabel(review.rating) }}</span>
+            </div>
+            <p class="review-comment">{{ review.comment || 'No comment provided.' }}</p>
+          </div>
+
+          <div class="review-row__meta">
+            <span>{{ review.reviewDate | date: 'mediumDate' }}</span>
+            <span>Appointment {{ shortId(review.appointmentId) }}</span>
+          </div>
+        </article>
+      } @empty {
+        <div class="empty-state">
+          @if (isLoading) {
+            Loading reviews...
+          } @else {
+            No customer reviews yet.
+          }
+        </div>
+      }
+    </section>
+  </main>
+</div>
