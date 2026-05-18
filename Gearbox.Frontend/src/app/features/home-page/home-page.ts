@@ -5,7 +5,7 @@ import { Spinner } from '../../shared/components/spinner/spinner';
 
 @Component({
   selector: 'app-home-page',
-  imports: [RouterLink,Spinner],
+  imports: [RouterLink],
   templateUrl: './home-page.html',
   styleUrl: './home-page.css',
 })

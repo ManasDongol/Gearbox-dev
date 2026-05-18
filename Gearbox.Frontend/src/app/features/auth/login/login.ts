@@ -16,6 +16,7 @@ import { Spinner } from '../../../shared/components/spinner/spinner';
 })
 export class Login {
   isLoading: boolean =false;
+  showPassword = false;
   private fb = inject(FormBuilder);
   private router = inject(Router);
   private auth = inject(Auth);
@@ -29,6 +30,11 @@ export class Login {
     username: ['', [Validators.required]],
     password: ['', Validators.required],
   });
+
+  hasError(controlName: 'username' | 'password', error: string): boolean {
+    const control = this.form.controls[controlName];
+    return control.touched && control.hasError(error);
+  }
 
 onSubmit() {
   if (this.form.invalid) {

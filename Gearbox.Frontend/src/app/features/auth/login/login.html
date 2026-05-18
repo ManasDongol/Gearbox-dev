@@ -27,13 +27,16 @@
             >Username</label
           >
           <input
-            type="username"
+            type="text"
             id="login-email"
             name="username"
             class="w-full px-4 py-3 bg-[#F0F0F0] border-none rounded-lg text-sm text-[#1a3a3a] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#1a3a3a]/20 transition-all duration-200"
-            placeholder=""
+            placeholder="Enter your username"
             formControlName="username"
           />
+          @if (hasError('username', 'required')) {
+            <p class="mt-1 text-xs text-red-600">Username is required.</p>
+          }
         </div>
 
         <!-- Password Field -->
@@ -41,14 +44,37 @@
           <label for="login-password" class="block text-sm font-medium text-[#1a3a3a] mb-2"
             >Password</label
           >
-          <input
-            type="password"
-            id="login-password"
-            name="password"
-            class="w-full px-4 py-3 bg-[#F0F0F0] border-none rounded-lg text-sm text-[#1a3a3a] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#1a3a3a]/20 transition-all duration-200"
-            placeholder=""
-            formControlName="password"
-          />
+          <div class="relative">
+            <input
+              [type]="showPassword ? 'text' : 'password'"
+              id="login-password"
+              name="password"
+              class="w-full px-4 py-3 pr-12 bg-[#F0F0F0] border-none rounded-lg text-sm text-[#1a3a3a] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#1a3a3a]/20 transition-all duration-200"
+              placeholder="Enter your password"
+              formControlName="password"
+            />
+            <button
+              type="button"
+              class="absolute right-3 top-1/2 -translate-y-1/2 text-[#5a6a6a] hover:text-[#1a3a3a]"
+              [attr.aria-label]="showPassword ? 'Hide password' : 'Show password'"
+              (click)="showPassword = !showPassword"
+            >
+              <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                @if (showPassword) {
+                  <path d="M3 3l18 18" />
+                  <path d="M10.6 10.6a2 2 0 0 0 2.8 2.8" />
+                  <path d="M9.9 4.2A10.6 10.6 0 0 1 12 4c5 0 9 4.5 10 8a12.5 12.5 0 0 1-2.3 4" />
+                  <path d="M6.6 6.6C4.3 8 2.8 10.2 2 12c1 3.5 5 8 10 8 1.6 0 3.1-.4 4.4-1.1" />
+                } @else {
+                  <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z" />
+                  <circle cx="12" cy="12" r="3" />
+                }
+              </svg>
+            </button>
+          </div>
+          @if (hasError('password', 'required')) {
+            <p class="mt-1 text-xs text-red-600">Password is required.</p>
+          }
         </div>
 
         <!-- Forgot Password -->
@@ -63,7 +89,8 @@
         <!-- Submit Button -->
         <button
           type="submit"
-          class="w-full py-3 bg-[#1a3a3a] text-white font-medium rounded-lg hover:bg-[#2a4a4a] focus:outline-none focus:ring-2 focus:ring-[#1a3a3a]/50 transition-all duration-200 cursor-pointer"
+          [disabled]="form.invalid || isLoading"
+          class="w-full py-3 bg-[#1a3a3a] text-white font-medium rounded-lg hover:bg-[#2a4a4a] focus:outline-none focus:ring-2 focus:ring-[#1a3a3a]/50 transition-all duration-200 cursor-pointer disabled:cursor-not-allowed disabled:bg-gray-300"
         >
           Login
         </button>

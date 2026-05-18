@@ -244,6 +244,7 @@ export class SalesInvoices implements OnInit {
     const partSubtotal = this.newInvoice.items.reduce((acc: number, item: any) => acc + (item.quantity * item.unitPrice), 0);
     const serviceSubtotal = this.newInvoice.serviceItems.reduce((acc: number, item: any) => acc + (item.quantity * item.unitPrice), 0);
     const subtotal = partSubtotal + serviceSubtotal;
+    this.newInvoice.discountAmount = subtotal > 5000 ? subtotal * 0.1 : 0;
     this.newInvoice.totalAmount = subtotal - this.newInvoice.discountAmount;
   }
 

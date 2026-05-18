@@ -7,6 +7,7 @@ export interface ServiceHistory {
   id: string;
   customerId: string;
   vehicleId: string;
+  serviceId: string;
   serviceDate: string;
   notes: string;
   totalCost: number;

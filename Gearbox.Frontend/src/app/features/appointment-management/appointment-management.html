@@ -121,6 +121,14 @@
                 >
                   Edit
                 </button>
+                @if (canCompleteAppointment(apt)) {
+                  <button
+                    (click)="completeService(apt)"
+                    class="text-sm text-green-700 hover:text-green-900 font-medium transition-colors duration-150 cursor-pointer whitespace-nowrap"
+                  >
+                    Complete 
+                  </button>
+                }
                 <button
                   (click)="deleteAppointment(apt.id)"
                   class="text-sm text-red-600 hover:text-red-800 font-medium transition-colors duration-150 cursor-pointer"

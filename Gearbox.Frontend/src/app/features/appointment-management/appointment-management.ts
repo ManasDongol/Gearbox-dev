@@ -169,6 +169,11 @@ export class AppointmentManagement implements OnInit {
     return vehicle ? `${vehicle.make} ${vehicle.model} (${vehicle.licensePlate})` : 'Unknown Vehicle';
   }
 
+  canCompleteAppointment(appointment: Appointment): boolean {
+    const status = appointment.status?.toLowerCase();
+    return status !== 'completed' && status !== 'cancelled';
+  }
+
   openAddDialog() {
     this.showAddDialog = true;
   }
@@ -254,6 +259,38 @@ export class AppointmentManagement implements OnInit {
         console.error('Error updating appointment', err);
         this.isLoading = false;
         this.toast.error('Unable to update appointment', 'Please try again.');
+      }
+    });
+  }
+
+  async completeService(appointment: Appointment) {
+    const confirmed = await this.confirmCard.confirm({
+      title: 'Complete service?',
+      message: 'Mark this appointment service as completed?',
+      confirmText: 'OK',
+      tone: 'default',
+    });
+    if (!confirmed) return;
+
+    const dto: Appointment = {
+      ...appointment,
+      status: 'Completed',
+    };
+
+    this.isLoading = true;
+    this.appointmentService.update(dto.id, dto).subscribe({
+      next: () => {
+        this.appointments = this.appointments.map((item) =>
+          item.id === appointment.id ? { ...item, status: 'Completed' } : item,
+        );
+        this.applyFilter();
+        this.isLoading = false;
+        this.toast.success('Service completed', 'The appointment was marked as completed.');
+      },
+      error: (err) => {
+        console.error('Error completing service', err);
+        this.isLoading = false;
+        this.toast.error('Unable to complete service', 'Please try again.');
       }
     });
   }

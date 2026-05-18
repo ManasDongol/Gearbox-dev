@@ -19,6 +19,7 @@ export class Register {
   private http = inject(HttpClient);
 private router = inject(Router);
 isLoading: boolean = false;
+showPassword = false;
   // Define the form structure
   registerForm: FormGroup = this.fb.group({
     userName: ['', [Validators.required, Validators.minLength(3)]],
@@ -29,6 +30,11 @@ isLoading: boolean = false;
     phoneNumber: ['', [Validators.required]],
     password: ['', [Validators.required, Validators.minLength(6)]]
   });
+
+  hasError(controlName: string, error: string): boolean {
+    const control = this.registerForm.get(controlName);
+    return !!control && control.touched && control.hasError(error);
+  }
 
   onSubmit() {
     if (this.registerForm.valid) {
