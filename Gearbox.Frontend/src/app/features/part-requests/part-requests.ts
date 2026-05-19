@@ -26,6 +26,7 @@ export class PartRequests implements OnInit {
   private confirmCard = inject(ConfirmCardService);
 
   customer: Customer | null = null;
+   private toast = inject(ToastService);
   requests: PartRequest[] = [];
   isLoading = true;
   showDialog = false;
@@ -102,8 +103,9 @@ export class PartRequests implements OnInit {
         next: () => {
           this.loadRequests();
           this.closeDialog();
+          this.toast.success("updated the request successfully!","");
         },
-        error: (err) => console.error('Error updating part request', err),
+        error: (err) =>  this.toast.error("failed to update the request!","")
       });
       return;
     }
@@ -120,8 +122,9 @@ export class PartRequests implements OnInit {
       next: () => {
         this.loadRequests();
         this.closeDialog();
+        this.toast.success("successfully created new request!","");
       },
-      error: (err) => console.error('Error creating part request', err),
+      error: (err) => this.toast.error("failed to create request!",""),
     });
   }
 
@@ -136,8 +139,9 @@ export class PartRequests implements OnInit {
     this.requestService.delete(request.id).subscribe({
       next: () => {
         this.requests = this.requests.filter((item) => item.id !== request.id);
+        this.toast.success("updated request successfully!","");
       },
-      error: (err) => console.error('Error deleting part request', err),
+      error: (err) => this.toast.error("failed to remove the request!",""),
     });
   }
 

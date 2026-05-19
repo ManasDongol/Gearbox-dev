@@ -142,8 +142,8 @@ public class PdfService : IPdfService
             .ThenBy(c => c.User.LastName)
             .ToListAsync();
 
-        var totalSpent = customers.Sum(c => c.TotalSpent);
-        var pendingCredits = customers.Sum(c => c.PendingCredits);
+        var totalSpent = customers.Sum(GetTotalSpent);
+        var pendingCredits = customers.Sum(GetPendingCredits);
         var totalVehicles = customers.Sum(c => c.Vehicles.Count);
         var activeCustomers = customers.Count(c => c.User.IsActive);
 
@@ -203,8 +203,8 @@ public class PdfService : IPdfService
                             table.Cell().Element(TableCell).Text(customer.User.PhoneNumber ?? customer.User.Email ?? "N/A");
                             table.Cell().Element(TableCell).AlignRight().Text(customer.Vehicles.Count.ToString());
                             table.Cell().Element(TableCell).AlignRight().Text(customer.ServiceHistories.Count.ToString());
-                            table.Cell().Element(TableCell).AlignRight().Text(FormatCurrency(customer.TotalSpent));
-                            table.Cell().Element(TableCell).AlignRight().Text(FormatCurrency(customer.PendingCredits));
+                            table.Cell().Element(TableCell).AlignRight().Text(FormatCurrency(GetTotalSpent(customer)));
+                            table.Cell().Element(TableCell).AlignRight().Text(FormatCurrency(GetPendingCredits(customer)));
                         }
                     });
 
@@ -222,25 +222,25 @@ public class PdfService : IPdfService
     {
         var customers = await GetCustomersForReportsAsync();
         var rankedCustomers = customers
-            .OrderByDescending(c => c.ServiceHistories.Count + c.SalesServicesInvoices.Count)
-            .ThenByDescending(c => c.TotalSpent)
+            .OrderByDescending(c => c.SalesServicesInvoices.Count)
+            .ThenByDescending(GetTotalSpent)
             .ToList();
 
         return GenerateCustomerSegmentReport(
             "Regular Customers Report",
-            "Customers ranked by service visits and invoice activity",
+            "Customers ranked by sales invoice activity",
             rankedCustomers,
             "Regular Customers",
-            "Activity",
-            customer => (customer.ServiceHistories.Count + customer.SalesServicesInvoices.Count).ToString());
+            "Invoices",
+            customer => customer.SalesServicesInvoices.Count.ToString());
     }
 
     public async Task<byte[]> GenerateHighSpendersReportAsync()
     {
         var customers = await GetCustomersForReportsAsync();
         var highSpenders = customers
-            .Where(c => c.TotalSpent > 0)
-            .OrderByDescending(c => c.TotalSpent)
+            .Where(c => GetTotalSpent(c) > 0)
+            .OrderByDescending(GetTotalSpent)
             .ThenBy(c => c.User.FirstName)
             .ToList();
 
@@ -250,16 +250,16 @@ public class PdfService : IPdfService
             highSpenders,
             "High Spenders",
             "Total Spent",
-            customer => FormatCurrency(customer.TotalSpent));
+            customer => FormatCurrency(GetTotalSpent(customer)));
     }
 
     public async Task<byte[]> GeneratePendingCreditsReportAsync()
     {
         var customers = await GetCustomersForReportsAsync();
         var pendingCredits = customers
-            .Where(c => c.PendingCredits > 0)
-            .OrderByDescending(c => c.PendingCredits)
-            .ThenByDescending(c => c.TotalSpent)
+            .Where(c => GetPendingCredits(c) > 0)
+            .OrderByDescending(GetPendingCredits)
+            .ThenByDescending(GetTotalSpent)
             .ToList();
 
         return GenerateCustomerSegmentReport(
@@ -268,7 +268,7 @@ public class PdfService : IPdfService
             pendingCredits,
             "Pending Credits",
             "Credits",
-            customer => FormatCurrency(customer.PendingCredits));
+            customer => FormatCurrency(GetPendingCredits(customer)));
     }
 
     private static void ApplyPageDefaults(PageDescriptor page)
@@ -364,6 +364,18 @@ public class PdfService : IPdfService
         return string.IsNullOrWhiteSpace(fullName) ? user.UserName ?? user.Email ?? "Unknown" : fullName;
     }
 
+    private static decimal GetTotalSpent(Customer customer)
+    {
+        return customer.SalesServicesInvoices?.Sum(invoice => invoice.TotalAmount) ?? 0;
+    }
+
+    private static decimal GetPendingCredits(Customer customer)
+    {
+        return customer.SalesServicesInvoices?
+            .Where(invoice => !invoice.PaymentStatus)
+            .Sum(invoice => invoice.TotalAmount) ?? 0;
+    }
+
     private async Task<List<Customer>> GetCustomersForReportsAsync()
     {
         return await _context.Customers
@@ -371,7 +383,6 @@ public class PdfService : IPdfService
             .Include(c => c.User)
             .Include(c => c.Vehicles)
             .Include(c => c.SalesServicesInvoices)
-            .Include(c => c.ServiceHistories)
             .ToListAsync();
     }
 
@@ -383,10 +394,10 @@ public class PdfService : IPdfService
         string metricHeader,
         Func<Customer, string> metricValue)
     {
-        var totalSpent = customers.Sum(c => c.TotalSpent);
-        var pendingCredits = customers.Sum(c => c.PendingCredits);
+        var totalSpent = customers.Sum(GetTotalSpent);
+        var pendingCredits = customers.Sum(GetPendingCredits);
         var totalVehicles = customers.Sum(c => c.Vehicles.Count);
-        var totalActivity = customers.Sum(c => c.ServiceHistories.Count + c.SalesServicesInvoices.Count);
+        var totalActivity = customers.Sum(c => c.SalesServicesInvoices.Count);
 
         return Document.Create(container =>
         {
@@ -408,7 +419,7 @@ public class PdfService : IPdfService
                         });
                         row.RelativeItem().Element(StatCard).Column(card =>
                         {
-                            card.Item().Text("Activity").FontSize(10).FontColor(Colors.Grey.Darken1);
+                            card.Item().Text("Invoices").FontSize(10).FontColor(Colors.Grey.Darken1);
                             card.Item().Text(totalActivity.ToString()).FontSize(18).Bold();
                         });
                         row.RelativeItem().Element(StatCard).Column(card =>
@@ -436,16 +447,16 @@ public class PdfService : IPdfService
                             columns.RelativeColumn(1.5f);
                         });
 
-                        ComposeTableHeader(table, "Customer", "Contact", "Vehicles", "Services", metricHeader, "Credits");
+                        ComposeTableHeader(table, "Customer", "Contact", "Vehicles", "Invoices", metricHeader, "Credits");
 
                         foreach (var customer in customers.Take(30))
                         {
                             table.Cell().Element(TableCell).Text(GetUserName(customer.User));
                             table.Cell().Element(TableCell).Text(customer.User.PhoneNumber ?? customer.User.Email ?? "N/A");
                             table.Cell().Element(TableCell).AlignRight().Text(customer.Vehicles.Count.ToString());
-                            table.Cell().Element(TableCell).AlignRight().Text(customer.ServiceHistories.Count.ToString());
+                            table.Cell().Element(TableCell).AlignRight().Text(customer.SalesServicesInvoices.Count.ToString());
                             table.Cell().Element(TableCell).AlignRight().Text(metricValue(customer));
-                            table.Cell().Element(TableCell).AlignRight().Text(FormatCurrency(customer.PendingCredits));
+                            table.Cell().Element(TableCell).AlignRight().Text(FormatCurrency(GetPendingCredits(customer)));
                         }
                     });
 

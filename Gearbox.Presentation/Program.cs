@@ -188,6 +188,7 @@ builder.Services.AddSingleton<EmailTemplateService>();
 builder.Services.AddSingleton<EmailService>();
 
 builder.Services.AddHostedService<EmailBackgroundWorker>();
+builder.Services.AddHostedService<PaymentReminderBackgroundWorker>();
 
 builder.Services.AddScoped<NotificationHub>();
 builder.Services.AddScoped<INotificationSender, NotificationSender>();

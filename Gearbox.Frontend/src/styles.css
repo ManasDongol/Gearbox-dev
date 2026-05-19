@@ -36,7 +36,7 @@
   }
 
   .modal-overlay {
-  @apply fixed inset-0 bg-black/40 flex justify-center items-start overflow-y-auto p-6;
+  @apply fixed inset-0 bg-black/40 flex justify-center items-start overflow-y-auto p-6 z-[999];
 }
 
   .modal-container {

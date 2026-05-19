@@ -30,8 +30,8 @@ namespace Gearbox.Application.Services
                 Email = c.User.Email,
                 PhoneNumber = c.User.PhoneNumber,
                 Address = c.User.Address,
-                TotalSpent = c.TotalSpent,
-                PendingCredits = c.PendingCredits,
+                TotalSpent = GetTotalSpent(c),
+                PendingCredits = GetPendingCredits(c),
                 FirstName = c.User.FirstName,
                 LastName = c.User.LastName,
             }).ToList();
@@ -39,7 +39,7 @@ namespace Gearbox.Application.Services
 
         public async Task<CustomerDto> GetByIdAsync(Guid id)
         {
-            var entity = await _Repository.GetByIdAsync(id);
+            var entity = await _Repository.GetCustomerWithDetailsAsync(id);
             if (entity == null) return null;
             return MapToDto(entity);
         }
@@ -139,8 +139,8 @@ namespace Gearbox.Application.Services
               
                 UserId = entity.UserId,
                
-                TotalSpent = entity.TotalSpent,
-                PendingCredits = entity.PendingCredits,
+                TotalSpent = GetTotalSpent(entity),
+                PendingCredits = GetPendingCredits(entity),
                 RegisteredSince = entity.RegisteredSince,
             };
         }
@@ -168,6 +168,18 @@ namespace Gearbox.Application.Services
             
                
             };
+        }
+
+        private static decimal GetTotalSpent(Customer customer)
+        {
+            return customer.SalesServicesInvoices?.Sum(invoice => invoice.TotalAmount) ?? 0;
+        }
+
+        private static decimal GetPendingCredits(Customer customer)
+        {
+            return customer.SalesServicesInvoices?
+                .Where(invoice => !invoice.PaymentStatus)
+                .Sum(invoice => invoice.TotalAmount) ?? 0;
         }
         
     }

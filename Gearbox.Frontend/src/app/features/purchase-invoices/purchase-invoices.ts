@@ -27,6 +27,7 @@ export class PurchaseInvoices implements OnInit {
   private vendorService = inject(VendorService);
   private partService = inject(PartService);
   private confirmCard = inject(ConfirmCardService);
+  private toast = inject(ToastService);
 
   invoices: PurchaseInvoice[] = [];
   filteredInvoices: PurchaseInvoice[] = [];
@@ -154,8 +155,9 @@ export class PurchaseInvoices implements OnInit {
       next: () => {
         this.loadInvoices();
         this.closeAddDialog();
+         this.toast.success("successfully created invoice","");
       },
-      error: (err) => console.error('Error saving invoice', err)
+      error: (err) => this.toast.error("failed to delete invoice","")
     });
   }
 
@@ -171,8 +173,9 @@ export class PurchaseInvoices implements OnInit {
       next: () => {
         this.invoices = this.invoices.filter(i => i.id !== id);
         this.applyFilter();
+        this.toast.success("successfully deleted invoice","");
       },
-      error: (err) => console.error('Error deleting invoice', err)
+      error: (err) =>  this.toast.error("failed todeleted invoice","")
     });
   }
 }

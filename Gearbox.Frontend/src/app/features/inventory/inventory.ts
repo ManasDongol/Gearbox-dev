@@ -23,6 +23,7 @@ export class Inventory implements OnInit {
   private partService = inject(PartService);
   private vendorService = inject(VendorService);
   private confirmCard = inject(ConfirmCardService);
+  private toast = inject(ToastService);
 
   parts: Part[] = [];
   filteredParts: Part[] = [];
@@ -140,9 +141,11 @@ export class Inventory implements OnInit {
         this.parts.push(part);
         this.applyFilter(this.searchQuery);
         this.closeAddDialog();
+        this.toast.success("part added successfully!","");
       },
       error: (err) => {
         console.error('Error adding part', err);
+        this.toast.error("failed to add part! try again later!","");
       }
     });
   }
@@ -158,9 +161,11 @@ export class Inventory implements OnInit {
           this.applyFilter(this.searchQuery);
         }
         this.closeEditDialog();
+        this.toast.success("part updated successfully!","");
       },
       error: (err) => {
         console.error('Error updating part', err);
+        this.toast.error("failed to update part!","");
       }
     });
   }
@@ -177,9 +182,11 @@ export class Inventory implements OnInit {
       next: () => {
         this.parts = this.parts.filter(p => p.id !== id);
         this.applyFilter(this.searchQuery);
+        this.toast.success("part removed successfully!","");
       },
       error: (err) => {
         console.error('Error deleting part', err);
+        this.toast.error("failed to remove part! please try again later","");
       }
     });
   }

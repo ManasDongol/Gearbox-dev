@@ -32,6 +32,27 @@ namespace Gearbox.Presentation.Controllers
             return Ok(result);
         }
 
+        [HttpGet("customer/{customerId}")]
+        public async Task<IActionResult> GetByCustomerId(Guid customerId)
+        {
+            var result = await _service.GetByCustomerIdAsync(customerId);
+            return Ok(result);
+        }
+
+        [HttpGet("appointment/{appointmentId}")]
+        public async Task<IActionResult> GetByAppointmentId(Guid appointmentId)
+        {
+            var result = await _service.GetByAppointmentIdAsync(appointmentId);
+            return Ok(result);
+        }
+
+        [HttpGet("service/{serviceId}")]
+        public async Task<IActionResult> GetByServiceId(Guid serviceId)
+        {
+            var result = await _service.GetByServiceIdAsync(serviceId);
+            return Ok(result);
+        }
+
         [HttpPost]
         public async Task<IActionResult> Add([FromBody] ServiceReviewDto dto)
         {
@@ -42,14 +63,16 @@ namespace Gearbox.Presentation.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(Guid id, [FromBody] ServiceReviewDto dto)
         {
-            await _service.UpdateAsync(id, dto);
+            var updated = await _service.UpdateAsync(id, dto);
+            if (!updated) return NotFound();
             return NoContent();
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {
-            await _service.DeleteAsync(id);
+            var deleted = await _service.DeleteAsync(id);
+            if (!deleted) return NotFound();
             return NoContent();
         }
     }

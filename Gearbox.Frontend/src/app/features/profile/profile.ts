@@ -19,7 +19,7 @@ import { Spinner } from '../../shared/components/spinner/spinner';
 export class Profile implements OnInit {
   private auth = inject(Auth);
   private userService = inject(UserService);
-
+   private toast = inject(ToastService);
   profile: UserProfile | null = null;
   isLoading = true;
   isSaving = false;
@@ -97,10 +97,12 @@ export class Profile implements OnInit {
       next: () => {
         this.profile = payload;
         this.isSaving = false;
+        this.toast.success("profile updated successfully!","");
         this.saveMessage = 'Profile updated successfully.';
       },
       error: () => {
         this.isSaving = false;
+        this.toast.error("failed to update profile!","")
         this.errorMessage = 'Profile could not be saved. Please try again.';
       },
     });

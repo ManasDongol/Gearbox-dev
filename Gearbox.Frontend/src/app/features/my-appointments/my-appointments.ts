@@ -26,13 +26,15 @@ export class MyAppointments implements OnInit {
   private customerService = inject(CustomerService);
   private vehicleService = inject(VehicleService);
   private confirmCard = inject(ConfirmCardService);
-
+     private toast = inject(ToastService);
+     
   customer: Customer | null = null;
   appointments: Appointment[] = [];
   vehicles: Vehicle[] = [];
   isLoading = true;
   showDialog = false;
   editingAppointment: Appointment | null = null;
+  today = new Date().toISOString().split('T')[0];
   appointmentForm = this.emptyAppointmentForm();
 
   ngOnInit() {
@@ -85,7 +87,7 @@ export class MyAppointments implements OnInit {
 
   getVehicleName(vehicleId: string): string {
     const vehicle = this.vehicles.find((v) => v.id === vehicleId);
-    return vehicle ? `${vehicle.make} ${vehicle.model} (${vehicle.licensePlate})` : 'Vehicle';
+    return vehicle ? `${vehicle.make} ${vehicle.model}` : 'Vehicle';
   }
 
   getStatusClass(status: string): string {
@@ -145,8 +147,10 @@ export class MyAppointments implements OnInit {
         next: () => {
           this.loadData();
           this.closeDialog();
+          this.toast.success("updated appointment successfully!","");
+          
         },
-        error: (err) => console.error('Error updating appointment request', err),
+        error: (err) => this.toast.error("unable to update, try again later!",""),
       });
       return;
     }
@@ -164,8 +168,9 @@ export class MyAppointments implements OnInit {
       next: () => {
         this.loadData();
         this.closeDialog();
+        this.toast.success("Successfully created new appointment","");
       },
-      error: (err) => console.error('Error creating appointment request', err),
+      error: (err) => this.toast.error("failed to create appointment!",""),
     });
   }
 
@@ -180,8 +185,9 @@ export class MyAppointments implements OnInit {
     this.appointmentService.delete(appointment.id).subscribe({
       next: () => {
         this.appointments = this.appointments.filter((item) => item.id !== appointment.id);
+        this.toast.info("the appointment has been cancelled!","");
       },
-      error: (err) => console.error('Error cancelling appointment', err),
+      error: (err) => this.toast.error("failed to cancel, try again later",""),
     });
   }
 

@@ -18,6 +18,7 @@ namespace Gearbox.Infrastructure.Repositories
         public async Task<Customer?> GetCustomerWithDetailsAsync(Guid id)
         {
             return await _dbSet
+                .Include(c => c.User)
                 .Include(c => c.Vehicles)
                 .Include(c => c.ServiceHistories)
                 .Include(c => c.SalesServicesInvoices)
@@ -27,14 +28,16 @@ namespace Gearbox.Infrastructure.Repositories
         public async Task<IEnumerable<Customer>> GetHighSpendersAsync()
         {
             return await _dbSet
-                .Where(c => c.TotalSpent > 5000) // 5000 threshold based on feature list
+                .Include(c => c.SalesServicesInvoices)
+                .Where(c => c.SalesServicesInvoices.Sum(i => i.TotalAmount) > 5000) // 5000 threshold based on feature list
                 .ToListAsync();
         }
 
         public async Task<IEnumerable<Customer>> GetCustomersWithPendingCreditsAsync()
         {
             return await _dbSet
-                .Where(c => c.PendingCredits > 0)
+                .Include(c => c.SalesServicesInvoices)
+                .Where(c => c.SalesServicesInvoices.Any(i => !i.PaymentStatus))
                 .ToListAsync();
         }
 
@@ -57,6 +60,7 @@ namespace Gearbox.Infrastructure.Repositories
         {
             return await _context.Customers
                 .Include(c => c.User)
+                .Include(c => c.SalesServicesInvoices)
                 .ToListAsync();
         }
  

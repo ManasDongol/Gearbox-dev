@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Gearbox.Application.BackgroundJobs;
 using Gearbox.Application.DTOs;
 using Gearbox.Application.Interfaces;
 using Gearbox.Domain.Entities;
@@ -16,15 +17,21 @@ namespace Gearbox.Application.Services
         private readonly ISalesServicesInvoiceRepository _repository;
         private readonly IPartRepository _partRepository;
         private readonly ApplicationDbContext _context;
+        private readonly EmailQueue _emailQueue;
+        private readonly INotificationService _notificationService;
 
         public SalesServicesInvoiceService(
             ISalesServicesInvoiceRepository repository,
             IPartRepository partRepository,
-            ApplicationDbContext context)
+            ApplicationDbContext context,
+            EmailQueue emailQueue,
+            INotificationService notificationService)
         {
             _repository = repository;
             _partRepository = partRepository;
             _context = context;
+            _emailQueue = emailQueue;
+            _notificationService = notificationService;
         }
 
         public async Task<IEnumerable<SalesServicesInvoiceDto>> GetAllAsync()
@@ -81,6 +88,7 @@ namespace Gearbox.Application.Services
     // Create items first
     var items = new List<SalesServicesInvoiceItem>();
     var serviceHistoryItems = new List<NewSalesServicesInvoiceItemDto>();
+    var lowStockMessages = new List<string>();
 
     foreach (var item in dto.Items)
     {
@@ -97,6 +105,11 @@ namespace Gearbox.Application.Services
 
             part.StockQuantity -= item.Quantity;
             _partRepository.Update(part);
+
+            if (part.StockQuantity < 10)
+            {
+                lowStockMessages.Add($"Low stock alert: {part.Name} has {part.StockQuantity} remaining.");
+            }
         }
 
         if (item.Type == "Service" && item.ServiceId.HasValue && item.VehicleId.HasValue)
@@ -127,7 +140,8 @@ namespace Gearbox.Application.Services
 
     // Calculate total safely
     var totalAmount = items.Sum(i => i.Quantity * i.UnitPrice);
-    var finalAmount = totalAmount - dto.DiscountAmount;
+    var discountAmount = totalAmount > 5000 ? totalAmount * 0.10m : 0;
+    var finalAmount = totalAmount - discountAmount;
 
     // Create invoice
     var invoice = new SalesServicesInvoice
@@ -136,7 +150,7 @@ namespace Gearbox.Application.Services
         CustomerId = dto.CustomerId,
         StaffId = dto.StaffId,
         AppointmentId = dto.AppointmentId,
-        DiscountAmount = dto.DiscountAmount,
+        DiscountAmount = discountAmount,
         TotalAmount = finalAmount,
         CreatedAt = DateTime.UtcNow,
         Items = items
@@ -159,6 +173,15 @@ namespace Gearbox.Application.Services
     // Save everything in one go
     await _repository.AddAsync(invoice);
     await _repository.SaveChangesAsync();
+    await RecalculateCustomerInvoiceTotalsAsync(invoice.CustomerId);
+    await _repository.SaveChangesAsync();
+
+    foreach (var message in lowStockMessages)
+    {
+        await _notificationService.SendToRoleAsync("Admin", message);
+    }
+
+    QueueInvoiceEmail(invoice);
 
     return MapToDto(invoice);
 }
@@ -167,6 +190,7 @@ namespace Gearbox.Application.Services
             var entity = await _repository.GetByIdAsync(id);
             if (entity != null)
             {
+                var originalCustomerId = entity.CustomerId;
                 entity.CustomerId = dto.CustomerId;
                 entity.StaffId = dto.StaffId;
                 entity.AppointmentId = dto.AppointmentId;
@@ -177,6 +201,12 @@ namespace Gearbox.Application.Services
                 // For now, updating basic fields.
                 
                 _repository.Update(entity);
+                await _repository.SaveChangesAsync();
+                await RecalculateCustomerInvoiceTotalsAsync(originalCustomerId);
+                if (originalCustomerId != entity.CustomerId)
+                {
+                    await RecalculateCustomerInvoiceTotalsAsync(entity.CustomerId);
+                }
                 await _repository.SaveChangesAsync();
             }
         }
@@ -194,6 +224,8 @@ namespace Gearbox.Application.Services
 
             entity.PaymentStatus = true;
             await _context.SaveChangesAsync();
+            await RecalculateCustomerInvoiceTotalsAsync(entity.CustomerId);
+            await _context.SaveChangesAsync();
 
             return MapToDto(entity);
         }
@@ -203,9 +235,56 @@ namespace Gearbox.Application.Services
             var entity = await _repository.GetByIdAsync(id);
             if (entity != null)
             {
+                var customerId = entity.CustomerId;
                 _repository.Remove(entity);
                 await _repository.SaveChangesAsync();
+                await RecalculateCustomerInvoiceTotalsAsync(customerId);
+                await _repository.SaveChangesAsync();
             }
+        }
+
+        private async Task RecalculateCustomerInvoiceTotalsAsync(Guid customerId)
+        {
+            var customer = await _context.Customers.FirstOrDefaultAsync(c => c.UserId == customerId);
+            if (customer == null) return;
+
+            customer.TotalSpent = await _context.SalesServicesInvoices
+                .Where(invoice => invoice.CustomerId == customerId)
+                .Select(invoice => (decimal?)invoice.TotalAmount)
+                .SumAsync() ?? 0;
+
+            customer.PendingCredits = await _context.SalesServicesInvoices
+                .Where(invoice => invoice.CustomerId == customerId && !invoice.PaymentStatus)
+                .Select(invoice => (decimal?)invoice.TotalAmount)
+                .SumAsync() ?? 0;
+        }
+
+        private void QueueInvoiceEmail(SalesServicesInvoice invoice)
+        {
+            var customer = _context.Customers
+                .Include(c => c.User)
+                .FirstOrDefault(c => c.UserId == invoice.CustomerId);
+
+            if (string.IsNullOrWhiteSpace(customer?.User?.Email)) return;
+
+            var customerName = $"{customer.User.FirstName} {customer.User.LastName}".Trim();
+            if (string.IsNullOrWhiteSpace(customerName))
+            {
+                customerName = customer.User.UserName ?? "Customer";
+            }
+
+            _emailQueue.Enqueue(new EmailJob
+            {
+                ToEmail = customer.User.Email,
+                Subject = $"Gearbox invoice {invoice.Id.ToString()[..8]}",
+                Type = EmailType.Invoice,
+                Data = new Dictionary<string, object>
+                {
+                    { "customerName", customerName },
+                    { "invoiceId", invoice.Id.ToString()[..8] },
+                    { "amount", invoice.TotalAmount }
+                }
+            });
         }
 
         private SalesServicesInvoiceDto MapToDto(SalesServicesInvoice entity)
