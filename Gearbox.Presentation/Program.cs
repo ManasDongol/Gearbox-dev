@@ -14,6 +14,7 @@ using  Gearbox.Infrastructure.Repositories;
 using  Gearbox.Application.Services;
 using Gearbox.Presentation.Helper;
 using Gearbox.Presentation.Hubs;
+using Gearbox.Presentation.Middleware;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.SignalR;
@@ -203,6 +204,7 @@ builder.Services.AddHttpClient();
 var app = builder.Build();
 
 app.MapHub<NotificationHub>("/notificationHub");
+app.UseMiddleware<GlobalExceptionMiddleware>();
 
 using (var scope = app.Services.CreateScope())
 {

@@ -13,11 +13,13 @@ namespace Gearbox.Presentation.Controllers
     {
         private readonly ICustomerService _service;
 
+        //constructor with Dependency injection
         public CustomerController(ICustomerService service)
         {
             _service = service;
         }
 
+        //get all customers
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {

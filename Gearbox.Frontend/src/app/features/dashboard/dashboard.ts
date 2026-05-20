@@ -16,6 +16,8 @@ import { SalesInvoice } from '../../core/models/sales-invoice.model';
 import { Customer } from '../../core/models/customer.model';
 import { Appointment } from '../../core/models/appointment.model';
 import { Part } from '../../core/models/part.model';
+import { Auth } from '../../core/services/auth/auth';
+
 
 type DashboardStat = {
   title: string;
@@ -54,10 +56,13 @@ export class Dashboard implements OnInit {
   private appointmentService = inject(AppointmentService);
   private partService = inject(PartService);
   private serviceHistoryService = inject(ServiceHistoryService);
+  private auth = inject(Auth);
+   isAdmin:boolean =false;
 
   isGeneratingFinancialReport = false;
   isGeneratingCustomerReport = false;
   isLoadingDashboard = true;
+  showReportSelectionModal = false;
 
   stats: DashboardStat[] = [
     { title: 'Total Revenue', value: 'Rs. 0', trend: 'Live', isPositive: true },
@@ -79,6 +84,7 @@ export class Dashboard implements OnInit {
 
   ngOnInit() {
     this.loadDashboardData();
+     this.isAdmin = this.auth.hasRole('Admin') ;
   }
 
   loadDashboardData() {
@@ -119,15 +125,24 @@ export class Dashboard implements OnInit {
     });
   }
 
-  generateFinancialReport() {
+  openReportModal() {
+    this.showReportSelectionModal = true;
+  }
+
+  closeReportModal() {
+    this.showReportSelectionModal = false;
+  }
+
+  generateFinancialReport(period: string) {
     if (this.isGeneratingFinancialReport) return;
 
     this.isGeneratingFinancialReport = true;
-    this.pdfService.generateFinancialReport().subscribe({
+    this.pdfService.generateFinancialReport(period).subscribe({
       next: (pdf) => {
-        this.downloadPdf(pdf, this.createFileName('financial-report'));
+        this.downloadPdf(pdf, this.createFileName(`financial-report-${period}`));
         this.toast.success('Report ready', 'Financial report downloaded.');
         this.isGeneratingFinancialReport = false;
+        this.closeReportModal();
       },
       error: (err) => {
         console.error('Error generating financial report', err);

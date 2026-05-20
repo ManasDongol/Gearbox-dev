@@ -15,10 +15,10 @@ public class PdfController : ControllerBase
     }
 
     [HttpGet("financial-report")]
-    public async Task<IActionResult> GenerateFinancialReport()
+    public async Task<IActionResult> GenerateFinancialReport([FromQuery] string period = "yearly")
     {
-        var pdf = await _pdfService.GenerateFinancialReportAsync();
-        var fileName = $"gearbox-financial-report-{DateTime.UtcNow:yyyyMMdd-HHmm}.pdf";
+        var pdf = await _pdfService.GenerateFinancialReportAsync(period);
+        var fileName = $"gearbox-financial-report-{period}-{DateTime.UtcNow:yyyyMMdd-HHmm}.pdf";
         return File(pdf, "application/pdf", fileName);
     }
 

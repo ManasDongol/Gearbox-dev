@@ -10,8 +10,8 @@ export class PdfService {
   private http = inject(HttpClient);
   private apiUrl = `${environment.apiUrl}/Pdf`;
 
-  generateFinancialReport(): Observable<Blob> {
-    return this.http.get(`${this.apiUrl}/financial-report`, { responseType: 'blob' });
+  generateFinancialReport(period: string = 'yearly'): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/financial-report?period=${period}`, { responseType: 'blob' });
   }
 
   generateCustomerReport(): Observable<Blob> {

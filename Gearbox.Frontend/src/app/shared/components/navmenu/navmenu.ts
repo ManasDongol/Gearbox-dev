@@ -18,10 +18,11 @@ export class Navmenu implements OnInit {
   menuGroups: any[] = [];
 
   ngOnInit() {
-    const isAdminOrStaff = this.auth.hasRole('Admin') || this.auth.hasRole('Staff');
+    const isAdmin = this.auth.hasRole('Admin') ;
+    const isStaff = this.auth.hasRole('Staff');
     const isCustomer = this.auth.hasRole('Customer');
 
-    if (isAdminOrStaff) {
+    if (isAdmin) {
       this.menuGroups = [
         {
           items: [
@@ -64,6 +65,35 @@ export class Navmenu implements OnInit {
             { label: 'My Invoices', route: '/my-invoices' },
             { label: 'Requests', route: '/requests' },
             { label: 'Profile', route: '/profile' },
+          ],
+        },
+      ];
+    } else if (isStaff){
+        this.menuGroups = [
+        {
+          items: [
+            { label: 'Dashboard', route: '/dashboard' },
+        
+            { label: 'Customers', route: '/customer-management' },
+        
+        
+          ],
+        },
+        {
+          items: [
+            { label: 'Inventory', route: '/inventory' },
+              { label: 'Appointments', route: '/appointment-management' },
+            { label: 'Reviews', route: '/reviews' },
+           
+          ],
+        },
+        {
+          items: [
+          
+            { label: 'Sales Invoices', route: '/sales-invoices' },
+            {label:'AI', route:'/gearbox-ai'}
+          
+           
           ],
         },
       ];

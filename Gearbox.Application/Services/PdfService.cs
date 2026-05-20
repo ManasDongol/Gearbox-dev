@@ -18,25 +18,37 @@ public class PdfService : IPdfService
         QuestPDF.Settings.License = LicenseType.Community;
     }
 
-    public async Task<byte[]> GenerateFinancialReportAsync()
+    public async Task<byte[]> GenerateFinancialReportAsync(string period = "yearly")
     {
+        var startDate = DateTime.MinValue;
+        if (period == "daily") {
+            startDate = DateTime.UtcNow.Date;
+        } else if (period == "monthly") {
+            startDate = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1);
+        } else if (period == "yearly") {
+            startDate = new DateTime(DateTime.UtcNow.Year, 1, 1);
+        }
+
         var salesInvoices = await _context.SalesServicesInvoices
             .AsNoTracking()
             .Include(i => i.Customer)
                 .ThenInclude(c => c.User)
             .Include(i => i.Staff)
                 .ThenInclude(s => s.User)
+            .Where(i => i.CreatedAt >= startDate)
             .OrderByDescending(i => i.CreatedAt)
             .ToListAsync();
 
         var purchaseInvoices = await _context.PurchaseInvoices
             .AsNoTracking()
             .Include(i => i.Vendor)
+            .Where(i => i.CreatedDate >= startDate)
             .OrderByDescending(i => i.CreatedDate)
             .ToListAsync();
 
         var serviceRevenue = await _context.ServiceHistories
             .AsNoTracking()
+            .Where(s => s.ServiceDate >= startDate)
             .SumAsync(s => s.TotalCost);
 
         var totalSales = salesInvoices.Sum(i => i.TotalAmount);

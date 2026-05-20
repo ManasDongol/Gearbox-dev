@@ -85,10 +85,8 @@ namespace Gearbox.Application.Services
             throw new ArgumentException("Unit price cannot be negative.");
     }
 
-    // Create items first
     var items = new List<SalesServicesInvoiceItem>();
     var serviceHistoryItems = new List<NewSalesServicesInvoiceItemDto>();
-    var lowStockMessages = new List<string>();
 
     foreach (var item in dto.Items)
     {
@@ -105,11 +103,6 @@ namespace Gearbox.Application.Services
 
             part.StockQuantity -= item.Quantity;
             _partRepository.Update(part);
-
-            if (part.StockQuantity < 10)
-            {
-                lowStockMessages.Add($"Low stock alert: {part.Name} has {part.StockQuantity} remaining.");
-            }
         }
 
         if (item.Type == "Service" && item.ServiceId.HasValue && item.VehicleId.HasValue)
@@ -176,10 +169,8 @@ namespace Gearbox.Application.Services
     await RecalculateCustomerInvoiceTotalsAsync(invoice.CustomerId);
     await _repository.SaveChangesAsync();
 
-    foreach (var message in lowStockMessages)
-    {
-        await _notificationService.SendToRoleAsync("Admin", message);
-    }
+    await CheckInventoryAndNotifyAsync();
+    await SendUnpaidCreditRemindersAsync();
 
     QueueInvoiceEmail(invoice);
 
@@ -257,6 +248,54 @@ namespace Gearbox.Application.Services
                 .Where(invoice => invoice.CustomerId == customerId && !invoice.PaymentStatus)
                 .Select(invoice => (decimal?)invoice.TotalAmount)
                 .SumAsync() ?? 0;
+        }
+
+        private async Task CheckInventoryAndNotifyAsync()
+        {
+            var lowStockParts = await _context.Parts.Where(p => p.StockQuantity < 10).ToListAsync();
+            foreach (var part in lowStockParts)
+            {
+                var message = $"Low stock alert: {part.Name} has {part.StockQuantity} remaining.";
+                await _notificationService.SendToRoleAsync("Admin", message);
+            }
+        }
+
+        private async Task SendUnpaidCreditRemindersAsync()
+        {
+            var oneMonthAgo = DateTime.UtcNow.AddMonths(-1);
+            var overdueInvoices = await _context.SalesServicesInvoices
+                .Include(i => i.Customer)
+                    .ThenInclude(c => c.User)
+                .Where(i => !i.PaymentStatus && i.CreatedAt < oneMonthAgo)
+                .ToListAsync();
+
+            var overDueCustomers = overdueInvoices.GroupBy(i => i.CustomerId);
+
+            foreach (var customerGroup in overDueCustomers)
+            {
+                var firstInvoice = customerGroup.First();
+                var customer = firstInvoice.Customer;
+                if (customer?.User?.Email == null) continue;
+
+                var totalOwed = customerGroup.Sum(i => i.TotalAmount);
+                var customerName = $"{customer.User.FirstName} {customer.User.LastName}".Trim();
+                if (string.IsNullOrWhiteSpace(customerName))
+                {
+                    customerName = customer.User.UserName ?? "Customer";
+                }
+
+                _emailQueue.Enqueue(new EmailJob
+                {
+                    ToEmail = customer.User.Email,
+                    Subject = "Unpaid Invoice Reminder",
+                    Type = EmailType.PaymentReminder,
+                    Data = new Dictionary<string, object>
+                    {
+                        { "customerName", customerName },
+                        { "dueAmount", totalOwed }
+                    }
+                });
+            }
         }
 
         private void QueueInvoiceEmail(SalesServicesInvoice invoice)
