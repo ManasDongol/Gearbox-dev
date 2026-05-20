@@ -10,7 +10,7 @@ import {
   Vehicle,
   VehicleService,
 } from '../../core/services/vehicle/vehicle.service';
-import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
+import { Subject, debounceTime, distinctUntilChanged, forkJoin } from 'rxjs';
 import { ToastService } from '../../shared/components/toast/toast.service';
 import { Spinner } from '../../shared/components/spinner/spinner';
 import { ConfirmCardService } from '../../shared/components/confirm-card/confirm-card.service';
@@ -31,6 +31,7 @@ export class CustomerManagement implements OnInit {
   customers: Customer[] = [];
   filteredCustomers: Customer[] = [];
   customerVehicles: Vehicle[] = [];
+  allVehicles: Vehicle[] = [];
   
   searchQuery: string = '';
   private searchSubject = new Subject<string>();
@@ -79,16 +80,19 @@ export class CustomerManagement implements OnInit {
 
   loadCustomers() {
     this.isLoading = true;
-    this.customerService.getAll().subscribe({
+    forkJoin({
+      customers: this.customerService.getAll(),
+      vehicles: this.vehicleService.getAll()
+    }).subscribe({
       next: (data) => {
-        console.log(data)
-        this.customers = data;
+        this.customers = data.customers;
+        this.allVehicles = data.vehicles;
         this.applyFilter();
         this.isLoading = false;
       },
       error: (err) => {
-        console.error('Error loading customers', err);
-        this.toast.error('Unable to load customers', 'Please try again.');
+        console.error('Error loading data', err);
+        this.toast.error('Unable to load customers or vehicles', 'Please try again.');
         this.isLoading = false;
       }
     });
@@ -101,12 +105,24 @@ export class CustomerManagement implements OnInit {
   applyFilter() {
     const query = this.searchQuery.toLowerCase().trim();
     this.filteredCustomers = this.customers.filter((c) => {
+      if (!query) return true;
+
+      // Find matching vehicles for this customer
+      const matchingVehicles = this.allVehicles.filter(v => v.customerId === c.userId);
+      const vehicleMatch = matchingVehicles.some(v => 
+        (v.make && v.make.toLowerCase().includes(query)) || 
+        (v.model && v.model.toLowerCase().includes(query)) ||
+        (v.numberPlate && v.numberPlate.toLowerCase().includes(query)) ||
+        (v.licensePlate && v.licensePlate.toLowerCase().includes(query)) ||
+        (v.vin && v.vin.toLowerCase().includes(query))
+      );
+
       return (
-        !query ||
-        c.firstName.toLowerCase().includes(query) ||
-        c.lastName.toLowerCase().includes(query) ||
-        c.phoneNumber.toLowerCase().includes(query) ||
-        c.address.toLowerCase().includes(query)
+        (c.firstName && c.firstName.toLowerCase().includes(query)) ||
+        (c.lastName && c.lastName.toLowerCase().includes(query)) ||
+        (c.phoneNumber && c.phoneNumber.toLowerCase().includes(query)) ||
+        (c.address && c.address.toLowerCase().includes(query)) ||
+        vehicleMatch
       );
     });
   }
