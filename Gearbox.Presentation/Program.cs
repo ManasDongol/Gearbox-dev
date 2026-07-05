@@ -30,7 +30,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowAngularApp",
         policy =>
         {
-            policy.WithOrigins("http://localhost:4200") // Angular dev server URL
+            policy.WithOrigins("https://gearbox-dev.vercel.app") // Angular dev server URL
                 .AllowAnyHeader()
                 .AllowAnyMethod()
                 .AllowCredentials();
