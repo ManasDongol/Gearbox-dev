@@ -6,9 +6,9 @@ using Microsoft.Extensions.Hosting;
 
 namespace Gearbox.Application.BackgroundJobs.Email;
 
-public class PaymentReminderBackgroundWorker : BackgroundService
+public class PaymentReminderBackgroundWorker  //: BackgroundService
 {
-    private static readonly TimeSpan CheckInterval = TimeSpan.FromDays(1);
+   /* private static readonly TimeSpan CheckInterval = TimeSpan.FromDays(1);
     private readonly EmailQueue _emailQueue;
     private readonly IServiceScopeFactory _scopeFactory;
 
@@ -69,5 +69,5 @@ public class PaymentReminderBackgroundWorker : BackgroundService
                 }
             });
         }
-    }
+    }*/
 }

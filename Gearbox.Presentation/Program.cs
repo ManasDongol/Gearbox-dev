@@ -187,10 +187,10 @@ builder.Services.AddScoped<TokenService>();
 builder.Services.AddSingleton<EmailQueue>();
 builder.Services.AddSingleton<EmailTemplateService>();
 builder.Services.AddSingleton<EmailService>();
-
+/*
 builder.Services.AddHostedService<EmailBackgroundWorker>();
 builder.Services.AddHostedService<PaymentReminderBackgroundWorker>();
-
+*/
 builder.Services.AddScoped<NotificationHub>();
 builder.Services.AddScoped<INotificationSender, NotificationSender>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
@@ -239,7 +239,7 @@ using (var scope = app.Services.CreateScope())
 }
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
 {
     app.MapOpenApi();
     app.MapScalarApiReference();
