@@ -1,8 +1,14 @@
 {
   "rewrites": [
     {
-      "source": "/(.*)",
-      "destination": "/index.html"
+      "source": "/api/:path*",
+      "destination": "http://gearbox.runasp.net*"
+    },
+    {
+      "source": "/hub/:path*",
+      "destination": "http://gearbox.runasp.net*"
     }
   ]
+
+  
 }
