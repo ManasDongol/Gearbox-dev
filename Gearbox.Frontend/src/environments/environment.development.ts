@@ -1,4 +1,4 @@
 export const environment = {
-  apiUrl: 'https://localhost:7200/api',
-  hubUrl: 'https://localhost:7200'
+  apiUrl: 'https://gearbox.runasp.net/api',
+  hubUrl: 'https://gearbox.runasp.net'
 };
